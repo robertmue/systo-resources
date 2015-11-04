@@ -1,0 +1,136 @@
+<!doctype html>
+<head>
+    <title>Systo example: Multiple models</title>
+
+    <!-- CSS -->
+    <link type="text/css" rel="stylesheet" href="../css/jquery-ui.css"/>
+    <!-- To get container diver around floating divs: see 
+        http://webdesignerwall.com/tutorials/css-clearing-floats-with-overflow -->
+
+    <style>
+    .floater {
+        float:left;
+        border:solid 1px black;
+        background:white;
+        margin:5px;
+        width:370px;
+        height:250px;
+    }
+
+    .diagram {
+        width:370px;
+        height:250px;
+    }
+
+    .multiple_sliders {
+        width:370px;
+        height:250px;
+    }
+
+    .plotter {
+        width:400px;
+        height:250px;
+    }
+
+    .container {
+        overflow:auto;
+        background:white;
+        margin:5px;
+    }
+    </style>
+
+    <!-- Javascript - as merged but non-minified files -->
+    <script type="text/javascript" src="../js/all_core.js"></script>
+    <script type="text/javascript" src="../plugins/all_plugins.js"></script>
+	<script type="text/javascript" src="../widgets/all_widgets.js"></script>
+
+    <!-- Model language definition(s), held as a Javascript object literal -->
+    <script type="text/javascript" src="../languages/system_dynamics.js"></script>
+
+    <!-- Model(s), held as a Javascript object literal -->
+    <script type="text/javascript" src="../models/miniworld.js"></script>
+    <script type="text/javascript" src="../models/predator_prey_shodor.js"></script>
+    <script type="text/javascript" src="../models/cascade.js"></script>
+
+    <!-- This page's custom script -->
+    <script>
+    $(document).ready(function() {
+
+        $('.floater').resizable();
+
+        var modelId1 = 'miniworld_copy1';
+        var modelId2 = 'miniworld_copy2';
+        var modelId3 = 'cascade_copy1';
+        var modelId4 = 'cascade_copy2';
+
+        SYSTO.copyModel('miniworld', modelId1);
+        SYSTO.copyModel('miniworld', modelId2);
+        SYSTO.copyModel('cascade', modelId3);
+        SYSTO.copyModel('cascade', modelId4);
+
+        SYSTO.switchToModel(modelId1);
+        SYSTO.switchToModel(modelId2);
+        SYSTO.switchToModel(modelId3);
+        SYSTO.switchToModel(modelId4);
+
+        $("#diagram1a").diagram({modelId:modelId1});
+        $("#diagram1b").diagram({modelId:modelId1});
+        $("#multiple_sliders1").multiple_sliders({modelId:modelId1});
+        $("#plotter1").plotter({modelId:modelId1});
+        $('#equation_listing1').equation_listing({modelId:modelId1});
+        $('#multi_plotter1').multi_plotter({modelId:modelId1});
+
+        $("#multiple_sliders12").multiple_sliders({modelId:modelId1, modelIdArray:[modelId1,modelId2]});
+
+        $("#diagram2").diagram({modelId:modelId2});
+        $("#multiple_sliders2").multiple_sliders({modelId:modelId2});
+        $("#plotter2").plotter({modelId:modelId2});
+
+        $("#diagram3").diagram({modelId:modelId3});
+        $("#multiple_sliders3").multiple_sliders({modelId:modelId3});
+        $("#plotter3").plotter({modelId:modelId3});
+
+    });
+
+    function switchModel(modelId) {
+        $("#diagram1a").diagram('option', 'modelId', modelId);
+        $("#diagram1b").diagram('option', 'modelId', modelId);
+        $("#multiple_sliders1").multiple_sliders('option', 'modelId', modelId);
+        $("#plotter1").plotter('option', 'modelId', modelId);
+        $("#equation_listing1").equation_listing('option', 'modelId', modelId);
+        $('#multi_plotter1').multi_plotter('option', 'modelId', modelId);
+    }
+</script>
+</head>
+
+<body>
+    <h3>1. An instance of the Miniworld model</h3>
+
+    <button onclick="switchModel('cascade_copy1');">Switch</button>
+
+    <div class="container">
+        <div id="diagram1a" class="floater diagram"></div>
+        <div id="diagram1b" class="floater diagram"></div>
+        <div id="multiple_sliders1" class="floater multiple_sliders"></div>
+        <div id="plotter1" class="floater plotter"></div>
+        <div id="equation_listing1" class="floater equation_listing"></div>
+        <div id="multi_plotter1" class="floater multi_plotter"></div>
+        <div id="multiple_sliders12" class="floater multiple_sliders"></div>
+    </div>
+
+    <h3>2. Another instance of the Miniworld model</h3>
+    <div class="container">
+        <div id="diagram2" class="floater diagram"></div>
+        <div id="multiple_sliders2" class="floater multiple_sliders"></div>
+        <div id="plotter2" class="floater plotter"></div>
+    </div>
+
+    <h3>3. An instance of the Cascade model</h3>
+    <div class="container">
+        <div id="diagram3" class="floater diagram"></div>
+        <div id="multiple_sliders3" class="floater multiple_sliders"></div>
+        <div id="plotter3" class="floater plotter"></div>
+    </div>
+
+</body>
+</html>

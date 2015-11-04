@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=1024, user-scalable=no">
+
+  <title>Your deck.js Presentation</title>
+
+  <!-- Required stylesheet -->
+  <link rel="stylesheet" media="screen" href="../../css/deck/core/deck.core.css">
+
+  <!-- Extension CSS files go here. Remove or add as needed. -->
+  <link rel="stylesheet" media="screen" href="../../css/deck/extensions/goto/deck.goto.css">
+  <link rel="stylesheet" media="screen" href="../../css/deck/extensions/menu/deck.menu.css">
+  <link rel="stylesheet" media="screen" href="../../css/deck/extensions/navigation/deck.navigation.css">
+  <link rel="stylesheet" media="screen" href="../../css/deck/extensions/status/deck.status.css">
+  <link rel="stylesheet" media="screen" href="../../css/deck/extensions/scale/deck.scale.css">
+
+  <!-- Style theme. More available in /themes/style/ or create your own. -->
+  <link rel="stylesheet" media="screen" href="../../css/deck/themes/style/web-2.0.css">
+
+  <!-- Transition theme. More available in /themes/transition/ or create your own. -->
+  <link rel="stylesheet" media="screen" href="../../css/deck/themes/transition/fade.css">
+
+  <!-- Basic black and white print styles -->
+  <link rel="stylesheet" media="print" href="../../css/deck/core/print.css">
+
+    <!-- CSS -->
+    <link type="text/css" rel="stylesheet" href="../../css/jquery-ui.css"/>
+
+  <!-- Required Modernizr file -->
+  <script src="../../js/deck/modernizr.custom.js"></script>
+</head>
+<body>
+  <div class="deck-container">
+
+    <!-- Begin slides. Just make elements with a class of slide. -->
+
+    <section class="slide">
+    <h1>Systo</h1>
+    <p>Here is the model diagram:</p>
+    <div id="diagram1"></div>
+    </section>
+
+    <section class="slide">
+    <p>... and here are the sliders and plot of results:</p>
+    <divx id="plotter1" style="float:left; width:400px; height:300px;"></divx>
+    <div id="plotter1" style="float:left;"></div>
+    <div id="multiple_sliders1" style="float:left;"></div>
+    </section>
+
+    <section class="slide">
+		<h2>Look at these screenshots from System Dynamics modelling tools...</h2>
+		<img src="../../images/five_sd_screenshots.gif" title="Screenshots from 5 System Dyamics modelling tools"></img>
+		<p>Clockwise from top-left: Stella, Simile, Insight Maker, Sysdea, and Vensim in the middle.</p>
+    </section>
+
+    <section class="slide">
+		<h3>We see that these are</h3>
+		<h3>similar...</h3>
+		<p>They all can display the model diagram, plot of results, input sliders etc.</p>
+		<h3>... but different</h3>
+		<p>Different screen layout, different appearance of the diagrams, etc.</p>
+		<p>This is hugely wasteful - massive duplication of effort.</p>
+		<p>It's also restrictive - any one package has to limit the number of features it provides.</p>
+		<p>For the user, it also leads to lock-in - you get used to one package.</p>
+    </section>
+
+    <section class="slide">
+		<h2>Car or kitchen?</h2>
+		<h3>When you choose a car...</h3>
+		<p>... you are choosing a whole package of (good and not so good) features.</p>
+		<p>You choice is a compromise between price, performance, styling, reliability, fuel economy, etc</p>
+		<p>Just about all software is like a car.</p>
+		<h3>When you choose a kitchen...</h3>
+		<p>... you choose each component separately, and combine them together to make the kitchen <u>you</u> want.</p>
+		<p>This works because there is a standard infrastructure (electricity, gas, water).</p>
+		<p>Systo is like a kitchen - or, to be precise, Systo is like the <u>concept</u> of kitchen.</p>
+		
+    </section>
+
+    <section class="slide">
+		<h2>Systo features</h2>
+		<ul>
+			<li>Multiple diagrammatic languages</li>
+			<li>Large number of diagramming, input and simulation display widgets</li>
+			<li>Highly efficient simulators</li>
+			<li>Built-in interactive tutorials</li>
+			<li>Unlimited flexibility in designing user interfaces, using HTML and JavaScript</li>
+			<li>Models, language definitions and widgets can live anywhere on the web</li>
+        </ul>
+    </section>
+
+    <section class="slide">
+		<h2>Systo links</h2>
+		<ul>
+			<li><a href="http://www.systo.org">Systo home page</a></li>
+			<li><a href="http://www.systo.org/miniworld.html">Miniworld example</a></li>
+			<li><a href="http://www.systo.org/systolite.html">SystoLite</a></li>
+        </ul>
+    </section>
+    <!-- End slides. -->
+
+    <!-- Begin extension snippets. Add or remove as needed. -->
+
+    <!-- deck.navigation snippet -->
+    <div aria-role="navigation">
+      <a href="#" class="deck-prev-link" title="Previous">&#8592;</a>
+      <a href="#" class="deck-next-link" title="Next">&#8594;</a>
+    </div>
+
+    <!-- deck.status snippet -->
+    <p class="deck-status" aria-role="status">
+      <span class="deck-status-current"></span>
+      /
+      <span class="deck-status-total"></span>
+    </p>
+
+    <!-- deck.goto snippet -->
+    <form action="." method="get" class="goto-form">
+      <label for="goto-slide">Go to slide:</label>
+      <input type="text" name="slidenum" id="goto-slide" list="goto-datalist">
+      <datalist id="goto-datalist"></datalist>
+      <input type="submit" value="Go">
+    </form>
+
+    <!-- End extension snippets. -->
+  </div>
+
+<!-- Required JS files. -->
+<!--script src="../../js/deck/jquery.min.js"></script-->
+<script type="text/javascript" src="../../js/all_core.js"></script>
+<script type="text/javascript" src="../../plugins/all_plugins.js"></script>
+<script type="text/javascript" src="../../widgets/all_widgets.js"></script>
+<script src="../../js/deck/core/deck.core.js"></script>
+
+<!-- Extension JS files. Add or remove as needed. -->
+<script src="../../js/deck/extensions/menu/deck.menu.js"></script>
+<script src="../../js/deck/extensions/goto/deck.goto.js"></script>
+<script src="../../js/deck/extensions/status/deck.status.js"></script>
+<script src="../../js/deck/extensions/navigation/deck.navigation.js"></script>
+<script src="../../js/deck/extensions/scale/deck.scale.js"></script>
+
+<!-- Initialize the deck. You can put this in an external file if desired. -->
+
+    <!-- Model language definition, held as a Javascript object literal -->
+    <script type="text/javascript" src="../../languages/system_dynamics.js"></script>
+
+    <!-- Model, held as a Javascript object literal -->
+    <script type="text/javascript" src="../../models/cascade.js"></script>
+
+    <!-- This page's custom script -->
+    <script>
+        $(document).ready(function() {
+    		$.deck('.slide');
+            SYSTO.switchToModel('cascade');
+            $('#diagram1').diagram();
+            $('#multiple_sliders1').multiple_sliders();
+            //$('#plotter1').plotter({css:{width:'300px', height:'250px'}});
+            $('#plotter1').plotter();
+            SYSTO.switchToModel('cascade');
+        });          
+    </script>
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> 
+
+	<title>Sysiwyg - a WYSIWYG editor for making a Systo web page</title> 
+
+	<link type="text/css" rel="stylesheet" href="layout-default-latest.css" />
+
+    <!-- CSS -->
+    <link type="text/css" rel="stylesheet" href="../css/jquery-ui.css"/>
+
+    <style>
+
+#workspace {
+    !position: relative;
+    !height: 600px;
+    !width: 800px;
+    !z-index:120;
+}
+
+.placeddiv {
+    background-color: white;
+    border: solid 1px black;
+    width: 300px;
+    height: 200px;
+    position: absolute;
+}
+
+/* !http://stackoverflow.com/questions/14954104/why-jquery-ui-1-10-remove-jquery-dialog-zindex-option */
+.ui-front {
+    z-index:1000000 !important; /* The default is 100. !important overrides the default. */
+    }
+.ui-dialog {
+    z-index:1000000 !important; /* The default is 100. !important overrides the default. */
+    }
+
+    </style>
+
+    <!-- Javascript - as merged but non-minified files -->
+    <script type="text/javascript" src="../js/all_core.js"></script>
+    <script type="text/javascript" src="../plugins/all_plugins.js"></script>
+	<script type="text/javascript" src="../widgets/all_widgets.js"></script>
+
+    <!-- Extra libraries -->
+    <script type="text/javascript" src="../js/jquery.layout-latest.js"></script>
+
+    <!-- A model language definition, held as a Javascript object literal -->
+    <script type="text/javascript" src="../languages/system_dynamics.js"></script>
+
+    <!-- Model(s), held as a Javascript object literal -->
+    <script type="text/javascript" src="../models/miniworld.js"></script>
+    <script type="text/javascript" src="../models/predator_prey_shodor.js"></script>
+    <script type="text/javascript" src="../models/cascade.js"></script>
+    <script type="text/javascript" src="../models/two_species_sir.js"></script>
+
+    <!-- This page's custom script -->
+    <script>
+
+    $(document).ready(function() {
+        var mode = 'pointer';   // alternatives are: 'adding_widget'
+        var mousedownx, mousedowny;
+        var count = 0;
+        var colours = {package1:'yellow', package2:'lightgreen', package3:'orange'};
+        var maxZindex = 0;
+
+        addOptionsToSelectModel();
+
+        SYSTO.switchToModel('miniworld');
+
+                SYSTO.trigger(
+                    'pagemaker.html',
+                    '#workspace mousedown',
+                    'change_model_listener',
+                    'click',
+                    [{  packageId:SYSTO.state.currentPackageId,
+                        oldModelId:'',
+                        newModelId:SYSTO.state.currentModelId}]
+                );
+                SYSTO.trigger(
+                    'pagemaker.html',
+                    '#workspace mousedown',
+                    'display_listener',
+                    'click',
+                    [{  packageId:SYSTO.state.currentPackageId,
+                        modelId:SYSTO.state.currentModelId
+                    }]
+                );
+
+        SYSTO.state.currentPackageId = $('#select_package').val();
+        SYSTO.state.currentWidgetId = $('#select_widget').val();
+        SYSTO.state.currentModelId = $('#select_model').val();
+
+        $('#select_package').on('change', function() {
+            SYSTO.state.currentPackageId = this.value;
+        })
+        $('#select_widget').on('change', function() {
+            SYSTO.state.currentWidgetId = this.value;
+        })
+        $('#select_model').on('change', function() {
+            var modelId = this.value;
+            SYSTO.state.currentModelId = modelId;
+            SYSTO.switchToModel(modelId);
+
+            SYSTO.trigger(
+                'pagemaker.html',
+                '#workspace mousedown',
+                'change_model_listener',
+                'click',
+                [{  packageId:SYSTO.state.currentPackageId,
+                    oldModelId:'',
+                    newModelId:SYSTO.state.currentModelId}]
+            );
+            SYSTO.trigger(
+                'pagemaker.html',
+                '#workspace mousedown',
+                'display_listener',
+                'click',
+                [{  packageId:SYSTO.state.currentPackageId,
+                    modelId:SYSTO.state.currentModelId
+                }]
+            );
+        })
+
+        $('#toolbar').rich_text_editor();
+
+
+        function addOptionsToSelectModel() {
+            for (var modelId in SYSTO.models) {
+                var model = SYSTO.models[modelId];
+                if (!model.meta.name) model.meta.name = modelId;
+                var option = $('<option value="'+modelId+'" title="Model ID: '+modelId+'">'+model.meta.name+'</option>');
+                $('#select_model').append(option);
+            }
+        }
+
+
+    });
+
+    function createNewModel() {
+        var modelId = SYSTO.createNewModel('system_dynamics'); 
+        var model = SYSTO.models[modelId];
+        $('#select_model').append('<option value="'+modelId+'" title="'+modelId+'">'+model.meta.name+'</option>');
+
+        alert('New model created: '+modelId+'('+model.meta.name+')');
+    }
+
+    
+    function copyModel() {
+        var modelId = $('#select_model').val();
+        var model = SYSTO.models[modelId];
+        var modelCopyId = SYSTO.copyModel(modelId); 
+        var modelCopy = SYSTO.models[modelCopyId];
+        $('#select_model').append('<option value="'+modelCopyId+'" title="'+modelCopyId+'">'+modelCopy.meta.name+'</option>');
+        
+        alert(modelId+'('+model.meta.name+') copied to '+modelCopyId+'('+modelCopy.meta.name+')');
+    }
+
+
+
+    function savePage() {
+        $('.systo_widget').empty();
+
+        var script = '';
+        for (var divId in WIDGET_LIST) {
+            var div = WIDGET_LIST[divId];
+            var packageId = div.packageId;
+            var modelId = div.modelId;
+            var widgetId = div.widgetId;
+            switch(widgetId) {
+
+                case 'diagram':
+                    script += "$('#"+divId+"').diagram({packageId:'"+packageId+"', modelId:'"+modelId+"', scale:0.5});\n";
+                    break;
+
+                case 'equation_listing':
+                    script += "$('#"+divId+"').equation_listing({packageId:'"+packageId+"', modelId:'"+modelId+"'});\n";
+                    break;
+
+                case 'plotter':
+                    script += "$('#"+divId+"').plotter({packageId:'"+packageId+"', modelId:'"+modelId+"'});\n";
+                    break;
+
+                case 'multiple_sliders':
+                    script += "$('#"+divId+"').multiple_sliders({packageId:'"+packageId+"', modelId:'"+modelId+"'});\n";
+                    break;
+            }
+        }
+
+        var text = $('#cannedHtml1').html();
+        var modelId = SYSTO.state.currentModelId;
+        var model = SYSTO.models[modelId];
+        var preparedModel = SYSTO.prepareModelForSaving(model);
+        var systoScript = 'SYSTO.models["'+modelId+'"] = '+JSON.stringify(preparedModel)+';';
+        var bodyText = $('#workspace').html();
+        bodyText = bodyText.replace(/</g,'&lt;');
+        bodyText = bodyText.replace(/>/,'&gt;');
+        text = text.replace('####',bodyText);
+        text = text.replace('++++',systoScript);
+        text = text.replace('----',script);
+        text = text.replace(/&lt;/g,'<');
+        text = text.replace(/&gt;/g,'>');
+
+        blob = new Blob([text], { type: 'text/plain' });
+        // Use the FileSaver.js interface to download the file.
+        var name = 'sysiwyg_test';
+        saveAs(blob, name+'.html');
+    }
+
+
+	</script>
+
+</head>
+<body style="margin:0px; padding:10px;">
+
+<div id="toolbar" style="position:fixed; top:0px; height:62px; width:100%; border:solid 1px black; background-color:white;z-index:1000;">
+
+<select id="select_package" style="z-index:2000;">
+    <option value="package1">package1</option>
+    <option value="package2">package2</option>
+    <option value="package3">package3</option>
+</select>
+
+<select id="select_model">
+</select>
+
+<select id="select_widget">
+    <option value="audio_plotter">audio_plotter</option>
+    <option value="auto_layout">auto_layout</option>
+    <option value="compare_models_text">compare_models</option>
+    <option value="diagram" selected>diagram</option>
+    <option value="equation_listing">equation_listing</option>
+    <option value="import_im">import_im</option>
+    <option value="import_vensim">import_vensim</option>
+    <option value="import_xmile">import_xmile</option>
+    <option value="inline_value">inline_value</option>
+    <option value="local_open">local_open</option>
+    <option value="local_save">local_save</option>
+    <option value="messages">messages</option>
+    <option value="multi_plotter">multi_plotter</option>
+    <option value="multiple_sliders">multiple_sliders</option>
+    <option value="phase_plane">phase_plane</option>
+    <option value="plotter">plotter</option>
+    <option value="runcontrol">runcontrol</option>
+    <option value="slider1">slider1</option>
+    <option value="table">table</option>
+    <option value="technical">technical</option>
+    <option value="text_editor">text_editor</option>
+    <option value="text_plotter">text_plotter</option>
+    <option value="toolbar">toolbar</option>
+    <option value="tutorial">tutorial</option>
+    <option value="tutorial_step">tutorial_step</option>
+</select>
+
+<!--button onclick="mode='adding_widget';" style="z-index:12000;">Add widget</button-->
+<button onclick="createNewModel();" style="z-index:12000;">New model</button>
+<button onclick="copyModel();" style="z-index:12000;">Copy model</button>
+<button onclick="savePage();" style="z-index:12000;">Save page</button>
+<div id="rich_text_editor" style="float:right;"></div>
+</div>
+
+<!--div id="workspace_container" style="margin-top:50px; z-index:-100;padding:0px; background-color:red; overflow:auto; "-->
+<div id="workspace" style="margin-top:65px; padding:5px;" contenteditable="true">
+<h2>Title for your model</h2>
+
+<p><i>Here is a suggested layout to get you started...</i></p>
+
+<h3>Introduction</h2>
+<p>Background, and purpose of the model.</p>
+
+<h3>Model description</h2>
+<p>Some text describing the main features of the model.</p>
+<p>Insert the <b>diagram</b> widget, plus some explanatory text.</p>
+<p>Insert the <b>equation</b> widget, plus some explanatory text.</p>
+
+<h3>Results</h3>
+<p>Insert the <b>multiple_sliders</b> widget to allow a visitor to your page to change model inputs.</p>
+<p>Insert the <b>plotter</b> widget to plot the simulation results (as a graph of the stock values against time).</p>
+
+<hr>
+<h2>Notes</h2>
+<p>You can freely mix text and Systo widgets on this page</p>
+
+<p>For text, just use like a normal WYSIWYG (what-you-see-is-what-you-get) editor.   I.e. type in the text, then use the text formatting menu above to make headings, bold ec.</p>
+
+<p>To insert a Systo widget, select the model and widget you want from the menus above, click where you want to insert the widget, then click on the <b>Insert</b> button.</p>
+
+<p>To save your page as a complete, ready-to-use HTML page, just click on the <b>Save</b> button.</p>
+</div>
+<!--/div-->
+
+<script>
+</script>
+
+<div id="cannedHtml1" style="display:none">
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+	&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt; 
+
+	&lt;title&gt;Sysiwyg saved HTML&lt;/title&gt; 
+
+	&lt;link type="text/css" rel="stylesheet" href="layout-default-latest.css" /&gt;
+
+    &lt;!-- CSS --&gt;
+    &lt;link type="text/css" rel="stylesheet" href="jquery-ui.css"/&gt;
+    &lt;link type="text/css" rel="stylesheet" href="jquery-ui-1.9.2.custom.css"/&gt;
+
+    &lt;style&gt;
+
+        .placeddiv {
+            background-color: white;
+            border: solid 1px black;
+            width: 300px;
+            height: 200px;
+            position: absolute;
+        }
+
+        .ui-front {
+            z-index:1000000 !important; /* The default is 100. !important overrides the default. */
+    &lt;/style&gt;
+
+    &lt;!-- Systo core - defines the SYSTO global variable and some core functions --&gt;
+    &lt;script type="text/javascript" src="systo.js"&gt;&lt;/script&gt;
+
+    &lt;!--script src="http://code.jquery.com/jquery-1.9.1.js"&gt;&lt;/script--&gt;
+    &lt;!--script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"&gt;&lt;/script--&gt;
+    &lt;script type="text/javascript" src="jquery-1.10.2.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="jquery-ui-1.10.3.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="jquery.layout-latest.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.ui.widget.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="formatting.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="Blob.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="FileSaver.js"&gt;&lt;/script&gt;
+
+    &lt;!-- Supplementary Systo code --&gt;
+    &lt;!--script type="text/javascript" src="generate_simulation_code_v1.js"&gt;&lt;/script--&gt;
+    &lt;script type="text/javascript" src="simulation.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="action.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="compact.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="equation.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="functions.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="plugins/codeGenerator/euler1.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="plugins/codeGenerator/euler2.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="plugins/codeGenerator/rk41.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src="plugins/codeGenerator/euler1animate.js"&gt;&lt;/script&gt;
+
+
+    &lt;!-- A model language definition, held as a Javascript object literal --&gt;
+    &lt;script type="text/javascript" src="languages/system_dynamics.js"&gt;&lt;/script&gt;
+
+    &lt;!-- Model(s), held as a Javascript object literal --&gt;
+    &lt;!-- None! - these are saved as SYSTO.models by sysiwyg! --&gt;
+
+    &lt;!-- The widgets used in this page --&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.audio_plotter.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.auto_layout.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.compare_models_text.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.diagram.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.dialog_diagram_options.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.dialog_sd_node.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.equation_listing.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.import_im.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.import_vensim.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.import_xmile.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.inline_value.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.keypad.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.local_open.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.local_save.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.messages.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.multi_plotter.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.multiple_sliders.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.node_panel.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.phase_plane.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.plotter.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.rich_text_editor.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.runcontrol.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.sketchgraph.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.slider1.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.table.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.technical.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.template.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.text_editor.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.text_plotter.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.toolbar.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.tutorial.js"&gt;&lt;/script&gt;
+	&lt;script type="text/javascript" src="systo_widgets/jquery.tutorial_step.js"&gt;&lt;/script&gt;
+
+    &lt;script&gt;
+        $(document).ready(function() {
+++++
+            SYSTO.state.currentPackageId = 'package1';
+            SYSTO.state.currentModelId = Object.keys(SYSTO.models)[0];
+            SYSTO.switchToModel(SYSTO.state.currentModelId);
+----
+            SYSTO.trigger(
+                'sysiwyg_gen.html',
+                'main script',
+                'change_model_listener',
+                'click',
+                [{  packageId:SYSTO.state.currentPackageId,
+                    oldModelId:'',
+                    newModelId:SYSTO.state.currentModelId}]
+            );
+            SYSTO.trigger(
+                'sysiwyg.html',
+                'main script',
+                'display_listener',
+                'click',
+                [{  packageId:SYSTO.state.currentPackageId,
+                    modelId:SYSTO.state.currentModelId
+                }]
+            );
+        });
+    &lt;/script&gt;
+
+&lt;/head&gt;
+
+&lt;body style="margin:0px; padding:10px;"&gt;
+####
+&lt;/body&gt;
+
+&lt;/html&gt;
+</div>  <!-- End of #cannedHtml1 -->
+
+
+
+
+</body>
+</html>

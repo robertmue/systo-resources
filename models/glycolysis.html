@@ -1,0 +1,56 @@
+<html>
+<head>
+    <!-- CSS -->
+    <link type="text/css" rel="stylesheet" href="jquery-ui.css"/>
+    <link type="text/css" rel="stylesheet" href="jquery-ui-1.9.2.custom.css"/>
+
+    <script>
+        var SYSTO = {};
+        SYSTO.models = {};
+        SYSTO.languages = {};
+    </script>
+
+    <!-- Core libraries -->
+    <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="jquery-ui.min.js"></script>
+    <script type="text/javascript" src="jquery-ui-1.8.23.custom.min.js"></script>
+    <script type="text/javascript" src="generate_simulation_code.js"></script>
+	<script type="text/javascript" src="systo_widgets/jquery.ui.widget.js"></script>
+
+    <!-- A model language definition, held as a Javascript object literal -->
+    <script type="text/javascript" src="languages/biological_pathway.js"></script>
+
+    <!-- Model(s), held as a Javascript object literal -->
+    <script type="text/javascript" src="models/glycolysis.js"></script>
+
+    <!-- The widgets used in this page -->
+	<script type="text/javascript" src="systo_widgets/jquery.runcontrol.js"></script>
+	<script type="text/javascript" src="systo_widgets/jquery.slider1.js"></script>
+	<script type="text/javascript" src="systo_widgets/jquery.multiple_sliders1.js"></script>
+	<script type="text/javascript" src="systo_widgets/jquery.load_language.js"></script>
+	<script type="text/javascript" src="systo_widgets/jquery.load_model.js"></script>
+	<script type="text/javascript" src="systo_widgets/jquery.diagram.js"></script>
+	<script type="text/javascript" src="systo_widgets/jquery.plotter.js"></script>
+	<script type="text/javascript" src="systo_widgets/jquery.inline_value.js"></script>
+	<script type="text/javascript" src="systo_widgets/jquery.equations.js"></script>
+
+    <!-- This page's custom script -->
+    <script>
+
+        $(document).ready(function() {
+
+
+            $('#diagram1').diagram({model:'glycolysis', allowEditing:true});
+            $('#diagram1').resizable();
+
+ 
+         });
+    </script>
+</head>
+
+<body style="font-family:arial,sans-serif;">
+    <div id="diagram1" style="float:left; margin:1px; width:900px; height:600px; margin-right:20px; border:solid 1px gray"></div>
+
+</body>
+</html>
+

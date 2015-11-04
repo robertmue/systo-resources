@@ -1,0 +1,5 @@
+.*.swp
+*.pyc
+.env/
+static/js/_build
+secret_settings.py

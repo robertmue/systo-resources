@@ -1,0 +1,267 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Systo model schema",
+    "type": "object",
+    "properties": {
+        "meta": {
+            "description": "Additional information about the model. Validated at http://www.jsonschemavalidator.net/",
+            "type": "object",
+            "properties": {
+            }
+        },
+        "nodes": {
+            "description": "The node map - i.e. the set of all nodes",
+            "type": "object",
+            "additionalProperties": {
+                "description": "Information about each node",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "type": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "label": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "centrex": {
+                        "description": "",
+                        "type": "number"
+                    },
+                    "centrey": {
+                        "description": "",
+                        "type": "number"
+                    },
+                    "text_shiftx": {
+                        "description": "",
+                        "type": "number"
+                    },
+                    "text_shifty": {
+                        "description": "",
+                        "type": "number"
+                    },
+                    "extras": {
+                        "description": "",
+                        "type": "object",
+                        "properties": {
+                            "equation": {
+                                "description": "",
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "description": "",
+                                        "type": "string"
+                                    },
+                                    "default_value": {
+                                        "description": "",
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "description": "",
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "min_value": {
+                                "description": "",
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "description": "",
+                                        "type": "string"
+                                    },
+                                    "default_value": {
+                                        "description": "",
+                                        "type": "number"
+                                    },
+                                    "value": {
+                                        "description": "",
+                                        "type": "number"
+                                    }
+                                }
+                            },
+                            "max_value": {
+                                "description": "",
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "description": "",
+                                        "type": "string"
+                                    },
+                                    "default_value": {
+                                        "description": "",
+                                        "type": "number"
+                                    },
+                                    "value": {
+                                        "description": "",
+                                        "type": "number"
+                                    }
+                                }
+                            },
+                            "documentation": {
+                                "description": "",
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "description": "",
+                                        "type": "string"
+                                    },
+                                    "default_value": {
+                                        "description": "",
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "description": "",
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "comments": {
+                                "description": "",
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "description": "",
+                                        "type": "string"
+                                    },
+                                    "default_value": {
+                                        "description": "",
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "description": "",
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "arcs": {
+            "description": "The arc (edge) map - i.e. the set of all edges",
+            "type": "object",
+            "additionalProperties": {
+                "description": "Information about each node",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "type": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "label": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "start_node_id": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "end_node_id": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "curvature": {
+                        "description": "",
+                        "type": "number"
+                    },
+                    "along": {
+                        "description": "",
+                        "type": "number"
+                    },
+                    "shape": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "set_state": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "select_state": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "line_colour": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "line_width": {
+                        "description": "",
+                        "type": "number"
+                    },
+                    "fill_colour": {
+                        "description": "",
+                        "type": "string"
+                    },
+                    "arrowhead": {
+                        "description": "",
+                        "type": "object",
+                        "properties": {
+                            "shape": {
+                                "description": "",
+                                "type": "string"
+                            },
+                            "gap": {
+                                "description": "",
+                                "type": "number"
+                            },
+                            "width": {
+                                "description": "",
+                                "type": "number"
+                            },
+                            "front": {
+                                "description": "",
+                                "type": "number"
+                            },
+                            "back": {
+                                "description": "",
+                                "type": "number"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "scenarios": {
+            "description": "The model run-time scenarios",
+            "type": "object",
+            "additionalProperties": {
+                "description": "",
+                "type": "object",
+                "properties": {
+                    "start_time": {
+                        "description": "",
+                        "type": "number"
+                    },
+                    "end_time": {
+                        "description": "",
+                        "type": "number"
+                    },
+                    "nstep": {
+                        "description": "",
+                        "type": "number"
+                    },
+                    "display_interval": {
+                        "description": "",
+                        "type": "number"
+                    },
+                    "integration_method": {
+                        "description": "",
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
+
+

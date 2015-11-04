@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Systo demo: Example1 - testbed</title>
+
+    <!-- CSS -->
+    <link type="text/css" rel="stylesheet" href="../css/jquery-ui.css"/>
+
+    <!-- Javascript - as merged but non-minified files -->
+    <script type="text/javascript" src="../js/all_core.js"></script>
+    <script type="text/javascript" src="../plugins/all_plugins.js"></script>
+	<script type="text/javascript" src="../widgets/all_widgets.js"></script>
+
+    <!-- Model language definition(s), held as a Javascript object literal -->
+    <script type="text/javascript" src="../languages/system_dynamics.js"></script>
+
+    <!-- Model(s), held as a Javascript object literal -->
+    <script type="text/javascript" src="../models/cascade.js"></script>
+
+
+    <!-- This page's custom script -->
+    <script>
+        $(document).ready(function() {
+            SYSTO.switchToModel('cascade');
+            $('#diagram1').diagram().resizable();
+            $('#multiple_sliders1').multiple_sliders().resizable();
+            $('#plotter1').plotter({css:{border:'solid 3px red'}}).resizable();
+            $('#diagram_svg').diagram_svg();
+            SYSTO.switchToModel('cascade');
+        });          
+    </script>
+</head>
+
+<body>
+    <h1>SVG diagram example</h1>
+    <p>This page shows the use of the original diagramming widget (upper), which uses HTML5/canvas, and an alternative SVG-based diagramming widget (lower).</p>
+
+    <p>The rest of the page simply has 4 widgets for the same model: the "cascade" model, showing water 
+    flowing through a chain of 4 tanks.</p>
+
+    <!-- The following divs are containers for the 3 widgets used in this example.   Note that their 
+         IDs match the ID reference in the page's custom code above.
+         This is the most basic example - you can style and resize the divs, change their layout, and
+         add as much HTML as you like. -->
+    <p>Here is the model diagram:</p>
+    <div id="diagram1"></div>
+    <p>... and here are the sliders and plot of results:</p>
+    <div id="plotter1" style="float:left;"></div>
+    <div id="multiple_sliders1" style="float:left;"></div>
+    <p style="float:left; clear:both;">... and here is the SVG model diagram.  Note that, currently, it is non-interactive.</p>
+    <div id="diagram_svg" style="float:left; clear:both;"></div>
+
+</body>
+</html>
+

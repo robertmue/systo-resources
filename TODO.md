@@ -1,0 +1,2 @@
+- Rationalize jquery versions.
+

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>reveal.js - Systo intro</title>
+
+		<!-- CSS -->
+		<link rel="stylesheet" href="../css/reveal/reveal.css">
+		<link rel="stylesheet" href="../css/reveal/theme/simple.css">
+		<link type="text/css" rel="stylesheet" href="../css/jquery-ui.css"/>
+	</head>
+
+	<body style="zoom:1;">
+
+		<div class="reveal" style="zoom:1;">
+
+			<div class="slides" style="zoom:1;">
+
+				<section data-transition="none" style="zoom:1;">
+					<h2>Systo</h2>
+					<p>A widget-based toolkit for building modelling-enabled web pages.</p>
+					<p>Here is the model diagram:</p>
+					<div id="diagram1"></div>
+				</section>
+
+				<section data-transition="none">
+					<h2>Now you can play with the model:</h2>
+					<p>... and here are the sliders and plot of results:</p>
+			        <div id="plotter1" style="float:left;"></div>
+					<div id="multiple_sliders1" style="float:left; "></div>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="../js/reveal.js"></script>
+
+
+    <!-- Javascript - as merged but non-minified files -->
+    <script type="text/javascript" src="../js/all_core.js"></script>
+    <script type="text/javascript" src="../plugins/all_plugins.js"></script>
+	<script type="text/javascript" src="../widgets/all_widgets.js"></script>
+
+    <!-- Model language definition, held as a Javascript object literal -->
+    <script type="text/javascript" src="../languages/system_dynamics.js"></script>
+
+    <!-- Model, held as a Javascript object literal -->
+    <script type="text/javascript" src="../models/cascade.js"></script>
+
+    <!-- This page's custom script -->
+    <script>
+        $(document).ready(function() {
+			Reveal.initialize();
+            SYSTO.switchToModel('cascade');
+            $('#diagram1').diagram();
+            $('#multiple_sliders1').multiple_sliders();
+            $('#plotter1').plotter();
+            //$('#plotter1').plotter({css:{width:'300px', height:'250px'}});
+            SYSTO.switchToModel('cascade');
+        });          
+    </script>
+
+
+	</body>
+</html>

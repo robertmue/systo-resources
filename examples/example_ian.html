@@ -1,0 +1,63 @@
+    <!-- 
+        This example MUST be run in a server (local or web) - you cannot just open 
+        the file locally in your browser.  The reason is that it loads SVG on the fly. 
+        If you haven't already done this, you need to install a local server.  I use
+        the Python Simple HTTPServer, and type the following command in the console:
+            python -m SimpleHTTPServer
+        I then enter the following URL into the browser:
+            http://127.0.0.1:8000/Projects/Systo/example_ian.html
+        but the IP address and the path could well be different for you.
+    -->
+
+<html lang="en">
+<head>
+    <title>Systo example - IAN symbol sizes linked to stock values</title>
+
+    <!-- CSS -->
+    <link type="text/css" rel="stylesheet" href="../css/jquery-ui.css"/>
+
+    <!-- Javascript - as merged but non-minified files -->
+    <script type="text/javascript" src="../js/all_core.js"></script>
+    <script type="text/javascript" src="../plugins/all_plugins.js"></script>
+	<script type="text/javascript" src="../widgets/all_widgets.js"></script>
+
+    <!-- Model language definition(s), held as a Javascript object literal -->
+    <script type="text/javascript" src="../languages/system_dynamics.js"></script>
+
+    <!-- Model(s), held as a Javascript object literal -->
+    <script type="text/javascript" src="../models/predator_prey_shodor.js"></script>
+
+    <!-- This page's custom script -->
+    <script>
+        $(document).ready(function() {
+            SYSTO.switchToModel('predator_prey_shodor');
+            $('#diagram1').diagram({canvasHeight:284, canvasWidth:500}).resizable();
+            $('#multiple_sliders1').multiple_sliders().resizable();
+            $('#plotter1').plotter().resizable();
+            SYSTO.trigger({
+                event_type:'change_model_listener',
+                parameters:{packageId:'package1', oldModelId:'',newModelId:'predator_prey_shodor'}
+            });
+            $('#ian1').ian().resizable();
+        });          
+    </script>
+
+</head>
+
+
+<body>
+    <p>Illustrates the use of a widget which contains <a href="http://ian.umces.edu">IAN</a> symbols (from the University of Maryland's "Integration and 
+    Analysis Network").   Attributes of the symbols (e.g. size, position...) 
+    can be tied to simulation results!</p>
+    <!-- The following divs are containers for the 3 widgets used in this example.   Note that their 
+         IDs match the ID reference in the page's custom code above.
+         This is the most basic example - you can style and resize the divs, change their layout, and
+         add as much HTML as you like. -->
+    <p>Here is the model diagram:</p>
+    <div id="diagram1" style="float:left;"></div>
+    <p>... and here are the sliders and plot of results:</p>
+    <div id="plotter1" style="float:left;"></div>
+    <div id="multiple_sliders1" style="float:left;"></div>
+    <div id="ian1" style="float:left;"></div>
+</body>
+</html>

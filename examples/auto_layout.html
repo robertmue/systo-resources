@@ -1,0 +1,56 @@
+<html lang="en">
+<head>
+    <title>Systo example: auto-layout</title>
+
+    <!-- CSS -->
+    <link type="text/css" rel="stylesheet" href="../css/jquery-ui.css"/>
+    <style>
+    .ui-front {
+        z-index:1000000 !important;
+        /* The default is 100. !important overrides the default. */
+    }
+    </style>
+
+    <!-- JavaScript - as merged but non-minified files -->
+    <script type="text/javascript" src="../js/all_core.js"></script>
+    <script type="text/javascript" src="../plugins/all_plugins.js"></script>
+	<script type="text/javascript" src="../widgets/all_widgets.js"></script>
+
+    <!-- Extra JavaScript - needed for auto-layout -->
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+    <!-- A model language definition, held as a JavaScript object literal -->
+    <script type="text/javascript" src="../languages/system_dynamics.js"></script>
+
+    <!-- Model(s), held as a JavaScript object literal -->
+    <script type="text/javascript" src="../models/miniworld.js"></script>
+
+    <!-- This page's custom script -->
+    <script>
+        $(document).ready(function() {
+            SYSTO.switchToModel('miniworld');
+            $('#diagram1').diagram({modelId:'miniworld', allowEditing:true}).
+                resizable();
+
+            $('#dummy3').auto_layout({modelId:'miniworld'});
+       });
+    </script>
+</head>
+
+
+<body>
+<div style="width:100%; background-color:yellow; border:2px solid red; font-size:22px; font-weight:bold;">This is a Systo demonstration page.<br/><span style="font-size:16px; font-weight:normal;">This one illustrates the use of graph auto-layout library to layout a Systo diagram..</span></div>
+
+    <p>In this demo, the starting point is a model diagram which has already been laid out by hand.    This provides a nice comparsion of how well (or how badly...) the automatically-laid-out diagram is compared to the human one.</p>
+    <p>However, the main point in having a mechanism for doing this is to enable text-equation models (for example, those obtained by listing out the equations in a Stella, Vensim or Simile model) to be loaded into Systo and rendered as a diagram.    This requires a little more work - the widget has to work out the nodes (variables) and arcs (influence or flow arrows) from the equations - but that's not too difficult.</p>
+
+<p>To see the demo work, simply click on the <b>Layout</b> button.   Wait until you get a message saying that the layout process is complete, then you can click the button again to see a different layout.</p>
+
+<p>Acknowledgements; <a href="http://d3js.org/">d3js</a></p>
+    <div id="diagram1" style="float:left; margin:1px; width:700px; height:500px; margin-right:20px; border:solid 1px gray"></div>
+    <div id='dummy3'></div>
+    <div id="node_dialogs"></div>
+
+    <div id="dialog_sd_node"></div>
+</body>
+</html>

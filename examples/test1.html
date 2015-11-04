@@ -1,0 +1,269 @@
+<html lang="en">
+
+<style>
+    dialog-form { font-size: 80%; }
+    label, input { display:block; }
+    input.text { margin-bottom:12px; width:95%; padding: .4em; }
+    fieldset { padding:0; border:0; margin-top:25px; }
+    h1 { font-size: 1.2em; margin: .6em 0; }
+    div#users-contain { width: 350px; margin: 20px 0; }
+    div#users-contain table { margin: 1em 0; border-collapse: collapse; width: 100%; }
+    div#users-contain table td, div#users-contain table th { border: 1px solid #eee; padding: .6em 10px; text-align: left; }
+    .ui-dialog .ui-state-error { padding: .3em; }
+    .validateTips { border: 1px solid transparent; padding: 0.3em; }
+    span {font-size:12px;}
+</style>
+
+    <link type="text/css" rel="stylesheet" href="../css/jquery-ui.css"/>
+
+    <!-- Javascript - as merged but non-minified files -->
+    <script type="text/javascript" src="../js/all_core.js"></script>
+    <script type="text/javascript" src="../plugins/all_plugins.js"></script>
+	<script type="text/javascript" src="../widgets/all_widgets.js"></script>
+
+    <!-- Model language definitions, held as a Javascript object literal -->
+    <script type="text/javascript" src="../languages/system_dynamics.js"></script>
+    <script type="text/javascript" src="../languages/wcs_conceptual_modelling.js"></script>
+
+    <!-- Model(s), held as a Javascript object literal -->
+    <script type="text/javascript" src="../models/miniworld.js"></script>
+    <script type="text/javascript" src="../models/predator_prey_shodor.js"></script>
+    <script type="text/javascript" src="../models/conceptual_model1.js"></script>
+
+<!-- This page's custom script -->
+<script>
+    //var SYSTO = {};
+
+    $(document).ready(function() {
+
+        var name = $( "#name" ),
+          email = $( "#email" ),
+          password = $( "#password" ),
+          allFields = $( [] ).add( name ).add( email ).add( password ),
+          tips = $( ".validateTips" );
+
+        //$('#dummy1').loadLanguage();
+        //$('#dummy2').loadModel();
+//$.getScript( 'http://www.systo.org/models/glycolysis.js', function() {
+//    console.debug(SYSTO.models);
+//});
+
+        //SYSTO.switchToModel('miniworld');
+
+        //$('#server').server();
+
+        $('#plotter1').plotter({
+            packageId:'package1', 
+            modelId: 'miniworld',
+            canvasWidth:100, 
+            canvasHeight:75,
+            selectNodeFunction:function (node) {
+                var nodesToPlot = {Population:true};
+                if (nodesToPlot[node.label]) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }).resizable();
+
+        $('#plotter2').plotter({
+            packageId:'package1', 
+            modelId: 'miniworld',
+            canvasWidth:100, 
+            canvasHeight:75,
+            selectNodeFunction:function (node) {
+                var nodesToPlot = {Environ_pollution:true};
+                if (nodesToPlot[node.label]) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+        $('#plotter2').resizable();
+
+        $('#sliders_initialstock').multiple_sliders({
+            packageId:'package1', 
+            modelId:'miniworld',
+            selectNode:function (node) {
+                if (node.type === 'stock') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+
+        $('#sliders_parameter').multiple_sliders({
+            packageId:'package1', 
+            modelId:'miniworld',
+            selectNode:function (node) {
+                if (node.type === 'variable' && isParameter(node)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+
+        $('#runcontrol').runcontrol({
+            packageId: 'package1',
+            modelId: 'miniworld'
+        });
+
+        // TODO: find out why zoom buttons appear only in correct position when ".resizable()" is added.  
+        // When it's not add, the buttons are at the top-left of the window!  Seems very odd.
+        // Subequently: I think it's to do with needing to have position:relative in an enclosing element
+        // - maybe making an element resizable is an indirect way of achieving this.
+        $('#toolbar1').toolbar({
+            packageId:'package1', 
+            languageId:'system_dynamics', 
+            modelId:'miniworld',
+            show_button_language:true, 
+            show_button_new:false, 
+            show_button_open:true,
+            show_button_save:true
+        }).draggable({
+            zIndex:10000, 
+            handle:'.language_toolbar_header'
+        });
+
+        $('#diagram1').diagram({
+            packageId:'package1', 
+            modelId:'miniworld', 
+            canvasWidth:400, 
+            canvasHeight:250, 
+            scale:0.4, 
+            allowEditing:true
+        }).resizable();
+
+        $('#diagram2').diagram({
+            packageId:'package1', 
+            modelId:'miniworld'
+        }).resizable();
+
+        $('#diagram3').diagram({
+            packageId:'package2', 
+            modelId:'predator_prey_shodor', 
+            canvasWidth:500, 
+            canvasHeight:300, 
+            scale:0.9
+        }).resizable();
+
+        $('#diagram4').diagram({
+            packageId:'package3', 
+            modelId:'conceptual_modelling1', 
+            canvasWidth:570, 
+            canvasHeight:310, scale:0.7
+        }).resizable();
+
+        $('#sliders_parameter').multiple_sliders('addNode','valve2');
+
+        $('#multi_plotter').multi_plotter({
+            packageId:'package1', 
+            modelId:'miniworld'
+        }).resizable();
+        
+        $('#plotter2').plotter('addNode','stock5');
+/*
+        $('#inline_value1').inline_value({
+            packageId:'package1', 
+            modelId:'miniworld', 
+            nodeId:'stock1', 
+            statistic:'final'
+        });
+*/
+        //$('#node_dialogs').append(SYSTO.node_dialogs.system_dynamics);
+
+        $('#plotter_new').plotter({
+            packageId:'package1', 
+            modelId:'miniworld'
+        }).resizable();
+
+        //$('#node_properties').node_properties({modelId:'miniworld'});
+        //$('#plotter_new').resizable();
+
+        //$('#sketchgraph').sketchgraph({modelId:'miniworld', nodeIdx:'stock1', nodeIdy:'valve1', data_xmax:100, data_ymin:2, data_ymax:50});
+        //$('#sketchgraph').resizable();
+
+        $('#local_open').local_open();
+
+        $('#local_save').local_save({
+            packageId:'package1', 
+            modelId:'miniworld'
+        });
+
+        //$('#dialog_sd_node').dialog_sd_node();
+
+        $('#technical').technical().resizable().draggable({zIndex:10000, containment:'body', handle:'.technical_header'});
+
+        SYSTO.switchToModel('miniworld', 'package1');
+        SYSTO.switchToModel('predator_prey_shodor', 'package1');
+        SYSTO.switchToModel('conceptual_modelling1', 'package1');
+/*
+        SYSTO.trigger({
+            file:' miniworld.html',
+            action: 'page loading',
+            event_type: 'change_model_listener',
+            parameters: {packageId:'package1', oldModelId:'',newModelId:'miniworld'}});
+        SYSTO.trigger({
+            file: 'miniworld.html',
+            action: 'page loading',
+            event_type: 'display_listener',
+            parameters: {packageId:'package1', modelId:'miniworld'}});
+*/
+
+        //var result = $('#sliders_parameter').multiple_sliders('meta');
+        //console.debug(results);
+
+     });
+</script>
+</head>
+
+<body>
+<div style="width:100%; background-color:yellow; border:2px solid red; font-size:22px; font-weight:bold;">This is a Systo demonstration page.<br/><span style="font-size:16px; font-weight:normal;">This one shows how one page can have more than one instance of the same model; more than one model of the same language (System Dynamics); and more than one language..</span></div>
+<h2>Test page</h2>
+<p><b>Description</b><br/>You can include all the normal HTML stuff in the page.</p>
+<!-- div id="technical" style="display:none; position:absolute; top:100px; left:100px; margin:1px; margin-right:20px; background-color:white; width:700px; height:600px; border:solid 1px gray; z-index:10000;"></div>
+
+<div id="server" style="float:left; position:relative; margin:1px; width:400px; height:300px; background-color:yellow; border:solid 3px red"></div-->
+
+<div id="plotter_new" style="float:left; position:relative; margin:1px; width:400px; height:300px; border:solid 5px red"></div>
+
+<!-- jQuery UI effects test
+<button onclick="$('#pad2').toggle('fade','slow');">Effect</button>
+<div id="pad" style="float:left; position:relative; margin:1px; width:400px; height:300px; border:solid 3px blue">
+    <div id="pad1" style="position:absolute; top:0px; left:0px; margin:1px; width:100%; height:100%; background-color:yellow; border:solid 3px red"></div>
+    <div id="pad2" style="position:absolute; top:0px; left:0px; margin:1px;width:100%; height:100%;  background-color:green; border:solid 3px red"></div>
+</div>
+-->
+
+<!--div id="sketchgraph" style="float:left; position:relative; margin:1px; width:400px; height:300px; border:solid 3px red"></div-->
+
+<p>The final value for Population is <span id="inline_value1"></span>.</p>
+<div id='plotter1' style="float:left; position:relative; border:2px solid red; margin:1px; width:200px; height:150px;"></div>
+<div id='plotter2' style="float:left; position:relative; border:2px solid red; margin:1px; width:200px; height:150px;"></div>
+<div id="sliders_initialstock" style="float:left; border:2px solid orange; padding:7px; margin:1px; width:420px;"></div>
+<div id="sliders_parameter" style="float:left; border:2px solid orange; padding:7px; margin:1px; width:420px;"></div>
+<div id="multi_plotter" style="float:left; position:relative; border:2px solid blue; background-color:white; margin:1px; width:430px; height:180px;"></div>
+
+<div id="toolbar1" style="float:left; border:1px solid black; margin:1px; z-index:1000;"></div>
+
+<div id="diagram1" style="float:left; border:2px solid red; margin:1px; width:400px; height:250px; "></div>
+<div id="diagram2" style="float:left; border:2px solid blue; margin:1px; width:700px; height:400px;"></div>
+<div id="diagram3" style="float:left; border:2px solid green; margin:1px; width:500px; height:300px;"></div>
+<div id="diagram4" style="float:left; border:2px solid orange; margin:1px; width:570px; height:310px;"></div>
+<div id="runcontrol" style="float:left; border:2px solid green; margin:1px; width:320px; height:200px;"></div>
+<!--div id="node_properties" style="float:left; overflow:auto; border:2px solid green; margin:1px; width:320px; height:200px;"></div-->
+<div id='dummy1'></div>
+<div id='dummy2'></div>
+<div id="node_dialogs"></div>
+<!--div id="local_open" style="display:none; position:absolute; top:100px; left:100px; margin:1px; margin-right:20px; background-color:yellow; border:solid 1px gray; z-index:5000;"></div-->
+<!--div id="local_save" style="display:none; position:absolute; top:100px; left:100px; margin:1px; margin-right:20px; background-color:yellow; border:solid 1px gray; z-index:5000;"></div-->
+<div id="local_open"></div>
+<div id="local_save"></div>
+<div id="dialog_sd_node"></div>
+
+</body>
+</html>

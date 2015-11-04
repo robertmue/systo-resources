@@ -1,0 +1,4 @@
+../plugins/simulation/euler1.js
+../plugins/simulation/euler1animate.js
+../plugins/simulation/euler2.js
+../plugins/simulation/rk41.js

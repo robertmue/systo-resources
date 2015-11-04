@@ -1,0 +1,21 @@
+<html>
+<head>
+<title>SystoLite change log</title>
+</head>
+<body>
+<pre>
+Mon 30 June 2014 14.40 BST
+1. Major overhaul of saving to/loading from file
+2. Now use model label (actually model.meta.name) for display purposes, but ID also usually visible (e.g. in model menu; Run Control header)
+3. All New models are labelled 'noname' -not trying anything clever with giving each one a number.  But ID can be used to discriminate (in the unlikely event that user makes several new models and does not re-label them when saving).
+4. Added a 'Clear Local Storage' button in footer - for emergency use.
+5. Add last-update date/time to footer (has to be edited manually), plus link to this change log.
+6. Loading an incomplete/incorrect model (from file or Local Storage) should now be more robust - simulate() has a try-catch on it to pick up any failure when executing generated code.
+7. Only file tabe in open/save dialogues work: user gets a message thatthe others are not yet operational.
+8. Label-edit div is now closwed by clicking on a toolbar snode or arc button.
+
+TODO:
+1. Still some minor funnies when doing New after loading and running a amodel (e.g. graph and sliders still)
+2. End-time issue still needs sorting.
+</pre>
+</html>
