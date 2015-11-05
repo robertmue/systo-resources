@@ -16,7 +16,7 @@ SYSTO.plugins = {codeGenerator: {}};   // These are not actual jQuery plugins,
         // but they could be...
 SYSTO.state = {
     mode: 'pointer',
-    currentModelId: '',
+    currentModelId: null,
     modelInstanceCounter: 0,
     simulationRunSequenceNumber: 0,
     simulationTimings: [{dateTime: 'start', nRuns: 0, cumElapsedTime: 0,
@@ -1307,9 +1307,10 @@ SYSTO.trigger = function (args) {
             $('.'+args.listener_class).trigger('click', args.parameters);
             $(document).trigger(args.listener_class, args.parameters);
         } else {                                                   // New (Dec 2014) method
+            //console.debug('@log. trigger: '+args.file+': '+args.action+': '+args.event_type);
             if (!SYSTO.trigger_log) SYSTO.trigger_log = [];
             SYSTO.trigger_log.push(args);
-            $('.'+args.event_type).trigger('click', args.parameters); // Probably now obsole
+            $('.'+args.event_type).trigger('click', args.parameters); // Probably now obsolete
             $(document).trigger(args.event_type, args.parameters);
         }
     } else {

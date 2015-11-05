@@ -51,8 +51,8 @@
             $(div).append(equationsDiv);
             equationsDiv.css({'max-height':'100%','overflow':'auto','table-layout':'fixed'});
 
-            //$('.equation_row:even').css('background-color','yellow');
-            //$('.equation_row:odd').css('background-color','green');
+            $('.equation_row:even').css('background-color','yellow');
+            $('.equation_row:odd').css('background-color','green');
 
 
             $(document).on('equation_listener', {}, function(event, parameters) {
@@ -145,13 +145,14 @@ function getEquations(model) {
         return 0;
         });
 
-    var html = '<div class="table_div" style="max-height:100%; overflow:auto; table-layout: fixed; margin-bottom:0px;"><table style="height:100%; overflow:auto; table-layout: fixed; word-break: break-all; word-wrap: break-word; margin-bottom:20px;">';
+    // Nov 2015 - lot of problems avoiding high rows - see https://bugs.webkit.org/show_bug.cgi?id=38527
+    var html = '<div class="table_div" style="max-height:100%; overflow:auto; table-layout: fixed; margin-bottom:0px;"><table style="height:100%; overflow:auto; table-layout: fixed; word-break: break-all; word-wrap: break-word;">';
     for (var i=0; i<array.length; i++) {
         html += 
-            '<tr class="equation_row">'+
-                '<td style="font-size:13px; vertical-align:top; min-width:130px;"><b>'+array[i].label+'</b></td>'+
-                '<td style="font-size:13px; vertical-align:top;"> = </td>'+
-                '<td style="font-size:13px; vertical-align:top;">'+array[i].equation+'</td>'+
+            '<tr style="display:block;">'+
+                '<td style="font-size:16px; vertical-align:top; width:300px; line-height:20px; display:block; word-break: break-all; word-wrap: break-word;"><b>'+array[i].label+'</b></td>'+
+                '<td style="font-size:16px; vertical-align:top; line-height:20px; display:block;"> = </td>'+
+                '<td style="font-size:16px; vertical-align:top; width:400px; line-height:20px; display:block; word-break: break-all; word-wrap: break-word;">'+array[i].equation+'</td>'+
             '</tr>';
     }
     html += '</table></div>';

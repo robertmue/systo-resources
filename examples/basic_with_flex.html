@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Systo demo: Example1 - testbed</title>
+
+    <!-- CSS -->
+    <link type="text/css" rel="stylesheet" href="../css/jquery-ui.css"/>
+    <style>
+body {
+  max-width: 80%;
+  margin: 0 auto;
+  font-family: sans-serif;
+  font-size: 90%;
+}
+.flex {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: box;
+  display: flex;
+  -webkit-box-lines: multiple;
+  -moz-box-lines: multiple;
+  -o-box-lines: multiple;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -webkit-box-orient: horizontal;
+  -moz-box-orient: horizontal;
+  -o-box-orient: horizontal;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  padding: 1em;
+}
+
+.flex .item {
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -o-box-flex: 1;
+  box-flex: 1;
+  -webkit-flex: 1 0 25%;
+  -ms-flex: 1 0 25%;
+  flex: 1 0 25%;
+  padding: 1em;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  min-width: 15em;
+  max-width:30em;
+  height:25em;
+  margin:1em;
+  border:1px solid red;
+}
+    </style>
+
+    <!-- Javascript - as merged but non-minified files -->
+    <script type="text/javascript" src="../js/all_core.js"></script>
+    <script type="text/javascript" src="../plugins/all_plugins.js"></script>
+	<script type="text/javascript" src="../widgets/all_widgets.js"></script>
+
+    <!-- Model language definition, held as a Javascript object literal -->
+    <script type="text/javascript" src="../languages/system_dynamics.js"></script>
+
+    <!-- Model, held as a Javascript object literal -->
+    <script type="text/javascript" src="../models/cascade.js"></script>
+
+    <!-- This page's custom script -->
+    <script>
+        $(document).ready(function() {
+            var modelId = 'cascade';
+            SYSTO.prepareModel(modelId);
+            $('#diagram1').diagram({modelId:modelId}).resizable();
+            $('#multiple_sliders1').multiple_sliders({modelId:modelId}).resizable();
+            $('#plotter1').plotter({modelId:modelId}).resizable();
+        });          
+    </script>
+</head>
+
+<body>
+    <h1>Basic example</h1>
+    <p>Here is some text.  This is just a regular HTML page, so you can do all the normal things, 
+    like using <b>bold</b> and <i>italics</i> and <a href="http://www.simulistics.com">links</a></p>
+
+    <p>The rest of the page simply has 3 widgets for the same model: the "cascade" model, showing water 
+    flowing through a chain of 4 tanks.</p>
+
+    <!-- The following divs are containers for the 3 widgets used in this example.   Note that their 
+         IDs match the ID reference in the page's custom code above.
+         This is the most basic example.  You can style and resize the divs, change their layout, and
+         add as much HTML as you like. -->    <p>Here is the model diagram:</p>
+    <div class="flex">
+        <div class="item" id="diagram1"></div>
+        <div class="item" id="plotter1"></div>
+        <div class="item" id="multiple_sliders1"></div>
+    </div>
+
+</body>
+</html>
+

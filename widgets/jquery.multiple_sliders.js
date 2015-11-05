@@ -61,7 +61,7 @@
         addNode: function (nodeId) {
             var model = SYSTO.models[this.options.modelId];
             var node = model.nodes[nodeId];
-            var sliderElement = $('<div class="slider1" style="float:left; padding:7px; margin:1px; width:400px; height:16px;"></div>').slider1({modelId:self.options.modelId, modelIdArray:self.options.modelIdArray, label:node.label, value:node.value, minval:node.minval, maxval:node.maxval});
+            var sliderElement = $('<div class="slider1" style="float:left; padding:7px; margin:1px; width:400px; height:16px;"></div>').slider1({modelId:this.options.modelId, modelIdArray:this.options.modelIdArray, label:node.label, value:node.value, minval:node.minval, maxval:node.maxval});
             this._container = $(self.element).append(sliderElement);
         },
 
@@ -117,16 +117,19 @@
             var sliders_div = $('<div></div');
             $(div).append(sliders_div);
 
-            createMultipleSliders(this, sliders_div, sliders, this.options.modelIdArray);
+            if (this.options.modelIdArray.length >0) {
+                createMultipleSliders(this, sliders_div, sliders, this.options.modelIdArray);
+            }
 
             $(document).on('change_model_listener', {}, function(event, parameters) {
-                console.debug('@event_response11: change_model_listener: multiple_sliders: '+JSON.stringify(parameters));
+                console.debug('@log: multiple_sliders.js: change_model_listener: '+JSON.stringify(parameters));
                 if (!parameters.packageId || parameters.packageId === self.options.packageId) {
-                    console.info('@event_response: change_model_listener: multiple_sliders: '+JSON.stringify(parameters));
-                    if (!parameters.modelIdArray) {
+                    if (!parameters.modelIdArray && parameters.newModelId) {
                         self.options.modelIdArray = [parameters.newModelId];
                     }
-                    createMultipleSliders(self, sliders_div, sliders, self.options.modelIdArray);
+                    if (self.options.modelIdArray && self.options.modelIdArray.length >0) {
+                        createMultipleSliders(self, sliders_div, sliders, self.options.modelIdArray);
+                    }
                 }
             });
 
@@ -191,10 +194,26 @@
                 modelId: function () {
                     var sliders = {};   
                     var modelId = value;
+                    self.options.modelIdArray = [modelId];
                     var sliders_div = $('<div></div>');
                     $(self.div).empty();
                     $(self.div).append(sliders_div);
-                    createMultipleSliders(self, sliders_div, sliders, modelId);
+                    if (self.options.modelIdArray.length >0) {
+                        createMultipleSliders(self, sliders_div, sliders, self.options.modelIdArray);
+                    }
+                },
+                modelIdArray: function () {
+                    var sliders = {};   
+                    var modelId = value[0];  // TODO: Check that value is an array!
+                    // Slightly convoluted, but to allow for createMultipleSliders checking parameters
+                    // for multiple models, not just taking them from the first one.
+                    self.options.modelIdArray = [modelId];
+                    var sliders_div = $('<div></div>');
+                    $(self.div).empty();
+                    $(self.div).append(sliders_div);
+                    if (self.options.modelIdArray.length >0) {
+                        createMultipleSliders(self, sliders_div, sliders, self.options.modelIdArray);
+                    }
                 },
                 selectNode: function () {
 /*

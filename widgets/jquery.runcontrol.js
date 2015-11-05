@@ -67,7 +67,7 @@
             display_interval: 1,
             end_time: 100,
             integration_method: 'euler',
-            modelId:'',
+            modelId:null,
             nstep: 0.01,
             packageId: 'package1',
             start_time: 0
@@ -80,14 +80,36 @@
             console.debug(window.location.pathname);
             this.element.addClass('runcontrol');
             var self = this;
-            var modelId = this.options.modelId;
-            var model = SYSTO.models[modelId];
-            if (!model.scenarios) {
-                SYSTO.createDefaultScenario(model);
+
+            // Note that SYSTO.state.currentModelId is set to null on loading Systo, so
+            // this.options.modelId could stay as null.
+            if (!this.options.modelId) {
+                this.options.modelId = SYSTO.state.currentModelId;
             }
-            var simulationSettings = model.scenarios.default.simulation_settings
+            if (this.options.modelId) {
+                var model = SYSTO.models[this.options.modelId];
+                this.model = model;
+                if (!model.scenarios) {
+                    SYSTO.createDefaultScenario(model);
+                }
+                var simulationSettings = model.scenarios.default.simulation_settings
+            } else {
+                model = null;
+                this.model = null;
+                simulationSettings = {
+                    start_time: 0,
+                    end_time: 100,
+                    nstep: 100,
+                    display_interval: 1,
+                    integration_method: 'euler1'
+                }
+            }
  
-            var div = $('<div style="padding:5px;"></div>').data('model',modelId);
+            var div = $('<div style="padding:5px;"></div>');
+            if (this.options.modelId) {
+                $(div).data('model',this.options.modelId);
+            }
+
             var headerDiv = $('<div class="toolbar_header" style="height:17px; width:100%; background:brown; color:white; font-size:14px;">&nbsp;Run control</div>');
             $(div).append(headerDiv);
 

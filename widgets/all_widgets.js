@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Wed Nov 4 22:58:46 GMT 2015  */
+/* Last merge : Thu Nov 5 21:22:54 GMT 2015  */
 
 /* Merging order :
 
@@ -1113,12 +1113,21 @@ function makeArcTable(widget) {
             var self = this;
             SYSTO.currentDiagramWidget = self;  //TODO: fix this hack.  It is put in so that I
                 // can clear the labelEdit div when user clicks elsewhere, e.g. on a toolbar button.
+
+            // Note that SYSTO.state.currentModelId is set to null on loading Systo, so
+            // this.options.modelId could stay as null.
             if (!this.options.modelId) {
                 this.options.modelId = SYSTO.state.currentModelId;
             }
-            var model = SYSTO.models[self.options.modelId];
-            this.model = model;
-            this.currentNode = null;  //TODO: put into widget.state
+            if (this.options.modelId) {
+                var model = SYSTO.models[this.options.modelId];
+                this.model = model;
+                this.currentNode = null;  //TODO: put into widget.state
+            } else {
+                model = null;
+                this.model = null;
+            }
+
             this.element.addClass('diagram-1');
 
             $(this.element).                
@@ -1288,6 +1297,7 @@ function makeArcTable(widget) {
 
             $(div).append(canvas);
 
+            // ============================================ BUTTONS
             // Zoom buttons
             var buttonZoomin = $('<button style="position:absolute; width:25px; height:25px; right:0px; top:30px; font-size:22px;" title="Zoom in"><b>+</b></button>').
                 mousedown(function(event) {
@@ -1436,11 +1446,10 @@ function makeArcTable(widget) {
 
 
 
-            // Listeners (custom event habdlers)
+            // ======================================== Listeners (custom event habdlers)
 
             $(document).on('change_model_listener', {}, function(event, parameters) {
-                console.debug('\n((((((((((((((((((((((( '+JSON.stringify(parameters) +' ::: '+self.model.meta.id);
-                console.debug(self.model);
+                console.debug('@log. listener: diagram.js: change_model_listener: '+JSON.stringify(parameters));
                 //if (parameters.oldModelId && (parameters.oldModelId === '' || parameters.oldModelId === self.model.meta.id) &&
                 //        parameters.newModelId) {
                     console.debug('\n(((((((((((((( ');
@@ -1540,15 +1549,17 @@ function makeArcTable(widget) {
             var context = canvas[0].getContext("2d");
             this.context = context;
 
-            setNodeDiagramProperties(this);
-            setArcDiagramProperties(this)
+            if (this.model) {
+                setNodeDiagramProperties(this);
+                setArcDiagramProperties(this)
+                SYSTO.trigger({
+                    file:'jquery.diagram.js', 
+                    action:'_create', 
+                    event_type: 'diagram_modified_event', 
+                    parameters: {packageId:this.options.packageId, modelId:self.model.meta.id}
+                });
+            }
 
-            SYSTO.trigger({
-                file:'jquery.diagram.js', 
-                action:'_create', 
-                event_type: 'diagram_modified_event', 
-                parameters: {packageId:this.options.packageId, modelId:self.model.meta.id}
-            });
             if (this.options.initialZoomToFit) {
                 $(this.element).find('.zoomToFit').trigger('mousedown');
             }
@@ -1620,6 +1631,8 @@ function makeArcTable(widget) {
 
 
 function redraw(widget) {
+    if (!widget.model) return;
+
     clearCanvas(widget);
 
     //setNodeDiagramProperties(widget);
@@ -1632,6 +1645,7 @@ function redraw(widget) {
     renderNodes(widget);
     renderMarquee(widget);
     //renderNodePanels(widget);  // Currently (July 2014) not called. See below.
+
 }
 
 
@@ -1711,6 +1725,8 @@ function renderMarquee(widget) {
 // node_panel widget it depends on.
    
 function renderNodePanels(widget) {
+    if (!widget.model) retrn;
+
     if (widget.options.hasNodePanels) {
 
         var model = widget.model;
@@ -1748,6 +1764,7 @@ function renderNodePanels(widget) {
 
 
 function renderNodes(widget) {
+    if (!widget.model) return;
 
     var model = widget.model;
     var context = widget.context;
@@ -1899,6 +1916,7 @@ http://www.html5canvastutorials.com/advanced/html5-canvas-ovals/
 // But: TODO: Do not do this every redraw()!
 
 function setNodeDiagramProperties(widget) {
+    if (!widget.model) return;
 
     var model = widget.model;
     var context = widget.context;
@@ -2206,6 +2224,18 @@ function displayNodeLabel(widget, node) {
 
 // ********************************************* SET ARC DIAGRAM PROPERTIES
 
+
+
+function setArcDiagramProperties(widget) {
+    if (!widget.model) return;
+
+    var model = widget.model;
+    setStylePropertiesForArcs(model);
+}
+
+
+
+
 function setStylePropertiesForArcs(model) {
 
     var arcList = model.arcs;
@@ -2250,13 +2280,6 @@ function setStylePropertiesForArc(model, arc) {
     }
 }
 
-
-
-
-function setArcDiagramProperties(widget) {
-    var model = widget.model;
-    setStylePropertiesForArcs(model);
-}
 
 // ******************************************************* CALCULATE PARAMETERS FOR ARCS
 
@@ -5840,8 +5863,8 @@ function getCaretCharacterOffsetWithin(element) {
             $(div).append(equationsDiv);
             equationsDiv.css({'max-height':'100%','overflow':'auto','table-layout':'fixed'});
 
-            //$('.equation_row:even').css('background-color','yellow');
-            //$('.equation_row:odd').css('background-color','green');
+            $('.equation_row:even').css('background-color','yellow');
+            $('.equation_row:odd').css('background-color','green');
 
 
             $(document).on('equation_listener', {}, function(event, parameters) {
@@ -5934,13 +5957,14 @@ function getEquations(model) {
         return 0;
         });
 
-    var html = '<div class="table_div" style="max-height:100%; overflow:auto; table-layout: fixed; margin-bottom:0px;"><table style="height:100%; overflow:auto; table-layout: fixed; word-break: break-all; word-wrap: break-word; margin-bottom:20px;">';
+    // Nov 2015 - lot of problems avoiding high rows - see https://bugs.webkit.org/show_bug.cgi?id=38527
+    var html = '<div class="table_div" style="max-height:100%; overflow:auto; table-layout: fixed; margin-bottom:0px;"><table style="height:100%; overflow:auto; table-layout: fixed; word-break: break-all; word-wrap: break-word;">';
     for (var i=0; i<array.length; i++) {
         html += 
-            '<tr class="equation_row">'+
-                '<td style="font-size:13px; vertical-align:top; min-width:130px;"><b>'+array[i].label+'</b></td>'+
-                '<td style="font-size:13px; vertical-align:top;"> = </td>'+
-                '<td style="font-size:13px; vertical-align:top;">'+array[i].equation+'</td>'+
+            '<tr style="display:block;">'+
+                '<td style="font-size:16px; vertical-align:top; width:300px; line-height:20px; display:block; word-break: break-all; word-wrap: break-word;"><b>'+array[i].label+'</b></td>'+
+                '<td style="font-size:16px; vertical-align:top; line-height:20px; display:block;"> = </td>'+
+                '<td style="font-size:16px; vertical-align:top; width:400px; line-height:20px; display:block; word-break: break-all; word-wrap: break-word;">'+array[i].equation+'</td>'+
             '</tr>';
     }
     html += '</table></div>';
@@ -9092,7 +9116,7 @@ function handleFileSelect(evt) {
         addNode: function (nodeId) {
             var model = SYSTO.models[this.options.modelId];
             var node = model.nodes[nodeId];
-            var sliderElement = $('<div class="slider1" style="float:left; padding:7px; margin:1px; width:400px; height:16px;"></div>').slider1({modelId:self.options.modelId, modelIdArray:self.options.modelIdArray, label:node.label, value:node.value, minval:node.minval, maxval:node.maxval});
+            var sliderElement = $('<div class="slider1" style="float:left; padding:7px; margin:1px; width:400px; height:16px;"></div>').slider1({modelId:this.options.modelId, modelIdArray:this.options.modelIdArray, label:node.label, value:node.value, minval:node.minval, maxval:node.maxval});
             this._container = $(self.element).append(sliderElement);
         },
 
@@ -9148,16 +9172,19 @@ function handleFileSelect(evt) {
             var sliders_div = $('<div></div');
             $(div).append(sliders_div);
 
-            createMultipleSliders(this, sliders_div, sliders, this.options.modelIdArray);
+            if (this.options.modelIdArray.length >0) {
+                createMultipleSliders(this, sliders_div, sliders, this.options.modelIdArray);
+            }
 
             $(document).on('change_model_listener', {}, function(event, parameters) {
-                console.debug('@event_response11: change_model_listener: multiple_sliders: '+JSON.stringify(parameters));
+                console.debug('@log: multiple_sliders.js: change_model_listener: '+JSON.stringify(parameters));
                 if (!parameters.packageId || parameters.packageId === self.options.packageId) {
-                    console.info('@event_response: change_model_listener: multiple_sliders: '+JSON.stringify(parameters));
-                    if (!parameters.modelIdArray) {
+                    if (!parameters.modelIdArray && parameters.newModelId) {
                         self.options.modelIdArray = [parameters.newModelId];
                     }
-                    createMultipleSliders(self, sliders_div, sliders, self.options.modelIdArray);
+                    if (self.options.modelIdArray && self.options.modelIdArray.length >0) {
+                        createMultipleSliders(self, sliders_div, sliders, self.options.modelIdArray);
+                    }
                 }
             });
 
@@ -9222,10 +9249,26 @@ function handleFileSelect(evt) {
                 modelId: function () {
                     var sliders = {};   
                     var modelId = value;
+                    self.options.modelIdArray = [modelId];
                     var sliders_div = $('<div></div>');
                     $(self.div).empty();
                     $(self.div).append(sliders_div);
-                    createMultipleSliders(self, sliders_div, sliders, modelId);
+                    if (self.options.modelIdArray.length >0) {
+                        createMultipleSliders(self, sliders_div, sliders, self.options.modelIdArray);
+                    }
+                },
+                modelIdArray: function () {
+                    var sliders = {};   
+                    var modelId = value[0];  // TODO: Check that value is an array!
+                    // Slightly convoluted, but to allow for createMultipleSliders checking parameters
+                    // for multiple models, not just taking them from the first one.
+                    self.options.modelIdArray = [modelId];
+                    var sliders_div = $('<div></div>');
+                    $(self.div).empty();
+                    $(self.div).append(sliders_div);
+                    if (self.options.modelIdArray.length >0) {
+                        createMultipleSliders(self, sliders_div, sliders, self.options.modelIdArray);
+                    }
                 },
                 selectNode: function () {
 /*
@@ -12451,11 +12494,21 @@ $(function () {
         _create: function () {
             console.debug('@log. creating_widget: plotter');
             var self = this;
+
+            // Note that SYSTO.state.currentModelId is set to null on loading Systo, so
+            // this.options.modelId could stay as null.
             if (!this.options.modelId) {
                 this.options.modelId = SYSTO.state.currentModelId;
             }
-            var model = SYSTO.models[this.options.modelId];
-            this.model = model;
+            if (this.options.modelId) {
+                var model = SYSTO.models[this.options.modelId];
+                this.model = model;
+                this.currentNode = null;  //TODO: put into widget.state
+            } else {
+                model = null;
+                this.model = null;
+            }
+
             var optionsDiv;
             this.element.addClass('plotter-1');
             this.actualRange = {};   // Actual x/y min/max.
@@ -12590,7 +12643,7 @@ $(function () {
            $(document).on('display_listener', {}, function(event, parameters) {
                 if (self.options.active) {
                     if (parameters.packageId === self.options.packageId || !parameters.packageId) {
-                        if (self.model.results) {
+                        if (self.model && self.model.results) {
                             if (self.options.active) {
                                 $(self.element).css('display','block');
                                 if (self.options.allowChangeOfModel) {
@@ -12717,16 +12770,19 @@ $(function () {
 
             this.selectedNodes = {};   // If I define this as a property, it's treated as global
                                         // across all widgets!
-            var nNode = 0;
-            $.each(model.nodes, function(nodeId, node) {
-                if (self.options.selectNodeFunction(node)) {
-                    // The following two lines are from multiple_sliders1, as a guide...
-                    //var sliderElement = $('<div class="slider1" style="float:left; border:1px solid blue; padding:7px; margin:1px; width:400px; height:16px;"></div>').slider1({label:node.label, value:node.value, minval:minval, maxval:maxval});
-                    //this._container = $(this.element).append(sliderElement);
-                    self.selectedNodes[nodeId] = node;
-                    nNode += 1;
-                }
-            });
+
+            if (this.model) {
+                var nNode = 0;
+                $.each(model.nodes, function(nodeId, node) {
+                    if (self.options.selectNodeFunction(node)) {
+                        // The following two lines are from multiple_sliders1, as a guide...
+                        //var sliderElement = $('<div class="slider1" style="float:left; border:1px solid blue; padding:7px; margin:1px; width:400px; height:16px;"></div>').slider1({label:node.label, value:node.value, minval:minval, maxval:maxval});
+                        //this._container = $(this.element).append(sliderElement);
+                        self.selectedNodes[nodeId] = node;
+                        nNode += 1;
+                    }
+                });
+            }
 
             if ($('#dialog_plotter_options').length=== 0) {
                 optionsDiv = $(
@@ -12782,10 +12838,13 @@ $(function () {
             var canvasHeight = $(div).height()-self.options.margin_top-self.options.margin_bottom;
             $(canvas).width(canvasWidth);
             $(canvas).height(canvasHeight);
-            clearCanvas(self);
-            initialiseAxes(this);
-            updateAxes(self);
-            render(self);
+            clearCanvas(this);
+
+            if (this.model) {
+                initialiseAxes(this);
+                updateAxes(this);
+                render(this);
+            }
 
             this._setOptions({
             });
@@ -12911,6 +12970,8 @@ function clearCanvas(widget) {
 // around on the axis.
 
 function initialiseAxes(widget) {
+    if (!widget.model) return;
+
     var options = widget.options;
     var canvas = $(widget.div).find('canvas');
     var selectedNodes = widget.selectedNodes;
@@ -13002,7 +13063,7 @@ function initialiseAxes(widget) {
 
 
 function updateAxes(widget) {
-
+    if (!widget.model) return;
     if (!widget.model.results) return;
 
     var i, j, k;
@@ -13088,7 +13149,8 @@ function updateAxes(widget) {
 
 
 function render(widget) {
- 
+    if (!widget.model) return;
+
     var nPoints;
     var timeValues;
     var x, y;
@@ -14366,7 +14428,7 @@ function handleWidget(widgetId, newDivId, packageId, modelId) {
             display_interval: 1,
             end_time: 100,
             integration_method: 'euler',
-            modelId:'',
+            modelId:null,
             nstep: 0.01,
             packageId: 'package1',
             start_time: 0
@@ -14379,14 +14441,36 @@ function handleWidget(widgetId, newDivId, packageId, modelId) {
             console.debug(window.location.pathname);
             this.element.addClass('runcontrol');
             var self = this;
-            var modelId = this.options.modelId;
-            var model = SYSTO.models[modelId];
-            if (!model.scenarios) {
-                SYSTO.createDefaultScenario(model);
+
+            // Note that SYSTO.state.currentModelId is set to null on loading Systo, so
+            // this.options.modelId could stay as null.
+            if (!this.options.modelId) {
+                this.options.modelId = SYSTO.state.currentModelId;
             }
-            var simulationSettings = model.scenarios.default.simulation_settings
+            if (this.options.modelId) {
+                var model = SYSTO.models[this.options.modelId];
+                this.model = model;
+                if (!model.scenarios) {
+                    SYSTO.createDefaultScenario(model);
+                }
+                var simulationSettings = model.scenarios.default.simulation_settings
+            } else {
+                model = null;
+                this.model = null;
+                simulationSettings = {
+                    start_time: 0,
+                    end_time: 100,
+                    nstep: 100,
+                    display_interval: 1,
+                    integration_method: 'euler1'
+                }
+            }
  
-            var div = $('<div style="padding:5px;"></div>').data('model',modelId);
+            var div = $('<div style="padding:5px;"></div>');
+            if (this.options.modelId) {
+                $(div).data('model',this.options.modelId);
+            }
+
             var headerDiv = $('<div class="toolbar_header" style="height:17px; width:100%; background:brown; color:white; font-size:14px;">&nbsp;Run control</div>');
             $(div).append(headerDiv);
 

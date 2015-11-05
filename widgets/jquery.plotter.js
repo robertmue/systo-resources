@@ -211,11 +211,21 @@
         _create: function () {
             console.debug('@log. creating_widget: plotter');
             var self = this;
+
+            // Note that SYSTO.state.currentModelId is set to null on loading Systo, so
+            // this.options.modelId could stay as null.
             if (!this.options.modelId) {
                 this.options.modelId = SYSTO.state.currentModelId;
             }
-            var model = SYSTO.models[this.options.modelId];
-            this.model = model;
+            if (this.options.modelId) {
+                var model = SYSTO.models[this.options.modelId];
+                this.model = model;
+                this.currentNode = null;  //TODO: put into widget.state
+            } else {
+                model = null;
+                this.model = null;
+            }
+
             var optionsDiv;
             this.element.addClass('plotter-1');
             this.actualRange = {};   // Actual x/y min/max.
@@ -350,7 +360,7 @@
            $(document).on('display_listener', {}, function(event, parameters) {
                 if (self.options.active) {
                     if (parameters.packageId === self.options.packageId || !parameters.packageId) {
-                        if (self.model.results) {
+                        if (self.model && self.model.results) {
                             if (self.options.active) {
                                 $(self.element).css('display','block');
                                 if (self.options.allowChangeOfModel) {
@@ -477,16 +487,19 @@
 
             this.selectedNodes = {};   // If I define this as a property, it's treated as global
                                         // across all widgets!
-            var nNode = 0;
-            $.each(model.nodes, function(nodeId, node) {
-                if (self.options.selectNodeFunction(node)) {
-                    // The following two lines are from multiple_sliders1, as a guide...
-                    //var sliderElement = $('<div class="slider1" style="float:left; border:1px solid blue; padding:7px; margin:1px; width:400px; height:16px;"></div>').slider1({label:node.label, value:node.value, minval:minval, maxval:maxval});
-                    //this._container = $(this.element).append(sliderElement);
-                    self.selectedNodes[nodeId] = node;
-                    nNode += 1;
-                }
-            });
+
+            if (this.model) {
+                var nNode = 0;
+                $.each(model.nodes, function(nodeId, node) {
+                    if (self.options.selectNodeFunction(node)) {
+                        // The following two lines are from multiple_sliders1, as a guide...
+                        //var sliderElement = $('<div class="slider1" style="float:left; border:1px solid blue; padding:7px; margin:1px; width:400px; height:16px;"></div>').slider1({label:node.label, value:node.value, minval:minval, maxval:maxval});
+                        //this._container = $(this.element).append(sliderElement);
+                        self.selectedNodes[nodeId] = node;
+                        nNode += 1;
+                    }
+                });
+            }
 
             if ($('#dialog_plotter_options').length=== 0) {
                 optionsDiv = $(
@@ -542,10 +555,13 @@
             var canvasHeight = $(div).height()-self.options.margin_top-self.options.margin_bottom;
             $(canvas).width(canvasWidth);
             $(canvas).height(canvasHeight);
-            clearCanvas(self);
-            initialiseAxes(this);
-            updateAxes(self);
-            render(self);
+            clearCanvas(this);
+
+            if (this.model) {
+                initialiseAxes(this);
+                updateAxes(this);
+                render(this);
+            }
 
             this._setOptions({
             });
@@ -671,6 +687,8 @@ function clearCanvas(widget) {
 // around on the axis.
 
 function initialiseAxes(widget) {
+    if (!widget.model) return;
+
     var options = widget.options;
     var canvas = $(widget.div).find('canvas');
     var selectedNodes = widget.selectedNodes;
@@ -762,7 +780,7 @@ function initialiseAxes(widget) {
 
 
 function updateAxes(widget) {
-
+    if (!widget.model) return;
     if (!widget.model.results) return;
 
     var i, j, k;
@@ -848,7 +866,8 @@ function updateAxes(widget) {
 
 
 function render(widget) {
- 
+    if (!widget.model) return;
+
     var nPoints;
     var timeValues;
     var x, y;

@@ -201,12 +201,21 @@
             var self = this;
             SYSTO.currentDiagramWidget = self;  //TODO: fix this hack.  It is put in so that I
                 // can clear the labelEdit div when user clicks elsewhere, e.g. on a toolbar button.
+
+            // Note that SYSTO.state.currentModelId is set to null on loading Systo, so
+            // this.options.modelId could stay as null.
             if (!this.options.modelId) {
                 this.options.modelId = SYSTO.state.currentModelId;
             }
-            var model = SYSTO.models[self.options.modelId];
-            this.model = model;
-            this.currentNode = null;  //TODO: put into widget.state
+            if (this.options.modelId) {
+                var model = SYSTO.models[this.options.modelId];
+                this.model = model;
+                this.currentNode = null;  //TODO: put into widget.state
+            } else {
+                model = null;
+                this.model = null;
+            }
+
             this.element.addClass('diagram-1');
 
             $(this.element).                
@@ -376,6 +385,7 @@
 
             $(div).append(canvas);
 
+            // ============================================ BUTTONS
             // Zoom buttons
             var buttonZoomin = $('<button style="position:absolute; width:25px; height:25px; right:0px; top:30px; font-size:22px;" title="Zoom in"><b>+</b></button>').
                 mousedown(function(event) {
@@ -524,11 +534,10 @@
 
 
 
-            // Listeners (custom event habdlers)
+            // ======================================== Listeners (custom event habdlers)
 
             $(document).on('change_model_listener', {}, function(event, parameters) {
-                console.debug('\n((((((((((((((((((((((( '+JSON.stringify(parameters) +' ::: '+self.model.meta.id);
-                console.debug(self.model);
+                console.debug('@log. listener: diagram.js: change_model_listener: '+JSON.stringify(parameters));
                 //if (parameters.oldModelId && (parameters.oldModelId === '' || parameters.oldModelId === self.model.meta.id) &&
                 //        parameters.newModelId) {
                     console.debug('\n(((((((((((((( ');
@@ -628,15 +637,17 @@
             var context = canvas[0].getContext("2d");
             this.context = context;
 
-            setNodeDiagramProperties(this);
-            setArcDiagramProperties(this)
+            if (this.model) {
+                setNodeDiagramProperties(this);
+                setArcDiagramProperties(this)
+                SYSTO.trigger({
+                    file:'jquery.diagram.js', 
+                    action:'_create', 
+                    event_type: 'diagram_modified_event', 
+                    parameters: {packageId:this.options.packageId, modelId:self.model.meta.id}
+                });
+            }
 
-            SYSTO.trigger({
-                file:'jquery.diagram.js', 
-                action:'_create', 
-                event_type: 'diagram_modified_event', 
-                parameters: {packageId:this.options.packageId, modelId:self.model.meta.id}
-            });
             if (this.options.initialZoomToFit) {
                 $(this.element).find('.zoomToFit').trigger('mousedown');
             }
@@ -708,6 +719,8 @@
 
 
 function redraw(widget) {
+    if (!widget.model) return;
+
     clearCanvas(widget);
 
     //setNodeDiagramProperties(widget);
@@ -720,6 +733,7 @@ function redraw(widget) {
     renderNodes(widget);
     renderMarquee(widget);
     //renderNodePanels(widget);  // Currently (July 2014) not called. See below.
+
 }
 
 
@@ -799,6 +813,8 @@ function renderMarquee(widget) {
 // node_panel widget it depends on.
    
 function renderNodePanels(widget) {
+    if (!widget.model) retrn;
+
     if (widget.options.hasNodePanels) {
 
         var model = widget.model;
@@ -836,6 +852,7 @@ function renderNodePanels(widget) {
 
 
 function renderNodes(widget) {
+    if (!widget.model) return;
 
     var model = widget.model;
     var context = widget.context;
@@ -987,6 +1004,7 @@ http://www.html5canvastutorials.com/advanced/html5-canvas-ovals/
 // But: TODO: Do not do this every redraw()!
 
 function setNodeDiagramProperties(widget) {
+    if (!widget.model) return;
 
     var model = widget.model;
     var context = widget.context;
@@ -1294,6 +1312,18 @@ function displayNodeLabel(widget, node) {
 
 // ********************************************* SET ARC DIAGRAM PROPERTIES
 
+
+
+function setArcDiagramProperties(widget) {
+    if (!widget.model) return;
+
+    var model = widget.model;
+    setStylePropertiesForArcs(model);
+}
+
+
+
+
 function setStylePropertiesForArcs(model) {
 
     var arcList = model.arcs;
@@ -1338,13 +1368,6 @@ function setStylePropertiesForArc(model, arc) {
     }
 }
 
-
-
-
-function setArcDiagramProperties(widget) {
-    var model = widget.model;
-    setStylePropertiesForArcs(model);
-}
 
 // ******************************************************* CALCULATE PARAMETERS FOR ARCS
 
