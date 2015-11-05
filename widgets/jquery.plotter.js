@@ -357,7 +357,7 @@
                                     clearCanvas(self);
                                     updateAxes(self);
                                     render(self);
-                                } else if (parameters.modelIdArray.indexOf(self.options.modelId) > -1) {
+                                } else if (parameters.modelIdArray && parameters.modelIdArray.indexOf(self.options.modelId) > -1) {
                                     clearCanvas(self);
                                     updateAxes(self);
                                     render(self);

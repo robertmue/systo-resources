@@ -148,6 +148,9 @@
                         }
                         for (var i=0; i<modelIdArray.length; i++) {
                             var model = SYSTO.models[modelIdArray[i]];
+                            if (!model.nodes[nodeId].workspace) {  // Shouldn't be necessary to check this here!
+                                model.nodes[nodeId].workspace = {};
+                            }
                             model.nodes[nodeId].workspace.jsequation = ui.value;
                         }
                         self._setOption('value',ui.value);
@@ -167,6 +170,7 @@
                     },
                     start: function (event, ui) {
                         $('.slider_value').css('background-color','white');
+                        var nodeId = $(this).data('id');
                         // Two ways of keeping track of simulation time!
                         SYSTO.state.nRuns = 0;
                         SYSTO.state.totalSimulationTime = 0;

@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Tue Nov 3 20:40:37 GMT 2015  */
+/* Last merge : Wed Nov 4 22:58:46 GMT 2015  */
 
 /* Merging order :
 
@@ -116,70 +116,6 @@ SYSTO.copyModel = function(modelId, modelCopyId) {
 
 
 
-SYSTO.copyModelxxx = function(modelId) {
-    var modelCopyId = SYSTO.getUID();
-    var model = SYSTO.models[modelId];
-    var modelCopy = JSON.parse(JSON.stringify(model));
-    SYSTO.models[modelCopyId] = modelCopy;
-
-    return modelCopyId;
-};
-
-// =======================================  Action-related methods - undo, redo...
-
-SYSTO.undoAction = function (model) {
-
-    if (SYSTO.tutorials && SYSTO.state.tutorial === 'running') {
-        alert('Sorry - you cannot use Undo during a tutorial.\n'+
-                'Instead, use the Back button in the tutorial panel.');
-        return;
-    }
-
-    if (!model.previousAction) {
-        alert('Nothing to undo.');
-        return;
-    }
-    if (model.previousAction === 'undo') {
-        if (model.currentActionIndex === 1) {
-            alert('You cannot undo past the first action.');
-            return;
-        }
-        model.currentActionIndex -= 1;
-    }
-    var action = model.actionArray[model.currentActionIndex];
-    action.undoAction();
-    model.previousAction = 'undo';
-};
-
-
-
-SYSTO.redoAction = function (model) {
-
-    if (SYSTO.tutorials && SYSTO.state.tutorial === 'running') {
-        alert('Sorry - you cannot use Redo during a tutorial.\n'+
-                'Instead, use the Forwad button in the tutorial panel.');
-        return;
-    }
-
-    if (!model.previousAction) {
-        alert('Nothing to redo.');
-        return;
-    }
-    if (model.previousAction === 'redo') {
-        if (model.currentActionIndex === model.actionArray.length-1) {
-            alert('You cannot redo past the most recent action.');
-            return;
-        }
-        model.currentActionIndex += 1;
-    }
-    var action = model.actionArray[model.currentActionIndex];
-    action.doAction();
-    model.previousAction = 'redo';
-    SYSTO.saveModelToLocalStorage('current');
-};
-
-
-
 // ============================================= switchToModel
 
 SYSTO.switchToModel = function (modelId, packageId) {
@@ -239,6 +175,72 @@ SYSTO.switchToModel = function (modelId, packageId) {
     }
 };
 
+
+
+
+SYSTO.prepareModel = function (modelId) {
+    console.debug('@log. prepareModel.  modelId:'+modelId);
+
+    if (SYSTO.models[modelId]) {
+        var model = SYSTO.models[modelId];
+        if (SYSTO.checkModel) {   // This is currently in js/simulation.js
+            // No need to check that resultObject.status==='OK', since failure to
+            // check that a model is OK is not a fatal eoor.
+            var resultObject = SYSTO.checkModel(model);
+        }
+
+        if (!model.workspace) {
+            model.workspace = {};
+        }
+        if (!model.scenarios) {
+            SYSTO.createDefaultScenario(model);
+        }
+        var oldModelId = SYSTO.state.currentModelId;
+        SYSTO.state.oldModelId = oldModelId;
+        SYSTO.state.currentModelId = modelId;
+        SYSTO.unselectAllNodes(model);
+
+        SYSTO.saveModelToLocalStorage('current');
+
+        SYSTO.clearResults();
+        if (SYSTO.generateSimulationFunction) {
+            // No need to check that resultObject.status==='OK', since failure to
+            // check that a model is OK is not a fatal eoor.
+            resultObject = SYSTO.generateSimulationFunction(model);
+        }
+
+        SYSTO.colourFlowNetworks(model);
+
+        SYSTO.trigger({
+            file:'systo.js', 
+            action:'SYSTO.prepareModel()', 
+            event_type: 'message_listener', 
+            parameters: {message:'Preparing model with ID <b>' + model.meta.id + '</b> and name <b>' + model.meta.name + '</b><br/>Description:' + model.meta.description}
+        });
+
+        SYSTO.trigger({
+            file:'systo.js', 
+            action:'SYSTO.prepareModel()', 
+            event_type: 'change_model_listener', 
+            parameters: {packageId:null, oldModelId:oldModelId, newModelId:modelId}
+        });
+
+        SYSTO.trigger({
+            file:'systo.js', 
+            action:'SYSTO.switchToModel()', 
+            event_type: 'display_listener', 
+            parameters: {packageId:null, modelId:modelId}
+        });
+        return true;
+
+    } else {
+        alert('INTERNAL ERROR - not your fault.\n\nFile:     systo.js\nSYSTO.prepareModel(modelId)\nError:    Model with the specified modelId ('+modelId+') does not exist. in SYSTO.models');
+        return false;
+    }
+};
+
+
+/*
 SYSTO.switchFromToModel = function (oldModelId, newModelId) {
     console.debug('@log. switchFromToModel. oldModelId:'+oldModelId+'  newModelId: '+newModelId);
 
@@ -293,6 +295,122 @@ SYSTO.switchFromToModel = function (oldModelId, newModelId) {
         alert('INTERNAL ERROR - not your fault.\n\nFile:     systo.js\nFunction: switchToModel(modelId)\nError:    Model with the specified modelId ('+modelId+') does not exist.');
         return false;
     }
+};
+*/
+
+
+// Retained for legacy reasons.   Intention is to use SYSTO.prepareModel,
+// keeping SYSTO.swicthToModel for simple switching (not initialising).
+
+SYSTO.switchFromToModel = function (oldModelId, newModelId) {
+    console.debug('@log. switchFromToModel. oldModelId:'+oldModelId+'  newModelId: '+newModelId);
+
+    var modelId = newModelId;
+
+    if (SYSTO.models[modelId]) {
+        var model = SYSTO.models[modelId];
+        if (SYSTO.checkModel) var resultObject = SYSTO.checkModel(model);
+
+        if (!model.workspace) {
+            model.workspace = {};
+        }
+        if (!model.scenarios) {
+            SYSTO.createDefaultScenario(model);
+        }
+        SYSTO.state.currentModelId = modelId;
+        SYSTO.unselectAllNodes(model);
+
+        SYSTO.saveModelToLocalStorage('current');
+
+        SYSTO.clearResults();
+        if (SYSTO.generateSimulationFunction) {
+            SYSTO.generateSimulationFunction(model);
+        }
+
+        SYSTO.colourFlowNetworks(model);
+
+        SYSTO.trigger({
+            file:'systo.js', 
+            action:'SYSTO.switchToModel()', 
+            event_type: 'message_listener', 
+            parameters: {message:'Switching to model <b>' + model.meta.name +'</b><br/>Description:' + model.meta.description}
+        });
+
+        console.debug('triggering...');
+        SYSTO.trigger({
+            file:'systo.js', 
+            action:'SYSTO.switchToModel()', 
+            event_type: 'change_model_listener', 
+            parameters: {oldModelId:oldModelId, newModelId:newModelId}
+        });
+
+        SYSTO.trigger({
+            file:'systo.js', 
+            action:'SYSTO.switchToModel()', 
+            event_type: 'display_listener', 
+            parameters: {modelId:modelId}
+        });
+        return true;
+
+    } else {
+        alert('INTERNAL ERROR - not your fault.\n\nFile:     systo.js\nFunction: switchToModel(modelId)\nError:    Model with the specified modelId ('+modelId+') does not exist.');
+        return false;
+    }
+};
+
+
+
+// =======================================  Action-related methods - undo, redo...
+
+SYSTO.undoAction = function (model) {
+
+    if (SYSTO.tutorials && SYSTO.state.tutorial === 'running') {
+        alert('Sorry - you cannot use Undo during a tutorial.\n'+
+                'Instead, use the Back button in the tutorial panel.');
+        return;
+    }
+
+    if (!model.previousAction) {
+        alert('Nothing to undo.');
+        return;
+    }
+    if (model.previousAction === 'undo') {
+        if (model.currentActionIndex === 1) {
+            alert('You cannot undo past the first action.');
+            return;
+        }
+        model.currentActionIndex -= 1;
+    }
+    var action = model.actionArray[model.currentActionIndex];
+    action.undoAction();
+    model.previousAction = 'undo';
+};
+
+
+
+SYSTO.redoAction = function (model) {
+
+    if (SYSTO.tutorials && SYSTO.state.tutorial === 'running') {
+        alert('Sorry - you cannot use Redo during a tutorial.\n'+
+                'Instead, use the Forwad button in the tutorial panel.');
+        return;
+    }
+
+    if (!model.previousAction) {
+        alert('Nothing to redo.');
+        return;
+    }
+    if (model.previousAction === 'redo') {
+        if (model.currentActionIndex === model.actionArray.length-1) {
+            alert('You cannot redo past the most recent action.');
+            return;
+        }
+        model.currentActionIndex += 1;
+    }
+    var action = model.actionArray[model.currentActionIndex];
+    action.doAction();
+    model.previousAction = 'redo';
+    SYSTO.saveModelToLocalStorage('current');
 };
 
 
@@ -1207,19 +1325,20 @@ Template:
 
 
 SYSTO.trigger = function (args) {
+    //console.log('#log. SYSTO.trigger  args='+JSON.stringify(args));
     if (args && args.event_type) {
         // Checks to see if we should be logging this trigger
         //if (SYSTO.logging.listener_classes[args.listener_class] &&
         //    !SYSTO.logging.action_exclude[args.action]) {
         //    //console.debug('@log. trigger: '+JSON.stringify(args,null,4));
         //}
-        if (args.event_type === 'click' && args.listener_class) {   // Old method
+        if (args.event_type === 'click' && args.listener_class) {   // Old method - probably now obsolete
             $('.'+args.listener_class).trigger('click', args.parameters);
             $(document).trigger(args.listener_class, args.parameters);
         } else {                                                   // New (Dec 2014) method
             if (!SYSTO.trigger_log) SYSTO.trigger_log = [];
             SYSTO.trigger_log.push(args);
-            $('.'+args.event_type).trigger('click', args.parameters);
+            $('.'+args.event_type).trigger('click', args.parameters); // Probably now obsole
             $(document).trigger(args.event_type, args.parameters);
         }
     } else {
@@ -2895,6 +3014,8 @@ SYSTO.generateSimulationFunction = function (model) {
         }
 
         var result = myTopologicalSort(model, ['stock', 'valve', 'variable']);
+        console.debug('\n==============================================');
+        console.debug(result);
         if (result.status === 'OK') {
             var sortedDynamicArray = result.sortedNodeArray;
         } else {
@@ -2902,6 +3023,7 @@ SYSTO.generateSimulationFunction = function (model) {
         }
 
         model.simulationDataStructures = buildSimulationDataStructures(model);
+        console.debug(model.simulationDataStructures);
 
         if (model.scenarios && model.scenarios.default && model.scenarios.default.simulation_settings) {
             var integrationMethod = model.scenarios.default.simulation_settings.integration_method;

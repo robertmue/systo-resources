@@ -21,12 +21,12 @@
     <!-- This page's custom script -->
     <script>
         $(document).ready(function() {
-            SYSTO.switchToModel('cascade');
-            $('#diagram1').diagram().resizable();
-            $('#multiple_sliders1').multiple_sliders().resizable();
-            $('#plotter1').plotter({css:{border:'solid 3px red'}}).resizable();
-            $('#diagram_svg').diagram_svg();
-            SYSTO.switchToModel('cascade');
+            var modelId = 'cascade';
+            SYSTO.prepareModel(modelId);
+            $('#diagram1').diagram({modelId:modelId}).resizable();
+            $('#multiple_sliders1').multiple_sliders({modelId:modelId}).resizable();
+            $('#plotter1').plotter({modelId:modelId, css:{border:'solid 3px red'}}).resizable();
+            $('#diagram_svg').diagram_svg({modelId:modelId});
         });          
     </script>
 </head>
@@ -46,7 +46,7 @@
     <div id="diagram1"></div>
     <p>... and here are the sliders and plot of results:</p>
     <div id="plotter1" style="float:left;"></div>
-    <div id="multiple_sliders1" style="float:left;"></div>
+    <div id="multiple_sliders1" style="float:left; margin-left:110px;"></div>
     <p style="float:left; clear:both;">... and here is the SVG model diagram.  Note that, currently, it is non-interactive.</p>
     <div id="diagram_svg" style="float:left; clear:both;"></div>
 

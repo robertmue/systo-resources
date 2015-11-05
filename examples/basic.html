@@ -20,12 +20,11 @@
     <!-- This page's custom script -->
     <script>
         $(document).ready(function() {
-            SYSTO.switchToModel('cascade');
-            $('#diagram1').diagram();
-            $('#multiple_sliders1').multiple_sliders();
-            //$('#plotter1').plotter({css:{width:'300px', height:'250px'}});
-            $('#plotter1').plotter();
-            SYSTO.switchToModel('cascade');
+            var modelId = 'cascade';
+            SYSTO.prepareModel(modelId);
+            $('#diagram1').diagram({modelId:modelId});
+            $('#multiple_sliders1').multiple_sliders({modelId:modelId});
+            $('#plotter1').plotter({modelId:modelId});
         });          
     </script>
 </head>

@@ -68,10 +68,10 @@
         SYSTO.copyModel('cascade', modelId3);
         SYSTO.copyModel('cascade', modelId4);
 
-        SYSTO.switchToModel(modelId1);
-        SYSTO.switchToModel(modelId2);
-        SYSTO.switchToModel(modelId3);
-        SYSTO.switchToModel(modelId4);
+        SYSTO.prepareModel(modelId1);
+        SYSTO.prepareModel(modelId2);
+        SYSTO.prepareModel(modelId3);
+        SYSTO.prepareModel(modelId4);
 
         $("#diagram1a").diagram({modelId:modelId1});
         $("#diagram1b").diagram({modelId:modelId1});

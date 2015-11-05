@@ -123,6 +123,9 @@
                 console.debug('@event_response11: change_model_listener: multiple_sliders: '+JSON.stringify(parameters));
                 if (!parameters.packageId || parameters.packageId === self.options.packageId) {
                     console.info('@event_response: change_model_listener: multiple_sliders: '+JSON.stringify(parameters));
+                    if (!parameters.modelIdArray) {
+                        self.options.modelIdArray = [parameters.newModelId];
+                    }
                     createMultipleSliders(self, sliders_div, sliders, self.options.modelIdArray);
                 }
             });

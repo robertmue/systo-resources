@@ -13,20 +13,6 @@
     <!-- Model language definition(s), held as a Javascript object literal -->
     <script type="text/javascript" src="../languages/system_dynamics.js"></script>
 
-    <!-- The widgets used in this page >
-    <script type="text/javascript" src="/static/js/systo_widgets/jquery.runcontrol.js"></script>
-    <script type="text/javascript" src="/static/js/systo_widgets/jquery.slider1.js"></script>
-    <script type="text/javascript" src="/static/js/systo_widgets/jquery.multiple_sliders.js"></script>
-    <script type="text/javascript" src="/static/js/systo_widgets/jquery.diagram.js"></script>
-    <script type="text/javascript" src="/static/js/systo_widgets/jquery.plotter.js"></script>
-    <script type="text/javascript" src="/static/js/systo_widgets/jquery.inline_value.js"></script>
-    <script type="text/javascript" src="/static/js/systo_widgets/jquery.equation_listing.js"></script>
-    <script type="text/javascript" src="/static/js/systo_widgets/jquery.local_saveload.js"></script>
-    <script type="text/javascript" src="/static/js/systo_widgets/jquery.import_im.js"></script>
-    <script type="text/javascript" src="/static/js/systo_widgets/jquery.import_vensim.js"></script>
-    <script type="text/javascript" src="/static/js/systo_widgets/jquery.import_xmile.js"></script>
-    <script type="text/javascript" src="/static/js/systo_widgets/jquery.node_dialog_system_dynamics.js"></script-->
-
     <!-- This page's custom script -->
     <script>
         SYSTO.models.new = {
@@ -36,10 +22,61 @@
 
         $(document).ready(function() {
 
-            //generateSimulationFunction(SYSTO.models['new']);
+            var modelId = 'new';
+
+            $('#load_example_button').click(function () {
+                var sourceLanguageId = $('#source_language').val();
+                var sourceText = $('#example_'+sourceLanguageId).text().replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+                $('#import_div > textarea').val(sourceText);
+            });
+
+            $('#import_button').click(function () {
+                var sourceLanguageId = $('#source_language').val();
+                switch(sourceLanguageId) {
+                    case 'im':
+                        $('#import_textarea').import_im({modelId:modelId});
+                        break;
+                    case 'vensim':
+                        $('#import_textarea').import_vensim({modelId:modelId});
+                        break;
+                    case 'xmile':
+                        $('#import_textarea').import_xmile({modelId:modelId});
+                        break;
+                    default:
+                        alert('Sorry: internal error/nsourceLanguageId not recognised');
+                }
+                SYSTO.prepareModel(modelId);
+            });
+
+            $('#diagram1').diagram({modelId:modelId, allowEditing:true});
+            $('#diagram1').resizable();
+
+            $('#runcontrol').runcontrol({modelId:modelId}).resizable();
+
+            $('#sliders_initialstock').multiple_sliders({
+                modelId:modelId,
+                selectNode:function (node) {
+                    if (node.type === 'stock') {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
+
+            $('#sliders_parameter').multiple_sliders({
+                modelId:modelId,
+                selectNode:function (node) {
+                    if (node.type === 'variable' && isEmpty(node.inarcList)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
 
             $('#plotter').plotter({
-                modelId:'new',
+                modelId:modelId,
                 canvasWidth:400, 
                 canvasHeight:250,
                 selectNode:function (node) {
@@ -51,72 +88,7 @@
                 }
             });
 
-/*
-            $('#import_vensim').import_vensim({model:'new'});
-            $('#import_im').import_im({model:'new'});
-            $('#import_xmile').import_xmile({model:'new'});
-*/
-            $('#load_example_button').click(function () {
-                var sourceLanguageId = $('#source_language').val();
-                var sourceText = $('#example_'+sourceLanguageId).text().replace(/&lt;/g,'<').replace(/&gt;/g,'>');
-                $('#import_div > textarea').val(sourceText);
-            });
-
-            $('#import_button').click(function () {
-                var sourceLanguageId = $('#source_language').val();
-                switch(sourceLanguageId)
-                {
-                case 'im':
-                $('#import_textarea').import_im({modelId:'new'});
-                    break;
-                case 'vensim':
-                $('#import_textarea').import_vensim({modelId:'new'});
-                    break;
-                case 'xmile':
-                $('#import_textarea').import_xmile({modelId:'new'});
-                    break;
-                default:
-                    alert('Sorry: internal error/nsourceLanguageId not recognised');
-                }
-                SYSTO.switchToModel('new'); // TODO: make it a GUID
-                SYSTO.trigger1({
-                    triggering_file:'import.html', 
-                    triggering_action:'import_button click()', 
-                    listener_class: 'change_model_listener', 
-                    event_type: 'click', 
-                    argument_array: [{oldModelId:'',newModelId:'new'}]});
-            });
-
-            $('#diagram1').diagram({modelId:'new', allowEditing:true});
-            $('#diagram1').resizable();
-
-            //$('#local_saveload').local_saveload();
-
-            $('#runcontrol').runcontrol({modelId:'new'}).resizable();
-
-            $('#sliders_initialstock').multiple_sliders({
-                modelId:'new',
-                selectNode:function (node) {
-                    if (node.type === 'stock') {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            });
-
-            $('#sliders_parameter').multiple_sliders({
-                modelId:'new',
-                selectNode:function (node) {
-                    if (node.type === 'variable' && isEmpty(node.inarcList)) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            });
-
-            $('#equation_listing').equation_listing({modelId:'new'});
+            $('#equation_listing').equation_listing({modelId:modelId});
             $('#node_dialogs').append(SYSTO.node_dialogs.system_dynamics);
 
 

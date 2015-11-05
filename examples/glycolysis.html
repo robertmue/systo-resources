@@ -20,8 +20,9 @@
 
         $(document).ready(function() {
 
-            //SYSTO.switchToModel('glycolysis');
-            $('#diagram1').diagram({modelId:'glycolysis', allowEditing:true});
+            var modelId = 'glcolysis';
+            SYSTO.prepareModel('glycolysis');
+            $('#diagram1').diagram({modelId:modelId, allowEditing:true});
             $('#diagram1').resizable();
  
          });

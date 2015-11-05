@@ -527,8 +527,11 @@
             // Listeners (custom event habdlers)
 
             $(document).on('change_model_listener', {}, function(event, parameters) {
-                if (parameters.oldModelId && parameters.oldModelId === self.model.meta.id &&
-                        parameters.newModelId) {
+                console.debug('\n((((((((((((((((((((((( '+JSON.stringify(parameters) +' ::: '+self.model.meta.id);
+                console.debug(self.model);
+                //if (parameters.oldModelId && (parameters.oldModelId === '' || parameters.oldModelId === self.model.meta.id) &&
+                //        parameters.newModelId) {
+                    console.debug('\n(((((((((((((( ');
                     self.options.modelId = parameters.newModelId;
                     var model = SYSTO.models[parameters.newModelId];
                     self.model = model;
@@ -536,7 +539,7 @@
                     setArcDiagramProperties(self);
                     self.state.labelEditNodeId = null;
                     redraw(self);
-                }
+                //}
                 event.stopPropagation();
             });
 

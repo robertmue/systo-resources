@@ -29,6 +29,7 @@
         },
 
         options: {
+            modelId:null
         },
 
         widgetEventPrefix: 'import_vensim:',
@@ -47,7 +48,10 @@
             $(div).append(textarea).append(importButton);
             this._container = $(this.element).append(div);
 */
-            importVensim();
+            var model = importVensim();
+            model.meta.id = this.options.modelId;
+            console.debug(model);
+            SYSTO.models[this.options.modelId] = model;
 
             this._setOptions({
             });
@@ -391,17 +395,12 @@ function importVensim() {
         }
     }
 */
-    //var model = {nodes:nodeList,arcs:arcList};
-    //console.debug(JSON.stringify(model));
-    SYSTO.models.new.nodes = nodeList;
-    SYSTO.models.new.arcs = arcList;
-    SYSTO.trigger({
-        file:'import_xmile.js', 
-        action:'importXmile()', 
-        event_type: 'diagram_modified_event', 
-        parameters: {}
-    });
-
+    var model = {
+        meta:{"language":"system_dynamics"},
+        nodes:nodeList,
+        arcs:arcList
+    };
+    return model;
 }
 
 

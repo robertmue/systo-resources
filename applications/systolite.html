@@ -253,6 +253,8 @@
         console.debug(modelId + ', ' + SYSTO.state.currentModelId);
 
         var modelId = 'predator_prey_shodor'; 
+        SYSTO.prepareModel(modelId);
+        //SYSTO.switchToModel(modelId);
         var model = SYSTO.models[modelId];
 
         $('#diagram').diagram({

@@ -16,19 +16,28 @@
         },
 
         options: {
-            packageId:'package1'
+            packageId:'package1',
+            modelId:null
         },
 
         widgetEventPrefix: 'diagram_svg:',
 
         _create: function () {
+            console.log('#log. creating_widget:   diagram_svg');
             var self = this;
             this.element.addClass('diagram_svg-1');
 
             var div = $('<div style="width:600px; height:500px; border:solid 2px black"></div>');
+            self.div = div;
 
             this._container = $(this.element).append(div);
 
+            var modelId = this.options.modelId;;
+            var model = SYSTO.models[modelId];
+            $(div).empty();
+            var svgString = generateSvg(model);
+            var svg = $(svgString);
+            $(div).append(svg);
 
             $(document).on('change_model_listener', {}, function(event, parameters) {
                 console.debug(parameters);
@@ -59,6 +68,14 @@
             var self = this;
             var prev = this.options[key];
             var fnMap = {
+                modelId: function() {
+                    var modelId = value;
+                    var model = SYSTO.models[modelId];
+                    $(self.div).empty();
+                    var svgString = generateSvg(model);
+                    var svg = $(svgString);
+                    $(self.div).append(svg);
+                }
             };
 
             // base
@@ -101,9 +118,6 @@
             arc = arcList[arcId];
             var arcPoints = calculateParametersForArc(arc, nodeList);
             var arrowheadPoints = calculateArrowheadPoints(arc, arcPoints);
-            console.debug(arc.type);
-            console.debug(JSON.stringify(arcPoints));
-            console.debug(JSON.stringify(arrowheadPoints));
             var x1 = arcPoints.start.x;
             var y1 = arcPoints.start.y;
             var x2 = arrowheadPoints.base.x;
