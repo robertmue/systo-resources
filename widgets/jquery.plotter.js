@@ -246,7 +246,7 @@
             $(this.element).css({position:'relative', width:elementWidth, height:elementHeight});
 
 
-            var div = $('<div class="this_div" style="position:absolute; top:0px; left:0px; width:100%; height:100%; border:solid 1px #808080;"></div>');
+            var div = $('<div class="this_div" style="position:absolute; top:0px; left:0px; width:100%; height:100%; border:solid 1px #808080; background:#f4f4f4"></div>');
             //var div = $('<div class="this_div" style="background:orange; overflow:hidden; border:solid 1px blue;"></div>');
             $(div).css(this.options.css);
             this.div = div;
@@ -269,9 +269,29 @@
                     clearTimeout(this.downTimer);
                 });
 
+
+            // Handling resizing of container element.
+            // It seems that secondary resizing (e.g. in CSS3-flex, when you resize the window and
+            // flex resizes elements contained in the window) does NOT generate a resize event on
+            // the widget's container.   Therefore, we have to watch out for any resize event which
+            // may cause the container to be resized.   That's what happens here.
+            $(window).resize(function() {
+                resizeWidgetToFitContainer(self, div);
+            });
+
+            $(this.element).resize(function() {
+                resizeWidgetToFitContainer(self, div);
+            });
+
+            $(document).on('display_panel_resized', {}, function(event, parameters) {
+                console.debug('\ndisplay_panel_resized!'+JSON.stringify(parameters));
+                resizeWidgetToFitContainerUsingId(self, div, parameters.panelId);
+            });
+
+/*
             $(this.element).                
                 bind( "resize", function(event, ui) {
-                    console.debug('resizing........');
+                    console.debug('resizing...................................................');
                     var canvas = $(self.element).find('canvas');
                     var canvasWidth = $(div).width()-self.options.margin_left-self.options.margin_right;
                     var canvasHeight = $(div).height()-self.options.margin_top-self.options.margin_bottom;
@@ -282,7 +302,7 @@
                     updateAxes(self);
                     render(self);
                 });
-
+*/
             //console.debug(this.element);
             //console.debug($(this.element).parent());
             //console.debug($(this.element).parent().parent());
@@ -550,13 +570,17 @@
 
             var context = canvas[0].getContext("2d");
             this.context = context;
+
+            resizeWidgetToFitContainer(this, div);
+
+/*
             //var canvas = $(self.element).find('canvas');
             var canvasWidth = $(div).width()-self.options.margin_left-self.options.margin_right;
             var canvasHeight = $(div).height()-self.options.margin_top-self.options.margin_bottom;
             $(canvas).width(canvasWidth);
             $(canvas).height(canvasHeight);
             clearCanvas(this);
-
+*/
             if (this.model) {
                 initialiseAxes(this);
                 updateAxes(this);
@@ -644,7 +668,12 @@
 
 
 /*
-The four main functions are:
+The main functions are:
+
+- resizeWidgetToFitContainer(widget, div) Called in response to some event which changes the size
+  of the div in the main HTML that this widget is associated with.   A resizing event can be, for
+  example, automatically generated using CSS3-flex; or can come from a .resizable() method attached
+  to the containing div.
 
 - clearCanvas(widget)  As its name implies.  Does not need simulation results.
 
@@ -656,6 +685,37 @@ The four main functions are:
 
 - render(widget)  Plots the data points.    Does need simulation results.
 */
+
+function resizeWidgetToFitContainer(widget, div) {
+    $(div).width($(widget.element).width());
+    $(div).height($(widget.element).height());
+    var canvas = $(widget.element).find('canvas');
+    var canvasWidth = $(div).width()-widget.options.margin_left-widget.options.margin_right;
+    var canvasHeight = $(div).height()-widget.options.margin_top-widget.options.margin_bottom;
+    $(canvas).width(canvasWidth);
+    $(canvas).height(canvasHeight);
+    clearCanvas(widget);
+    updateAxes(widget);
+    render(widget);
+}
+
+
+function resizeWidgetToFitContainerUsingId(widget, div, id) {
+    $(widget.element).width($('#'+id).width()-6);
+    $(widget.element).height($('#'+id).height()-30);
+    $(div).width($('#'+id).width()-6);
+    $(div).height($('#'+id).height()-30);
+    var canvas = $(widget.element).find('canvas');
+    var canvasWidth = $(div).width()-widget.options.margin_left-widget.options.margin_right;
+    var canvasHeight = $(div).height()-widget.options.margin_top-widget.options.margin_bottom;
+    $(canvas).width(canvasWidth);
+    $(canvas).height(canvasHeight);
+    clearCanvas(widget);
+    updateAxes(widget);
+    render(widget);
+}
+
+
 
 function clearCanvas(widget) {
 

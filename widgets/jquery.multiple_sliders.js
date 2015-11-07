@@ -99,22 +99,39 @@
 
             // Possibly controversial: if containing element's width/height is set in the web page, then
             // that is what is used here.  Otherwise, use the option settings.
-            // Note that we only check for height === 0px.   If not set, the div width defaukts to the page width, so
+            // Note that we only check for height === 0px.   If not set, the div width defaults to the page width, so
             // we can't check its value.
+/*
             if ($(this.element).css('height') === '0px') {
                 var elementWidth = this.options.width+'px';
-                var elementHeight = this.options.height+'px';
+                var h = this.options.height;
+                var elementHeight = h+'px';
             } else {
-                elementWidth = $(this.element).css('width');
-                elementHeight = $(this.element).css('height');
+                elementWidth = $(this.element).css('width')+'px';
+                elementHeight = $(this.element).css('height')+'px';
+            }
+            $(this.element).css({width:elementWidth, height:elementHeight, 'overflow-x':'hidden', 'overflow-y':'auto',  border:'solid 1px #808080'});
+*/
+/*
+            if ($(this.element).css('height') === '0px') {
+                var elementWidth = this.options.width;
+                var elementHeight = this.options.height;
+            } else {
+                elementWidth = $(this.element).width();
+                elementHeight = $(this.element).height();
             }
 
-            $(this.element).css({width:elementWidth, height:elementHeight, 'overflow-x':'hidden', 'overflow-y':'auto',  border:'solid 1px #808080'});
-
-            var div = $('<div></div>');
+            $(this.element).
+                width(elementWidth).
+                height(elementHeight).
+                css({'overflow-x':'hidden', 'overflow-y':'auto',  border:'solid 1px #808080'});
+*/
+            var div = $('<div style="background:white;"></div>');  
             this.div = div;
+            $(div).width($(this.element).width()-2).height($(this.element).height()-2);
 
-            var sliders_div = $('<div></div');
+            var sliders_div = $('<div></div'); 
+            $(sliders_div).width($(div).width()-2).height($(div).height()-2);
             $(div).append(sliders_div);
 
             if (this.options.modelIdArray.length >0) {
@@ -302,7 +319,7 @@
                 if (value>maxval) {
                     maxval = 2*value;
                 }
-                var sliderElement = $('<div class="slider1" style="float:left; border:1px solid white;'+
+                var sliderElement = $('<div class="slider1" style="float:left;'+
                         'padding:5px; margin:1px; width:400px; height:16px;"></div>').
                     slider1({modelId:modelId, modelIdArray:modelIdArray, label:node.label, id:nodeId, value:value, minval:minval, maxval:maxval});
                 sliders[nodeId] = sliderElement;

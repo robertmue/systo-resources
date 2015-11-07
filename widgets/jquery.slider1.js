@@ -271,7 +271,6 @@
                 });
 
             this._container = $(this.element).append(a1).append(a2).append(a3).append(a4).append(a5);
-            //this._container = $(this.element).append('<div>Hello</div>');
 
             this._setOptions({
                 label: this.options.label,

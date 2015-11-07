@@ -196,7 +196,7 @@
                                 size: 180
                             },
                             center: {    // Displays (plotter, table...)
-                                onresize: function() {
+                                //onresize: function() {
                                     // TODO: fix this awful hack!
                                     // If I simply have the trigger line in, and the user resizes the
                                     // panel when the plotter tab is *not* the active one, then it 
@@ -209,10 +209,11 @@
                                     //$('.plotter_resize_listener').trigger('click');
                                     //$( "#tabs" ).tabs( "option", "active", activeTab );
 
-                                    // This replces the above.   It is possible because plotter now
+                                    // This replaces the above.   It is possible because plotter now
                                     // detects if its container (in this case, #plotter) has been resized.
                                     // This works properly (i.e. no need for a trigger in the HTML file's script),
                                     // but not when I use layout, hence the trigger on next line:
+                                    /*
                                     console.debug('#plotter - trigger(resize)');
                                     var w = $('#plotter').parent().css('width');
                                     var h = $('#plotter').parent().css('height');
@@ -222,6 +223,14 @@
                                     //$('#plotter').css({width:w, height:h}).resize();
                                     $('#plotter').css({width:w+'px', height:h+'px'}).resize();
                                     console.debug('#plotter - triggered(resize)');
+                                    */
+                                onresize: function () {
+                                    SYSTO.trigger({
+                                        file:'systolite.html', 
+                                        action:'onresize display panel', 
+                                        event_type: 'display_panel_resized', 
+                                        parameters: {panelId:'display_panel'}
+                                    });
                                 }
                             },
                             east: {     // Sliders
@@ -683,7 +692,9 @@ Free; no registration or sign-in: just start!<br/><br/>
 
 	    <div id="runcontrol" class="ui-layout-west"></div>      <!-- CENTER-SOUTH-WEST : run control-->
 
-        <div  class="ui-layout-center" style="position:absolute; top:0px; left:0px; bottom:0px; right:0px;"> <!-- CENTER-CENTER-CENTER : display -->
+        <!-- CENTER-CENTER-CENTER : display -->
+<!--  The following works - sort-of.  Commented out while trying tp find a better, more-principled approach.
+        <div id="display_panel" class="ui-layout-center" style="position:absolute; top:0px; left:0px; bottom:0px; right:0px;"> 
             <div id="tabs" style="position:absolute; top:0px; left:0px; bottom:0px; right:0px;">
                 <ul>
                     <li style="font-size:14px;"><a href="#plotter" style="outline-color:transparent; padding-top:0px; 
@@ -695,9 +706,7 @@ Free; no registration or sign-in: just start!<br/><br/>
                     <li style="font-size:14px;"><a href="#phase_plane" style="outline-color:transparent; padding-top:0px; 
                         padding-bottom:0px; padding-left:4px; padding-right:4px;">XY plot</a></li>
                 </ul>
-                <!--div id="plotter" style="position:relative; width:90%; height:75%; margin:1px; border:solid 0px white;
-                    overflow:hidden;"></div-->
-                <div id="plotter" style="position:absolute; top:0px; left:0px; bottom:40px; right:20px; margin:1px; 
+                <div id="plotter" style="position:absolute; top:0px; left:0px; bottom:0px; right:0px; margin:1px; 
                     overflow:hidden;"></div>
                 <div id="multi_plotter" style="position:absolute; top:25px; left:0px; bottom:0px; right:0px; margin:1px;
                     border:solid 0px white; overflow:hidden; padding:2px;"></div>
@@ -707,6 +716,30 @@ Free; no registration or sign-in: just start!<br/><br/>
                     border:solid 0px white; overflow:auto; padding:2px;"></div>
             </div>
         </div>
+-->
+        <div id="display_panel" class="ui-layout-center" style="position:relative; top:0px; left:0px; bottom:0px; right:0px; padding:0px; overflow:hidden;"> 
+            <div id="tabs" style="position:absolute; top:0px; left:0px; bottom:0px; right:0px;  padding:0px; margin:0px;">
+                <ul>
+                    <li style="font-size:14px;"><a href="#plotter" style="outline-color:transparent; padding-top:0px; 
+                        padding-bottom:0px; padding-left:4px; padding-right:4px; ">Plotter</a></li>
+                    <li style="font-size:14px;"><a href="#multi_plotter" style="outline-color:transparent;padding-top:0px;
+                        padding-bottom:0px; padding-left:4px; padding-right:4px;">MultiPlotter</a></li>
+                    <li style="font-size:14px;"><a href="#table" style="outline-color:transparent; padding-top:0px; 
+                        padding-bottom:0px; padding-left:4px; padding-right:4px;">Table</a></li>
+                    <li style="font-size:14px;"><a href="#phase_plane" style="outline-color:transparent; padding-top:0px; 
+                        padding-bottom:0px; padding-left:4px; padding-right:4px;">XY plot</a></li>
+                </ul>
+                <div id="plotter" style="position:absolute; top:0px; left:0px; bottom:0px; right:0px; margin:1px; 
+                    overflow:hidden;"></div>
+                <div id="multi_plotter" style="position:absolute; top:25px; left:0px; bottom:0px; right:0px; margin:1px;
+                    border:solid 0px white; overflow:hidden; padding:2px;"></div>
+                <div id="table" style="position:absolute; top:25px; left:0px; bottom:0px; right:0px; margin:1px; 
+                    border:solid 0px white; overflow:auto; padding:2px;"></div>
+                <div id="phase_plane" style="position:absolute; top:25px; left:0px; bottom:0px; right:0px; margin:1px; 
+                    border:solid 0px white; overflow:auto; padding:2px;"></div>
+            </div>
+        </div>
+
 
 	    <div id="sliders" class="ui-layout-east">               <!-- CENTER-SOUTH-EAST : sliders-->
         </div>
