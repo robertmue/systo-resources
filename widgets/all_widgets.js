@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Sat Nov 7 00:17:58 GMT 2015  */
+/* Last merge : Sat Nov 7 19:11:38 GMT 2015  */
 
 /* Merging order :
 
@@ -1191,8 +1191,10 @@ function makeArcTable(widget) {
             }
             $(this.element).css({width:elementWidth, height:elementHeight});
 */
+            var div = $('<div id="top_diagram" style="position:absolute; width:100%; height:100%; border:solid 1px #808080; background:white;"></div>');
             //var div = $('<div id="top_diagram" style="position:relative; width:100%; height:100%; border:solid 1px #808080;"></div>');
-            var div = $('<div id="top_diagram" style="border:solid 1px #808080; background:white;"></div>');
+            //var div = $('<div id="top_diagram" style="position:relative; width:100%; height:100%; border:solid 1px #808080;"></div>');
+            //var div = $('<div id="top_diagram" style="border:solid 1px #808080; background:white;"></div>');
             $(div).width($(this.element).width()-5);
             $(div).height($(this.element).height()-2);
             this.div = div;
@@ -1292,7 +1294,8 @@ function makeArcTable(widget) {
             }
 */
 
-            var canvas = $('<canvas style="position:absolute; background:rgba(255,255,255,'+this.options.opacity+'); top:0px; left:0px;"></canvas>').
+            //var canvas = $('<canvas style="position:absolute; background:rgba(255,255,255,'+this.options.opacity+'); top:0px; left:0px;"></canvas>').
+            var canvas = $('<canvas></canvas>').
                 mousedown(function(event) {
                     mouseDown(event, self, canvas[0]);
                 }).
@@ -1320,6 +1323,7 @@ function makeArcTable(widget) {
             // ============================================ BUTTONS
             // Zoom buttons
             var buttonZoomin = $('<button style="position:absolute; width:25px; height:25px; right:0px; top:30px; font-size:22px;" title="Zoom in"><b>+</b></button>').
+            //var buttonZoomin = $('<button style="font-size:22px;" title="Zoom in"><b>+</b></button>').
                 mousedown(function(event) {
                     var scalingFactor = 1.2;
                     self.options.scale = self.options.scale*scalingFactor;
@@ -1460,8 +1464,6 @@ function makeArcTable(widget) {
             //$(div).append(equationEntry);
 
             this._container = $(this.element).append(div);
-            var divWidth = $(this.element).width();
-            var divHeight = $(this.element).height();
             //$(this.element).css('z-index','1');
 
 

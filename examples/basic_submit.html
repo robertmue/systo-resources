@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Systo demo: Example1 - testbed</title>
+    <title>Systo example - test_submit</title>
+    <!-- See http://jquery.malsup.com/form/#getting-started -->
 
     <!-- CSS -->
     <link type="text/css" rel="stylesheet" href="../css/jquery-ui.css"/>
@@ -10,6 +11,10 @@
     <script type="text/javascript" src="../js/all_core.js"></script>
     <script type="text/javascript" src="../plugins/all_plugins.js"></script>
 	<script type="text/javascript" src="../widgets/all_widgets.js"></script>
+
+    <!-- Form-submit scripts -->
+    <!--script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script--> 
+    <script src="http://malsup.github.com/jquery.form.js"></script> 
 
     <!-- Model language definition, held as a Javascript object literal -->
     <script type="text/javascript" src="../languages/system_dynamics.js"></script>
@@ -25,6 +30,23 @@
             $('#diagram1').diagram({modelId:modelId});
             $('#multiple_sliders1').multiple_sliders({modelId:modelId});
             $('#plotter1').plotter({modelId:modelId});
+			
+			$('#message').val(JSON.stringify(SYSTO.models.cascade.meta));
+
+			// bind form using ajaxForm 
+			$('#jsonForm').ajaxForm({ 
+				// dataType identifies the expected content type of the server response 
+				dataType:  'json', 
+		 
+				// success identifies the function to invoke when the server response 
+				// has been received 
+				success:   processJson 
+			}); 
+
+			function processJson(data) { 
+				// 'data' is the json object returned from the server 
+				alert(data.message); 
+			}
         });          
     </script>
 </head>
@@ -45,8 +67,12 @@
     <div id="diagram1" style="height:300px;"></div>
     <p>... and here are the sliders and plot of results:</p>
     <div id="plotter1" style="float:left;"></div>
-    <div id="multiple_sliders1" style="float:left;"></div>
+    <div id="multiple_sliders1" style="float:left; clear:bottom;"></div>
 
+	<form id="jsonForm" action="json-echo.php" method="post" style="float:left; clear:both;"> 
+		Message: <input id="message" type="text" name="message" value="{model:{a:1,b:2}}" /> 
+		<input type="submit" value="Echo as JSON" /> 
+	</form>
 </body>
 </html>
 

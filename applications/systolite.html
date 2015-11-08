@@ -506,6 +506,14 @@
                 '</ul>'}
         });
 
+        // To force proper sizing of plotter widget inside the display tabbed panel.
+        SYSTO.trigger({
+            file:'systolite.html', 
+            action:'onresize display panel', 
+            event_type: 'display_panel_resized', 
+            parameters: {panelId:'display_panel'}
+        });
+
         $(document).on('add_new_model_listener', {}, function(event, parameters) {
             if (parameters.packageId) {
                 var packageId = parameters.packageId;
@@ -693,30 +701,6 @@ Free; no registration or sign-in: just start!<br/><br/>
 	    <div id="runcontrol" class="ui-layout-west"></div>      <!-- CENTER-SOUTH-WEST : run control-->
 
         <!-- CENTER-CENTER-CENTER : display -->
-<!--  The following works - sort-of.  Commented out while trying tp find a better, more-principled approach.
-        <div id="display_panel" class="ui-layout-center" style="position:absolute; top:0px; left:0px; bottom:0px; right:0px;"> 
-            <div id="tabs" style="position:absolute; top:0px; left:0px; bottom:0px; right:0px;">
-                <ul>
-                    <li style="font-size:14px;"><a href="#plotter" style="outline-color:transparent; padding-top:0px; 
-                        padding-bottom:0px; padding-left:4px; padding-right:4px;">Plotter</a></li>
-                    <li style="font-size:14px;"><a href="#multi_plotter" style="outline-color:transparent;padding-top:0px;
-                        padding-bottom:0px; padding-left:4px; padding-right:4px;">MultiPlotter</a></li>
-                    <li style="font-size:14px;"><a href="#table" style="outline-color:transparent; padding-top:0px; 
-                        padding-bottom:0px; padding-left:4px; padding-right:4px;">Table</a></li>
-                    <li style="font-size:14px;"><a href="#phase_plane" style="outline-color:transparent; padding-top:0px; 
-                        padding-bottom:0px; padding-left:4px; padding-right:4px;">XY plot</a></li>
-                </ul>
-                <div id="plotter" style="position:absolute; top:0px; left:0px; bottom:0px; right:0px; margin:1px; 
-                    overflow:hidden;"></div>
-                <div id="multi_plotter" style="position:absolute; top:25px; left:0px; bottom:0px; right:0px; margin:1px;
-                    border:solid 0px white; overflow:hidden; padding:2px;"></div>
-                <div id="table" style="position:absolute; top:25px; left:0px; bottom:0px; right:0px; margin:1px; 
-                    border:solid 0px white; overflow:auto; padding:2px;"></div>
-                <div id="phase_plane" style="position:absolute; top:25px; left:0px; bottom:0px; right:0px; margin:1px; 
-                    border:solid 0px white; overflow:auto; padding:2px;"></div>
-            </div>
-        </div>
--->
         <div id="display_panel" class="ui-layout-center" style="position:relative; top:0px; left:0px; bottom:0px; right:0px; padding:0px; overflow:hidden;"> 
             <div id="tabs" style="position:absolute; top:0px; left:0px; bottom:0px; right:0px;  padding:0px; margin:0px;">
                 <ul>
