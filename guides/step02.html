@@ -1,0 +1,19 @@
+<!doctype html>
+    <head>
+        <title>Systo Widget-writing Guides: 1</title>
+        <script type="text/javascript" src="../js/all_core.js"></script>
+        <script type="text/javascript" src="../languages/system_dynamics.js"></script>
+        <script type="text/javascript" src="../models/cascade.js"></script>
+        <script type="text/javascript" src="nodeListing_step02.js"></script>
+        <script>
+            $(document).ready(function() {
+                $('#nodes').nodeListing({modelId:"cascade"});
+            });
+        </script>
+    </head>
+
+    <body>
+        <p>Here are the nodes in the model:</p>
+        <div id="nodes"></div>
+    </body>
+</html>

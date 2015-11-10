@@ -3,6 +3,31 @@
 <head>
     <title>Systo example - test_submit</title>
     <!-- See http://jquery.malsup.com/form/#getting-started -->
+	<!-- Current state (9 Nov 2015):
+		 Start a php web server with
+		 	php -S 127.0.0.2:8000
+		 In the browser, go to:
+		 	http://127.0.0.2:8000/systo-resources/examples/basic_submit.html
+		 And that's it.   Clciking on teh Submit button will save whatever text
+		 is in the form's "meesage" field to the file "newfile.txt", in the same
+		 directory as json-echo.php, which itself is in the same directory as the
+		 the HTML file (i.e. basic_submit.html).
+		 Note that we use the php web server, rather than python's SimpleHTTPServer,
+		 since the latter doesn't handle POST.   (I tried the additional code I
+		 found online (SimpleServer) but couldn't get it to work).
+
+		 For completeness, here is the code for json-echo.php:
+			<?php  
+			$myfile = fopen("newfile.txt", "w") or die("Unable to open file!");
+			$message = $_REQUEST['message'];
+			fwrite($myfile, $message);
+			fclose($myfile);
+			echo '{ "message": "' . $_POST['message'] . '" }';
+			?>
+		Note that it doesn't actually wrap the echo'ed message as JSON (or
+		at least it isn't in the alert message in Chrome).  Also, very long
+		messages are not echo'ed at all.
+	-->
 
     <!-- CSS -->
     <link type="text/css" rel="stylesheet" href="../css/jquery-ui.css"/>

@@ -1,0 +1,281 @@
+<html>
+    <head>
+        <title>Systo Guide:How to make a Systo widget</title>
+
+        <style>
+        pre.html {
+            border:solid 2px black;
+            margin-left:20px;
+            padding:10px;
+            background:#e0ffff;
+            display:inline-block;
+        }
+
+        pre.widget {
+            border:solid 2px black;
+            margin-left:20px;
+            padding:10px;
+            background:#ffe0ff;
+            display:inline-block;
+        }
+
+        div.output {
+            border:solid 2px black;
+            margin-left:20px;
+            padding:10px;
+            background:#ffffe0;
+            display:inline-block;
+        }
+        </style>
+    </head>
+
+    <body>
+        <h1>Systo Guide: How to make a Systo widget</h1>
+
+        <p>This Guide takes you through the process of making a Systo-compliant widget.
+        By "Systo-compliant" I mean that it is able to be used in conjunction with a Systo
+        model, whether it be to display some information about the model structure (as in
+        this Guide), to display simulation results, or for some other purpose.</p>
+
+        <p>We begin with some conventional HTML+Javascript code that is able to report on 
+        some aspect of a Systo model
+        (listing the nodes it contains) <u>without</u> making use of a widget.   This
+        shows how to access information about the model, and should be a good stepping-off
+        point for the next step, when we separate out the information-displaying code into
+        a separate file, as a working Systo widget.</p>
+
+        <h2>Step 1: No widget</h2>
+        <p>In this step, we will write a simple HTML page to report on some aspect of a
+           Systo model.  This will involve making a list of the nodes in the model, along
+           their node type.</p>
+
+        <h3>Code</h3>
+        <pre class="html">
+&lt;!doctype html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Systo Widget-writing Guides: 1&lt;/title&gt;
+        &lt;script type="text/javascript" src="../js/all_core.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="../languages/system_dynamics.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="../models/cascade.js"&gt;&lt;/script&gt;
+        &lt;script&gt;
+            $(document).ready(function() {
+                var modelId = "cascade";
+                var model = SYSTO.models[modelId];
+                var nodes = model.nodes;
+                var nodes_html = "&lt;ul&gt;";
+                for (var nodeId in nodes) {
+                    var node = nodes[nodeId];
+                    nodes_html += "&lt;li&gt;"+node.label+": "+node.type+"&lt;/li&gt;";
+                }
+                nodes_html += "&lt;/ul&gt;";
+                $("#nodes").html(nodes_html);
+            });
+        &lt;/script&gt;
+    &lt;/head&gt;
+
+    &lt;body&gt;
+        &lt;p&gt;Here are the nodes in the cascade model:&lt;/p&gt;
+        &lt;div id="nodes"&gt;&lt;/div&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+        </pre>
+
+        <h3>Output</h3>
+        <p>Save this as HTML, and open it up in a browser.  You should see:</p>
+        <div class="output">
+            <p>Here are the nodes in the cascade model:</p>
+            <div id="nodes">
+                <ul><li>tank1: stock</li>
+                <li>tank2: stock</li>
+                <li>tank3: stock</li>
+                <li>tank4: stock</li>
+                <li>flow1: valve</li>
+                <li>flow2: valve</li>
+                <li>flow3: valve</li>
+                <li>k1: variable</li>
+                <li>k2: variable</li>
+                <li>k3: variable</li>
+                </ul>
+            </div>
+        </div>
+    
+        <h3>Explanation</h3>
+        <p>There are 4 &lt;script&gt; elements.  The first should be used in all Systo-based web pages,
+        and provides jQuery, jQuery-UI, and core Systo utilities.  The second loads the definition of a
+        particular Systo language - in this case, system_dynamics.   The third loads the definition of
+        a particular Systo model - in this case, the "cascade" model of water flow between 4 tanks.</p>
+
+        <p>Finally, there is the custom script for this page.  This shows how to extract information 
+        about a model from SYSTO.models, an object literal "hash" or "map" which cancontain definitions
+        for many models: we select the one we want using the model's ID (SYSTO.models[modelId] ).  We 
+        loop over the objects (nodes) within the model, get each node;s label and type, and build up
+        an HTML string in the variable nodes_html.</p>
+
+        <p>The final line of our script <br.<
+             <pre>$("#nodes").html(nodes_html);</pre>
+        uses our first bit of jQuery.   $("#nodes") selects an element from the HTML from furtehr down
+        in the file according to the id attribute of the element.   So in this case it selects the
+        div with an id="nodes".   The .html(nodes_html) uses the jQuery html() method to insert the
+        HTML string contained in the variable nodes_html into the specified element.<p>
+
+        <h2>Step 2: Our first widget</h2>
+        <p>We have now written an HTML page that does a useful job - it reports on the nodes in a Systo
+        model.   However, the code for doing this is hard-wired into this particular page.   Wouldn't it
+        be great if we could put the JavaScript vode into a separat file, so that anyone wanting to do the
+        same job could easily incorporate it into their own page, without having to copy all the code?</p>
+
+        <p>[Of course, in this case we need only a few lines to do the job.  But remember that we are
+        learning how to make widgets, so it makes sense to start off with something small that highlights
+        the widget-making aspects and doesn't confuse us with lots of task-specific code.]</p>
+
+        <p>Here is what our HTML file will look like when we have taken out the lines that are specific to
+        the particular task of reporting on the nodes in a model:
+
+        <h3>HTML page</h3>
+        <pre class="html">
+&lt;!doctype html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Systo Widget-writing Guides: 1&lt;/title&gt;
+        &lt;script type="text/javascript" src="../js/all_core.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="../languages/system_dynamics.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="../models/cascade.js"&gt;&lt;/script&gt;
+        <b>&lt;script type="text/javascript" src="nodeListing_step02.js"&gt;&lt;/script&gt;</b>
+        &lt;script&gt;
+            $(document).ready(function() {
+                <b>$("#nodes").nodeListing({modelId:"cascade"});</b>
+            });
+        &lt;/script&gt;
+    &lt;/head&gt;
+
+    &lt;body&gt;
+        &lt;p&gt;Here are the nodes in the cacade model:&lt;/p&gt;
+        &lt;div id="nodes"&gt;&lt;/div&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+        </pre>
+
+        <h3>Explanation</h3>
+        <p>We have made just two changes (highlighted in bold).</p>
+
+        <p>First, we have added in another &lt;script&gt; element:</p>
+        <pre>&lt;script&gt; type="text/javascript" src="nodeListing_step02.js"&gt;&lt;/script&gt;</pre>
+        <p>which loads our (yet to be written) widget code.</p>
+        <p>Second, we have cut out all the lines that found information
+        on each node, and replaced it with a single line:</p>
+                <pre>$("#nodes").nodeListing({modelId:"cascade"});</pre>
+        <p>The first part of this, <pre>$("#nodes")</pre> is the same as before.   The second part, 
+        <pre>.nodeListing({modelId:"cascade"});</pre> now "attaches" the widget "nodeListing" (which we
+        are about to make, with this element, rather than inserting HTML into it, as we did before.  So,
+        let"s see what this widget might look like.</p>
+
+        <p>And here it is.</p>
+
+        <h3>Widget</h3>
+        <pre class="widget">
+(function ($) {
+    $.widget("systo.nodeListing", {
+
+        options: {
+            modelId:null
+        },
+
+        _create: function () {
+            var self = this;
+            this.element.addClass("nodeListing-1");
+            var div = $("&lt;div&gt;&lt;/div&gt;");
+
+            <b>var modelId = self.options.modelId;
+            var model = SYSTO.models[modelId];
+            var nodes = model.nodes;
+            var nodes_html = "&lt;ul&gt;";
+            for (var nodeId in nodes) {
+                var node = nodes[nodeId];
+                nodes_html += "&lt;li&gt;"+node.label+": "+node.type+"&lt;/li&gt;";
+            }
+            nodes_html += "&lt;/ul&gt;";
+            $(div).html(nodes_html);</b>
+
+            $(this.element).append(div);
+        }
+    });
+})(jQuery);
+        </pre>
+        <p>In this code block, I have used bold to show the code that has not changed from the first step.
+        The only exception is that the generated HTML is now assigned to a &lt;div&gt; element within the
+        widget (stored in the variabled "div"), rather than to a &lt;div&gt; in the main HTML page.</p>
+
+        So, this is your first Systo widget.   In fact (in all probability) this is your first jQuery UI
+        widget.   We will explore what this means in the next section, but let us just reflect for a moment
+        on what you have now achieved.  You have made a utility that anyone in the world could incorporate into
+        their own Systo-enable web page with a mere 3 lines of code:
+        <ul>
+            <li>A &lt;script&gt; element in the header section of the page;</li>
+            <li>An empty &lt;div&gt; element in the body of the page;</li>
+            <li>A JavaScript statement to assign the widget to the &lt;div&gt; element.
+        </ul>
+        That is quite an achievement!</p>
+
+        [[ Explanation of the jQuery syntax and structure ]]
+
+        <h2>Step 3: Re-using the widget in the same page</h2>
+        <p>As well as making life simpler for other people, you can use the widget to make life simpler for 
+        you as well.  Perhapd you would like to generate a list of the nodes in a model for more than one
+        model in the same web page?   Simple, as the following example shows:</p>
+        <pre class="html">
+&lt;!doctype html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Systo Widget-writing Guides: 1&lt;/title&gt;
+        &lt;script type="text/javascript" src="../js/all_core.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="../languages/system_dynamics.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="../models/cascade.js"&gt;&lt;/script&gt;
+        <b>&lt;script type="text/javascript" src="../models/minworld.js"&gt;&lt;/script&gt;</b>
+        &lt;script type="text/javascript" src="nodeListing_step02.js"&gt;&lt;/script&gt;
+        &lt;script&gt;
+            $(document).ready(function() {
+                $("#nodes").nodeListing({modelId:"cascade"});
+                <b>$("#nodes1").nodeListing({modelId:"miniworld"});</b>
+            });
+        &lt;/script&gt;
+    &lt;/head&gt;
+
+    &lt;body&gt;
+        &lt;p&gt;Here are the nodes in the cascade model:&lt;/p&gt;
+        &lt;div id="nodes"&gt;&lt;/div&gt;
+        <b>&lt;p&gt;And here are the nodes in the miniworld model:&lt;/p&gt;
+        &lt;div id="nodes1"&gt;&lt;/div&gt;</b>
+    &lt;/body&gt;
+&lt;/html&gt;
+        </pre>
+        <p>We say that there are two (or more) <u>instances</u> of the same widget, each
+        bound to a different HTML element.</p>
+
+
+        <h2>providing additional options</h2>
+        <p>Very commonly, we would like to provide the web-page builder with the ability to
+        control various aspects of the widget.   For example, to provide more control over the
+        styling of the widget; the format it uses for producing its report (table or 
+        bullet-points; the properties of each node that are displayed; or to restrict the types
+        of nodes that are included.   All these requirements, and more, are handled by widget <u>options</u>.</p>
+
+        <p>The beauty about the jQuery UI Widget Factory - and one of the main reasons for adopting it -
+        is that it provides a consistent way of handling options, so once you (the widget developer
+        or the web page developer) have learnt to work with them for one widget, you will know how to
+        work with them for any widget.</p>
+
+        <p>Options can be set in a number of different ways:
+        <ul>
+            <li>Through default values asssigned when the widget is first created, using default values
+            built into the widget, in the widget's "options" property.</li>
+            <li>When the widget is first called.  That's what we did with the "modelId" option.  This is
+            done by passing an object in (in our case, {modelId:"cascade"} ) when we first called
+            the "nodeListing" widget.  This over-rides the widget's default values.</li>
+            <li>Once the widget has been created, through a call to the widget's "option" method.</li>
+            <li>Once the widget has been created, through a call to some user-defined method for the widget;</li>
+            <li>Once the widget has been created, through an event mechanism ("publish/subscribe").
+        </ul>
+
+
+    </body>
+</html>
+
+

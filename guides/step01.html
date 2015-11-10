@@ -1,0 +1,27 @@
+<!doctype html>
+    <head>
+        <title>Systo Widget-writing Guides: 1</title>
+        <script type="text/javascript" src="../js/all_core.js"></script>
+        <script type="text/javascript" src="../languages/system_dynamics.js"></script>
+        <script type="text/javascript" src="../models/cascade.js"></script>
+        <script>
+            $(document).ready(function() {
+                var modelId = 'cascade';
+                var model = SYSTO.models[modelId];
+                var nodes = model.nodes;
+                var nodes_html = '<ul>';
+                for (var nodeId in nodes) {
+                    var node = nodes[nodeId];
+                    nodes_html += '<li>'+node.label+': '+node.type+'</li>';
+                }
+                nodes_html += '</ul>';
+                $('#nodes').html(nodes_html);
+            });
+        </script>
+    </head>
+
+    <body>
+        <p>Here are the nodes in the model:</p>
+        <div id="nodes"></div>
+    </body>
+</html>
