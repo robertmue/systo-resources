@@ -44,26 +44,40 @@
             var self = this;
             this.element.addClass('equation_listing-1');
 
-            this.div = $('<div style="height:100%; overflow:y:auto; background-color:white;"></div>');
+            var div = $('<div style="height:100%; overflow:y:auto; background-color:white;"></div>');
+            self.div = div;
 
-            this.refresh(this.options.modelId);
+            var equationsDiv = $(getEquations(SYSTO.models[this.options.modelId]));
+            $(div).append(equationsDiv);
+            equationsDiv.css({'max-height':'100%','overflow':'auto','table-layout':'fixed'});
 
-            // We could have used "model_modified_event" for this, but no need to re-do diagram.
+            $('.equation_row:even').css('background-color','yellow');
+            $('.equation_row:odd').css('background-color','green');
+
+
             $(document).on('equation_listener', {}, function(event, parameters) {
                 if (!parameters.packageId || self.options.packageId === parameters.packageId) {
                     console.debug('equation_listing: parameters:'+parameters.packageId+' ===  options:' + self.options.packageId);
-                    this.refresh(parameters.modelId);
+                    $(div).find('.table_div').remove();
+                    var equationsDiv = $(getEquations(SYSTO.models[parameters.modelId]));
+                    $(div).append(equationsDiv);
+                    equationsDiv.css({'max-height':'100%','overflow':'auto','table-layout':'fixed'});
                 }
             });
 
             $(document).on('change_model_listener', {}, function(event, parameters) {
                 if (!parameters.packageId || self.options.packageId === parameters.packageId) {
                     console.debug('equation_listing: parameters:'+parameters.packageId+' ===  options:' + self.options.packageId);
-                    this.refresh(parameters.newModelId);
+                    var oldModelId = parameters.oldModelId;
+                    var newModelId = parameters.newModelId;
+                    $(div).find('.table_div').remove();
+                    var equationsDiv = $(getEquations(SYSTO.models[newModelId]));
+                    $(div).append(equationsDiv);
+                    equationsDiv.css({'max-height':'100%','overflow':'auto','table-layout':'fixed'});
                 }
             });
  
-            this._container = $(this.element).append(this.div);
+            this._container = $(this.element).append(div);
 
             this._setOptions({
             });
@@ -80,13 +94,10 @@
             var fnMap = {
                 modelId: function() {
                     var modelId = value;
-                    self.refresh(modelId);
-/*
                     $(self.div).find('.table_div').remove();
                     var equationsDiv = $(getEquations(SYSTO.models[modelId]));
                     $(self.div).append(equationsDiv);
                     equationsDiv.css({'max-height':'100%','overflow':'auto','table-layout':'fixed'});
-*/
                 }
             };
 
@@ -107,48 +118,46 @@
                 previous: previousValue,
                 current: currentValue
             });
-        },
-
-        refresh: function (modelId) {
-            $(self.div).find('.table_div').remove();
-            var model = SYSTO.models[modelId];
-            var nodeList = model.nodes;
-
-            array = [];
-
-            for (var nodeId in nodeList) {
-                var node = nodeList[nodeId];
-                if (node.type === 'cloud') continue;
-                equation = node.extras.equation.value;
-                array.push({label:node.label, equation:equation});
-            }
-            
-            array.sort(function(a,b) {
-                alower = a.label.toLowerCase();
-                blower = b.label.toLowerCase();
-                if (alower < blower)
-                    return -1;
-                if (alower > blower)
-                    return 1;
-                return 0;
-                });
-
-            // Nov 2015 - lot of problems avoiding high rows - see https://bugs.webkit.org/show_bug.cgi?id=38527
-            var html = '<div class="table_div" style="max-height:100%; overflow:auto; table-layout: fixed; margin-bottom:0px;"><table style="height:100%; overflow:auto; table-layout: fixed; word-break: break-all; word-wrap: break-word;">';
-            for (var i=0; i<array.length; i++) {
-                html += 
-                    '<tr style="display:block;">'+
-                        '<td style="font-size:16px; vertical-align:top; width:300px; line-height:20px; display:block; word-break: break-all; word-wrap: break-word;"><b>'+array[i].label+'</b></td>'+
-                        '<td style="font-size:16px; vertical-align:top; line-height:20px; display:block;"> = </td>'+
-                        '<td style="font-size:16px; vertical-align:top; width:400px; line-height:20px; display:block; word-break: break-all; word-wrap: break-word;">'+array[i].equation+'</td>'+
-                    '</tr>';
-            }
-            html += '</table></div>';
-            this.equationsDiv = $(html);
-            $(this.div).append(this.equationsDiv);
-            this.equationsDiv.css({'max-height':'100%','overflow':'auto','table-layout':'fixed'});
         }
-
     });
+
+
+function getEquations(model) {
+
+    var nodeList = model.nodes;
+
+    array = [];
+
+    for (var nodeId in nodeList) {
+        var node = nodeList[nodeId];
+        if (node.type === 'cloud') continue;
+        equation = node.extras.equation.value;
+        array.push({label:node.label, equation:equation});
+    }
+    
+    array.sort(function(a,b) {
+        alower = a.label.toLowerCase();
+        blower = b.label.toLowerCase();
+        if (alower < blower)
+            return -1;
+        if (alower > blower)
+            return 1;
+        return 0;
+        });
+
+    // Nov 2015 - lot of problems avoiding high rows - see https://bugs.webkit.org/show_bug.cgi?id=38527
+    var html = '<div class="table_div" style="max-height:100%; overflow:auto; table-layout: fixed; margin-bottom:0px;"><table style="height:100%; overflow:auto; table-layout: fixed; word-break: break-all; word-wrap: break-word;">';
+    for (var i=0; i<array.length; i++) {
+        html += 
+            '<tr style="display:block;">'+
+                '<td style="font-size:16px; vertical-align:top; width:300px; line-height:20px; display:block; word-break: break-all; word-wrap: break-word;"><b>'+array[i].label+'</b></td>'+
+                '<td style="font-size:16px; vertical-align:top; line-height:20px; display:block;"> = </td>'+
+                '<td style="font-size:16px; vertical-align:top; width:400px; line-height:20px; display:block; word-break: break-all; word-wrap: break-word;">'+array[i].equation+'</td>'+
+            '</tr>';
+    }
+    html += '</table></div>';
+    return $(html);
+}
+
 
 })(jQuery);
