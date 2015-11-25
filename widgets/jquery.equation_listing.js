@@ -52,14 +52,14 @@
             $(document).on('equation_listener', {}, function(event, parameters) {
                 if (!parameters.packageId || self.options.packageId === parameters.packageId) {
                     console.debug('equation_listing: parameters:'+parameters.packageId+' ===  options:' + self.options.packageId);
-                    this.refresh(parameters.modelId);
+                    self.refresh(parameters.modelId);
                 }
             });
 
             $(document).on('change_model_listener', {}, function(event, parameters) {
                 if (!parameters.packageId || self.options.packageId === parameters.packageId) {
                     console.debug('equation_listing: parameters:'+parameters.packageId+' ===  options:' + self.options.packageId);
-                    this.refresh(parameters.newModelId);
+                    self.refresh(parameters.newModelId);
                 }
             });
  

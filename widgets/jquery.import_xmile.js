@@ -114,12 +114,11 @@ function importXmile(model) {
 */
     var xml = $('#import_textarea').val();
     var xmileObject = $.xml2json(xml,true);
-    console.debug('\n**  **  **  **  **  **  **  ** xmileObject');
-    console.debug(xmileObject.model[0]);
-    var xmileStocks = xmileObject.model[0].stock;
-    var xmileFlows = xmileObject.model[0].flow;
-    var xmileAuxs = xmileObject.model[0].aux;
-    console.debug(xmileAuxs);
+    var xmileModel = xmileObject.model[0];
+    var xmileStocks = xmileModel.variables[0].stock;
+    var xmileFlows = xmileModel.variables[0].flow;
+    var xmileAuxs = xmileModel.variables[0].aux;
+    var xmileView = xmileModel.views[0].view[0];
 
     
     var nodeLookup = {};
@@ -132,32 +131,37 @@ function importXmile(model) {
     console.debug(flowLookup);
 
     for (var i=0; i<xmileStocks.length; i++) {
+        var xmileStock = xmileStocks[i];
         var j = i+1;
         var args = {};
         args.id = 'stock'+j;
         args.type = 'stock';
-        args.label = tidy(xmileStocks[i].name);
+        args.label = tidy(xmileStock.name);
         nodeLookup[args.label] = args.id;
         console.debug(args.label);
-        for (j=0;j<xmileStocks[i].inflow.length;j++) {
-            var inflowLabel = tidy(xmileStocks[i].inflow[j].text);
-            console.debug(inflowLabel);
-            flowLookup[inflowLabel].end_node_id = args.id;
+        if (xmileStock.inflow) {
+            for (j=0;j<xmileStock.inflow.length;j++) {
+                var inflowLabel = tidy(xmileStock.inflow[j].text);
+                console.debug(inflowLabel);
+                flowLookup[inflowLabel].end_node_id = args.id;
+            }
         }
-        for (j=0;j<xmileStocks[i].outflow.length;j++) {
-            var outflowLabel = tidy(xmileStocks[i].outflow[j].text);
-            console.debug(outflowLabel);
-            flowLookup[outflowLabel].start_node_id = args.id;
+        if (xmileStock.outflow) {
+            for (j=0;j<xmileStock.outflow.length;j++) {
+                var outflowLabel = tidy(xmileStock.outflow[j].text);
+                console.debug(outflowLabel);
+                flowLookup[outflowLabel].start_node_id = args.id;
+            }
         }
         args.centrex = 100;
         args.centrey = 
-        args.centrex = xmileStocks[i].display[0].x;
-        args.centrey = xmileStocks[i].display[0].y;
-        args.equation = xmileStocks[i].eqn[0].text;
+        args.centrex = xmileView.stock[i].x;
+        args.centrey = xmileView.stock[i].y;
+        args.equation = xmileStock.eqn[0].text;
         args.min_value = 0;  // TODO: Find where these values are!
         args.max_value = 100;
-        if (xmileStocks[i].doc) {
-            args.description = xmileStocks[i].doc[0].text;
+        if (xmileStock.doc) {
+            args.description = xmileStock.doc[0].text;
         } else {
             args.description = '';
         }
@@ -167,26 +171,27 @@ function importXmile(model) {
     console.debug(flowLookup);
 
     for (var i=0; i<xmileAuxs.length; i++) {
+        var xmileAux = xmileAuxs[i];
         var j = i+1;
         var args = {};
         args.id = 'variable'+j;
         args.type = 'variable';
-        args.label = tidy(xmileAuxs[i].name);
+        args.label = tidy(xmileAux.name);
         nodeLookup[args.label] = args.id;
-        args.centrex = xmileAuxs[i].display[0].x;
-        args.centrey = xmileAuxs[i].display[0].y;
-        if (xmileAuxs[i].gf) {
-            var indepVar = xmileAuxs[i].eqn[0].text;
-            var xsString = xmileAuxs[i].gf[0].xpts[0].text;
-            var ysString = xmileAuxs[i].gf[0].ypts[0].text;
+        args.centrex = xmileView.aux[i].x;
+        args.centrey = xmileView.aux[i].y;
+        if (xmileAux.gf) {
+            var indepVar = xmileAux.eqn[0].text;
+            var xsString = xmileAux.gf[0].xpts[0].text;
+            var ysString = xmileAux.gf[0].ypts[0].text;
             args.equation = 'interpXY('+indepVar+',['+xsString+'],['+ysString+'])';
         } else {
-            args.equation = xmileAuxs[i].eqn[0].text;
+            args.equation = xmileAux.eqn[0].text;
         }
         args.min_value = 0;  // TODO: Find where these values are!
         args.max_value = 100;
-        if (xmileAuxs[i].doc) {
-            args.description = xmileAuxs[i].doc[0].text;
+        if (xmileAux.doc) {
+            args.description = xmileAux.doc[0].text;
         } else {
             args.description = '';
         }
@@ -194,11 +199,12 @@ function importXmile(model) {
     }
 
     for (var i=0; i<xmileFlows.length; i++) {
+        var xmileFlow = xmileFlows[i];
         var j = i+1;
         var args = {};
         args.id = 'flow'+j;
         args.type = 'flow';
-        var flowLabel = tidy(xmileFlows[i].name);
+        var flowLabel = tidy(xmileFlow.name);
         args.label = flowLabel;
         args.node_id = 'valve'+j;
         nodeLookup[args.label] = args.node_id;
@@ -219,14 +225,14 @@ function importXmile(model) {
         var args = {};
         args.id = 'valve'+j;
         args.type = 'valve';
-        args.label = tidy(xmileFlows[i].name);
-        args.centrex = xmileFlows[i].display[0].x;
-        args.centrey = xmileFlows[i].display[0].y;
-        args.equation = xmileFlows[i].eqn[0].text;
+        args.label = tidy(xmileFlow.name);
+        args.centrex = xmileView.flow[i].x;
+        args.centrey = xmileView.flow[i].y;
+        args.equation = xmileFlow.eqn[0].text;
         args.min_value = 0;  // TODO: Find where these values are!
         args.max_value = 100;
-        if (xmileFlows[i].doc) {
-            args.description = xmileFlows[i].doc[0].text;
+        if (xmileFlow.doc) {
+            args.description = xmileFlow.doc[0].text;
         } else {
             args.description = '';
         }
@@ -237,7 +243,7 @@ function importXmile(model) {
             args.id = 'cloud'+j;
             args.type = 'cloud';
             args.label = '';
-            var points = xmileFlows[i].display[0].pts[0].pt;
+            var points = xmileView.flow[i].pts[0].pt;
             args.centrex = points[0].x;
             args.centrey = points[0].y;
             createNode(model, args);
@@ -246,22 +252,21 @@ function importXmile(model) {
             args.id = 'cloud'+j;
             args.type = 'cloud';
             args.label = '';
-            var points = xmileFlows[i].display[0].pts[0].pt;
+            var points = xmileView.flow[i].pts[0].pt;
             args.centrex = points[points.length-1].x;
             args.centrey = points[points.length-1].y;
             createNode(model, args);
         }
     }
 
-    var xmileConnectors = xmileObject.model[0].display[0].connector;
+    var xmileConnectors = xmileView.connector;
     for (var i=0; i<xmileConnectors.length; i++) {
-        console.debug(i+': '+JSON.stringify(xmileConnectors[i]));
+        var xmileConnector = xmileConnectors[i];
         var j = i+1;
         var args = {};
         args.id = 'influence'+j;
-        var startLabel = tidy(xmileConnectors[i].from[0].text);
-        var endLabel = tidy(xmileConnectors[i].to[0].text);
-        console.debug(startLabel+','+endLabel);
+        var startLabel = tidy(xmileConnector.from[0].text);
+        var endLabel = tidy(xmileConnector.to[0].text);
         args.start_node_id = nodeLookup[startLabel];
         args.end_node_id = nodeLookup[endLabel];
         createInfluence(model, args);

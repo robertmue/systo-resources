@@ -57,14 +57,14 @@
             this.element.addClass('dialog_sd_node-1');
 
             var dialog = $(
-                '<div id="sd_node_dialog_form" style="font-size:75%;">'+
+                '<div id="sd_node_dialog_form" style="font-size:75%; background:yellow;">'+
                 '</div>');
 
             var tabsDiv = $(
                 '<div id="sd_node_dialog_tabs" style="overflow:auto; height:95%">'+
 	                '<ul>'+
 		                '<li>'+
-                            '<a id="sd_node_dialog_tab_equation_a" href="#sd_node_dialog_tab_equation" style="font-size:1em; font-weight:normal; outline-color:transparent;">Equation</a>'+
+                            '<a id="sd_node_dialog_tab_equation_a" href="#sd_node_dialog_tab_equation" style="font-size:1em; font-weight:normal; outline-color:transparent;">Equation...</a>'+
                         '</li>'+
 		                '<li>'+
                             '<a id="sd_node_dialog_tab_sketchgraph_a" href="#sd_node_dialog_tab_sketchgraph" style="font-size:1em; font-weight:normal; outline-color:transparent;">Sketch graph</a>'+
@@ -153,10 +153,12 @@
                 } );
 
             $(this.element).dialog({
+                position: {my: "center", at: "center", of: window},
+                background:"yellow",
                 autoOpen: false,
                 height: 510,
                 width: 700,
-                modal: true,
+                modal: false,
                 title:'xxx',
                 buttons: {
                     OK: function() {

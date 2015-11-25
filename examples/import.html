@@ -24,9 +24,16 @@
 
             var modelId = "new";
 
+/*
             $("#load_example_button").click(function () {
                 var sourceLanguageId = $("#source_language").val();
                 var sourceText = $("#example_"+sourceLanguageId).text().replace(/&lt;/g,"<").replace(/&gt;/g,">");
+                $("#import_div > textarea").val(sourceText);
+            });
+*/
+            $("#load_example_button").click(function () {
+                var sourceLanguageId = $("#source_language").val();
+                var sourceText = $("#example_"+sourceLanguageId).val();
                 $("#import_div > textarea").val(sourceText);
             });
 
@@ -150,8 +157,8 @@
     <div style="float:left;">Choose original language: </div>
     <select id="source_language" style="float:left;">
         <!--option value="im" selected="">Insight Maker</option-->
-        <option value="vensim">Vensim</option>
         <option value="xmile">XMILE</option>
+        <option value="vensim">Vensim</option>
     </select>
     <button id="load_example_button" style="float:left;">Load example</button>
     <button id="import_button" style="float:left;">Import</button>
@@ -189,161 +196,157 @@
     <div id="equation_listing"></div>
 
 
-    <div id="example_im" style="display:none">&lt;mxGraphModel&gt;
-  &lt;root&gt;
-    &lt;mxCell id="0"/&gt;
-    &lt;mxCell id="1" parent="0"/&gt;
-    &lt;Setting Note="" Version="11" TimeLength="100" TimeStart="0" TimeStep="1" TimeUnits="Years" Units="" HiddenUIGroups="Validation,User Interface" SolutionAlgorithm="RK4" BackgroundColor="white" id="2"&gt;
-      &lt;mxCell parent="1" vertex="1" visible="0"&gt;
-        &lt;mxGeometry x="20" y="20" width="80" height="40" as="geometry"/&gt;
-      &lt;/mxCell&gt;
-    &lt;/Setting&gt;
-    &lt;Display name="Data Display" Note="" Type="Time Series" xAxis="Time (%u)" yAxis="%o" ThreeDimensional="false" Primitives="4,5" AutoAddPrimitives="true" Image="Display" id="3"&gt;
-      &lt;mxCell style="roundImage;image=/builder/images/DisplayFull.png;" parent="1" vertex="1" connectable="0" visible="0"&gt;
-        &lt;mxGeometry x="30" y="20" width="64" height="64" as="geometry"/&gt;
-      &lt;/mxCell&gt;
-    &lt;/Display&gt;
-    &lt;Stock name="Predator" Note="" InitialValue="111.9" StockMode="Store" Delay="10" Volume="100" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="true" MaxConstraint="100" MinConstraint="0" ShowSlider="true" SliderMax="500" SliderMin="0" NonNegative="false" Image="None" id="4"&gt;
-      &lt;mxCell style="stock;labelBackgroundColor=none" parent="1" vertex="1"&gt;
-        &lt;mxGeometry x="189" y="240" width="100" height="40" as="geometry"/&gt;
-      &lt;/mxCell&gt;
-    &lt;/Stock&gt;
-    &lt;Stock name="Prey" Note="" InitialValue="164.2" StockMode="Store" Delay="10" Volume="100" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="true" MaxConstraint="100" MinConstraint="0" ShowSlider="true" SliderMax="500" SliderMin="0" NonNegative="true" Image="None" id="5"&gt;
-      &lt;mxCell style="stock;labelBackgroundColor=none" parent="1" vertex="1"&gt;
-        &lt;mxGeometry x="489" y="230" width="100" height="40" as="geometry"/&gt;
-      &lt;/mxCell&gt;
-    &lt;/Stock&gt;
-    &lt;Flow name="PredatorDeaths" Note="" FlowRate="[Predator]*[Predator Death Rate]" OnlyPositive="true" TimeIndependent="false" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" id="6"&gt;
-      &lt;mxCell style="" parent="1" source="4" edge="1"&gt;
-        &lt;mxGeometry x="-81" y="30" width="100" height="100" as="geometry"&gt;
-          &lt;mxPoint x="-81" y="130" as="sourcePoint"/&gt;
-          &lt;mxPoint x="239" y="450" as="targetPoint"/&gt;
-        &lt;/mxGeometry&gt;
-      &lt;/mxCell&gt;
-    &lt;/Flow&gt;
-    &lt;Flow name="PreyDeaths" Note="" FlowRate="[Prey]*[Prey Death Rate]" OnlyPositive="true" TimeIndependent="false" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" id="7"&gt;
-      &lt;mxCell style="" parent="1" source="5" edge="1"&gt;
-        &lt;mxGeometry x="-68.5" y="30" width="100" height="100" as="geometry"&gt;
-          &lt;mxPoint x="-68.5" y="130" as="sourcePoint"/&gt;
-          &lt;mxPoint x="551.5" y="430" as="targetPoint"/&gt;
-          &lt;Array as="points"&gt;
-            &lt;mxPoint x="551.5" y="360"/&gt;
-          &lt;/Array&gt;
-        &lt;/mxGeometry&gt;
-      &lt;/mxCell&gt;
-    &lt;/Flow&gt;
-    &lt;Flow name="PredatorBirths" Note="" FlowRate="[Predator]*[Predator Birth Rate]" OnlyPositive="true" TimeIndependent="false" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" id="9"&gt;
-      &lt;mxCell style="" parent="1" target="4" edge="1"&gt;
-        &lt;mxGeometry x="-81" y="30" width="100" height="100" as="geometry"&gt;
-          &lt;mxPoint x="239" y="50" as="sourcePoint"/&gt;
-          &lt;mxPoint x="-81" y="130" as="targetPoint"/&gt;
-        &lt;/mxGeometry&gt;
-      &lt;/mxCell&gt;
-    &lt;/Flow&gt;
-    &lt;Flow name="PreyBirths" Note="" FlowRate="[Prey]*[Prey Birth Rate]" OnlyPositive="true" TimeIndependent="false" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" id="10"&gt;
-      &lt;mxCell style="" parent="1" target="5" edge="1"&gt;
-        &lt;mxGeometry x="-81" y="30" width="100" height="100" as="geometry"&gt;
-          &lt;mxPoint x="529" y="50" as="sourcePoint"/&gt;
-          &lt;mxPoint x="-81" y="130" as="targetPoint"/&gt;
-          &lt;Array as="points"&gt;
-            &lt;mxPoint x="529" y="140"/&gt;
-          &lt;/Array&gt;
-        &lt;/mxGeometry&gt;
-      &lt;/mxCell&gt;
-    &lt;/Flow&gt;
-    &lt;Parameter name="Predator Birth Rate" Note="" Equation="[Prey]*.001" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" Image="None" id="11"&gt;
-      &lt;mxCell style="parameter;labelBackgroundColor=none" parent="1" vertex="1"&gt;
-        &lt;mxGeometry x="309" y="110" width="150" height="50" as="geometry"/&gt;
-      &lt;/mxCell&gt;
-    &lt;/Parameter&gt;
-    &lt;Parameter name="Predator Death Rate" Note="" Equation="0.12" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" Image="None" id="12"&gt;
-      &lt;mxCell style="parameter;labelBackgroundColor=none" parent="1" vertex="1"&gt;
-        &lt;mxGeometry x="9" y="260" width="150" height="50" as="geometry"/&gt;
-      &lt;/mxCell&gt;
-    &lt;/Parameter&gt;
-    &lt;Parameter name="Prey Death Rate" Note="" Equation="[Predator]*0.0008" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" Image="None" id="13"&gt;
-      &lt;mxCell style="parameter;labelBackgroundColor=none" parent="1" vertex="1"&gt;
-        &lt;mxGeometry x="309" y="330" width="150" height="50" as="geometry"/&gt;
-      &lt;/mxCell&gt;
-    &lt;/Parameter&gt;
-    &lt;Parameter name="Prey Birth Rate" Note="" Equation="0.16" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" Image="None" id="14"&gt;
-      &lt;mxCell style="parameter;labelBackgroundColor=none" parent="1" vertex="1"&gt;
-        &lt;mxGeometry x="619" y="60" width="140" height="50" as="geometry"/&gt;
-      &lt;/mxCell&gt;
-    &lt;/Parameter&gt;
-    &lt;Link name="Link" Note="" BiDirectional="false" id="15"&gt;
-      &lt;mxCell style="entity" parent="1" source="14" target="10" edge="1" connectable="0"&gt;
-        &lt;mxGeometry x="-81" y="30" width="100" height="100" as="geometry"&gt;
-          &lt;mxPoint x="-81" y="130" as="sourcePoint"/&gt;
-          &lt;mxPoint x="539" y="140" as="targetPoint"/&gt;
-        &lt;/mxGeometry&gt;
-      &lt;/mxCell&gt;
-    &lt;/Link&gt;
-    &lt;Link name="Link" Note="" BiDirectional="false" id="16"&gt;
-      &lt;mxCell style="entity" parent="1" source="5" target="11" edge="1" connectable="0"&gt;
-        &lt;mxGeometry x="-81" y="30" width="100" height="100" as="geometry"&gt;
-          &lt;mxPoint x="-81" y="130" as="sourcePoint"/&gt;
-          &lt;mxPoint x="19" y="30" as="targetPoint"/&gt;
-        &lt;/mxGeometry&gt;
-      &lt;/mxCell&gt;
-    &lt;/Link&gt;
-    &lt;Link name="Link" Note="" BiDirectional="false" id="17"&gt;
-      &lt;mxCell style="entity" parent="1" source="11" target="9" edge="1" connectable="0"&gt;
-        &lt;mxGeometry x="-81" y="30" width="100" height="100" as="geometry"&gt;
-          &lt;mxPoint x="-81" y="130" as="sourcePoint"/&gt;
-          &lt;mxPoint x="19" y="30" as="targetPoint"/&gt;
-        &lt;/mxGeometry&gt;
-      &lt;/mxCell&gt;
-    &lt;/Link&gt;
-    &lt;Link name="Link" Note="" BiDirectional="false" id="18"&gt;
-      &lt;mxCell style="entity" parent="1" source="12" target="6" edge="1" connectable="0"&gt;
-        &lt;mxGeometry x="-81" y="30" width="100" height="100" as="geometry"&gt;
-          &lt;mxPoint x="-81" y="130" as="sourcePoint"/&gt;
-          &lt;mxPoint x="19" y="30" as="targetPoint"/&gt;
-        &lt;/mxGeometry&gt;
-      &lt;/mxCell&gt;
-    &lt;/Link&gt;
-    &lt;Link name="Link" Note="" BiDirectional="false" id="19"&gt;
-      &lt;mxCell style="entity" parent="1" source="4" target="13" edge="1" connectable="0"&gt;
-        &lt;mxGeometry x="-81" y="30" width="100" height="100" as="geometry"&gt;
-          &lt;mxPoint x="-81" y="130" as="sourcePoint"/&gt;
-          &lt;mxPoint x="19" y="30" as="targetPoint"/&gt;
-        &lt;/mxGeometry&gt;
-      &lt;/mxCell&gt;
-    &lt;/Link&gt;
-    &lt;Link name="Link" Note="" BiDirectional="false" id="20"&gt;
-      &lt;mxCell style="entity" parent="1" source="13" target="7" edge="1" connectable="0"&gt;
-        &lt;mxGeometry x="-81" y="30" width="100" height="100" as="geometry"&gt;
-          &lt;mxPoint x="-81" y="130" as="sourcePoint"/&gt;
-          &lt;mxPoint x="19" y="30" as="targetPoint"/&gt;
-        &lt;/mxGeometry&gt;
-      &lt;/mxCell&gt;
-    &lt;/Link&gt;
-    &lt;Display name="Flight Simulator" Note="" Type="Time Series" xAxis="Time (%u)" yAxis="Predator and Prey Populations" ThreeDimensional="false" Primitives="4,5,14" AutoAddPrimitives="false" Image="Display" id="21"&gt;
-      &lt;mxCell style="display" parent="1" vertex="1" connectable="0" visible="0"&gt;
-        &lt;mxGeometry x="140" y="20" width="64" height="64" as="geometry"/&gt;
-      &lt;/mxCell&gt;
-    &lt;/Display&gt;
-    &lt;Picture name="" Note="" Image="Negative Feedback Counterclockwise" FlipHorizontal="false" FlipVertical="false" id="22"&gt;
-      &lt;mxCell style="picture;image=/builder/images/SD/Negative Feedback Counterclockwise.png" parent="1" vertex="1"&gt;
-        &lt;mxGeometry x="339" y="200" width="108" height="98" as="geometry"/&gt;
-      &lt;/mxCell&gt;
-    &lt;/Picture&gt;
-    &lt;Display name="Scatterplot" Note="" Type="Scatterplot" xAxis="%o" yAxis="%o" ThreeDimensional="false" Primitives="4,5" AutoAddPrimitives="false" ScatterplotOrder="X Primitive, Y Primitive" Image="Display" id="23"&gt;
-      &lt;mxCell style="display" parent="1" vertex="1" connectable="0" visible="0"&gt;
-        &lt;mxGeometry x="48" y="118" width="64" height="64" as="geometry"/&gt;
-      &lt;/mxCell&gt;
-    &lt;/Display&gt;
-  &lt;/root&gt;
-&lt;/mxGraphModel&gt;
-    </div>
+<textarea id="example_im" style="display:none;"><mxGraphModel>
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    <Setting Note="" Version="11" TimeLength="100" TimeStart="0" TimeStep="1" TimeUnits="Years" Units="" HiddenUIGroups="Validation,User Interface" SolutionAlgorithm="RK4" BackgroundColor="white" id="2">
+      <mxCell parent="1" vertex="1" visible="0">
+        <mxGeometry x="20" y="20" width="80" height="40" as="geometry"/>
+      </mxCell>
+    </Setting>
+    <Display name="Data Display" Note="" Type="Time Series" xAxis="Time (%u)" yAxis="%o" ThreeDimensional="false" Primitives="4,5" AutoAddPrimitives="true" Image="Display" id="3">
+      <mxCell style="roundImage;image=/builder/images/DisplayFull.png;" parent="1" vertex="1" connectable="0" visible="0">
+        <mxGeometry x="30" y="20" width="64" height="64" as="geometry"/>
+      </mxCell>
+    </Display>
+    <Stock name="Predator" Note="" InitialValue="111.9" StockMode="Store" Delay="10" Volume="100" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="true" MaxConstraint="100" MinConstraint="0" ShowSlider="true" SliderMax="500" SliderMin="0" NonNegative="false" Image="None" id="4">
+      <mxCell style="stock;labelBackgroundColor=none" parent="1" vertex="1">
+        <mxGeometry x="189" y="240" width="100" height="40" as="geometry"/>
+      </mxCell>
+    </Stock>
+    <Stock name="Prey" Note="" InitialValue="164.2" StockMode="Store" Delay="10" Volume="100" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="true" MaxConstraint="100" MinConstraint="0" ShowSlider="true" SliderMax="500" SliderMin="0" NonNegative="true" Image="None" id="5">
+      <mxCell style="stock;labelBackgroundColor=none" parent="1" vertex="1">
+        <mxGeometry x="489" y="230" width="100" height="40" as="geometry"/>
+      </mxCell>
+    </Stock>
+    <Flow name="PredatorDeaths" Note="" FlowRate="[Predator]*[Predator Death Rate]" OnlyPositive="true" TimeIndependent="false" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" id="6">
+      <mxCell style="" parent="1" source="4" edge="1">
+        <mxGeometry x="-81" y="30" width="100" height="100" as="geometry">
+          <mxPoint x="-81" y="130" as="sourcePoint"/>
+          <mxPoint x="239" y="450" as="targetPoint"/>
+        </mxGeometry>
+      </mxCell>
+    </Flow>
+    <Flow name="PreyDeaths" Note="" FlowRate="[Prey]*[Prey Death Rate]" OnlyPositive="true" TimeIndependent="false" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" id="7">
+      <mxCell style="" parent="1" source="5" edge="1">
+        <mxGeometry x="-68.5" y="30" width="100" height="100" as="geometry">
+          <mxPoint x="-68.5" y="130" as="sourcePoint"/>
+          <mxPoint x="551.5" y="430" as="targetPoint"/>
+          <Array as="points">
+            <mxPoint x="551.5" y="360"/>
+          </Array>
+        </mxGeometry>
+      </mxCell>
+    </Flow>
+    <Flow name="PredatorBirths" Note="" FlowRate="[Predator]*[Predator Birth Rate]" OnlyPositive="true" TimeIndependent="false" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" id="9">
+      <mxCell style="" parent="1" target="4" edge="1">
+        <mxGeometry x="-81" y="30" width="100" height="100" as="geometry">
+          <mxPoint x="239" y="50" as="sourcePoint"/>
+          <mxPoint x="-81" y="130" as="targetPoint"/>
+        </mxGeometry>
+      </mxCell>
+    </Flow>
+    <Flow name="PreyBirths" Note="" FlowRate="[Prey]*[Prey Birth Rate]" OnlyPositive="true" TimeIndependent="false" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" id="10">
+      <mxCell style="" parent="1" target="5" edge="1">
+        <mxGeometry x="-81" y="30" width="100" height="100" as="geometry">
+          <mxPoint x="529" y="50" as="sourcePoint"/>
+          <mxPoint x="-81" y="130" as="targetPoint"/>
+          <Array as="points">
+            <mxPoint x="529" y="140"/>
+          </Array>
+        </mxGeometry>
+      </mxCell>
+    </Flow>
+    <Parameter name="Predator Birth Rate" Note="" Equation="[Prey]*.001" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" Image="None" id="11">
+      <mxCell style="parameter;labelBackgroundColor=none" parent="1" vertex="1">
+        <mxGeometry x="309" y="110" width="150" height="50" as="geometry"/>
+      </mxCell>
+    </Parameter>
+    <Parameter name="Predator Death Rate" Note="" Equation="0.12" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" Image="None" id="12">
+      <mxCell style="parameter;labelBackgroundColor=none" parent="1" vertex="1">
+        <mxGeometry x="9" y="260" width="150" height="50" as="geometry"/>
+      </mxCell>
+    </Parameter>
+    <Parameter name="Prey Death Rate" Note="" Equation="[Predator]*0.0008" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" Image="None" id="13">
+      <mxCell style="parameter;labelBackgroundColor=none" parent="1" vertex="1">
+        <mxGeometry x="309" y="330" width="150" height="50" as="geometry"/>
+      </mxCell>
+    </Parameter>
+    <Parameter name="Prey Birth Rate" Note="" Equation="0.16" Units="Unitless" MaxConstraintUsed="false" MinConstraintUsed="false" MaxConstraint="100" MinConstraint="0" ShowSlider="false" SliderMax="100" SliderMin="0" Image="None" id="14">
+      <mxCell style="parameter;labelBackgroundColor=none" parent="1" vertex="1">
+        <mxGeometry x="619" y="60" width="140" height="50" as="geometry"/>
+      </mxCell>
+    </Parameter>
+    <Link name="Link" Note="" BiDirectional="false" id="15">
+      <mxCell style="entity" parent="1" source="14" target="10" edge="1" connectable="0">
+        <mxGeometry x="-81" y="30" width="100" height="100" as="geometry">
+          <mxPoint x="-81" y="130" as="sourcePoint"/>
+          <mxPoint x="539" y="140" as="targetPoint"/>
+        </mxGeometry>
+      </mxCell>
+    </Link>
+    <Link name="Link" Note="" BiDirectional="false" id="16">
+      <mxCell style="entity" parent="1" source="5" target="11" edge="1" connectable="0">
+        <mxGeometry x="-81" y="30" width="100" height="100" as="geometry">
+          <mxPoint x="-81" y="130" as="sourcePoint"/>
+          <mxPoint x="19" y="30" as="targetPoint"/>
+        </mxGeometry>
+      </mxCell>
+    </Link>
+    <Link name="Link" Note="" BiDirectional="false" id="17">
+      <mxCell style="entity" parent="1" source="11" target="9" edge="1" connectable="0">
+        <mxGeometry x="-81" y="30" width="100" height="100" as="geometry">
+          <mxPoint x="-81" y="130" as="sourcePoint"/>
+          <mxPoint x="19" y="30" as="targetPoint"/>
+        </mxGeometry>
+      </mxCell>
+    </Link>
+    <Link name="Link" Note="" BiDirectional="false" id="18">
+      <mxCell style="entity" parent="1" source="12" target="6" edge="1" connectable="0">
+        <mxGeometry x="-81" y="30" width="100" height="100" as="geometry">
+          <mxPoint x="-81" y="130" as="sourcePoint"/>
+          <mxPoint x="19" y="30" as="targetPoint"/>
+        </mxGeometry>
+      </mxCell>
+    </Link>
+    <Link name="Link" Note="" BiDirectional="false" id="19">
+      <mxCell style="entity" parent="1" source="4" target="13" edge="1" connectable="0">
+        <mxGeometry x="-81" y="30" width="100" height="100" as="geometry">
+          <mxPoint x="-81" y="130" as="sourcePoint"/>
+          <mxPoint x="19" y="30" as="targetPoint"/>
+        </mxGeometry>
+      </mxCell>
+    </Link>
+    <Link name="Link" Note="" BiDirectional="false" id="20">
+      <mxCell style="entity" parent="1" source="13" target="7" edge="1" connectable="0">
+        <mxGeometry x="-81" y="30" width="100" height="100" as="geometry">
+          <mxPoint x="-81" y="130" as="sourcePoint"/>
+          <mxPoint x="19" y="30" as="targetPoint"/>
+        </mxGeometry>
+      </mxCell>
+    </Link>
+    <Display name="Flight Simulator" Note="" Type="Time Series" xAxis="Time (%u)" yAxis="Predator and Prey Populations" ThreeDimensional="false" Primitives="4,5,14" AutoAddPrimitives="false" Image="Display" id="21">
+      <mxCell style="display" parent="1" vertex="1" connectable="0" visible="0">
+        <mxGeometry x="140" y="20" width="64" height="64" as="geometry"/>
+      </mxCell>
+    </Display>
+    <Picture name="" Note="" Image="Negative Feedback Counterclockwise" FlipHorizontal="false" FlipVertical="false" id="22">
+      <mxCell style="picture;image=/builder/images/SD/Negative Feedback Counterclockwise.png" parent="1" vertex="1">
+        <mxGeometry x="339" y="200" width="108" height="98" as="geometry"/>
+      </mxCell>
+    </Picture>
+    <Display name="Scatterplot" Note="" Type="Scatterplot" xAxis="%o" yAxis="%o" ThreeDimensional="false" Primitives="4,5" AutoAddPrimitives="false" ScatterplotOrder="X Primitive, Y Primitive" Image="Display" id="23">
+      <mxCell style="display" parent="1" vertex="1" connectable="0" visible="0">
+        <mxGeometry x="48" y="118" width="64" height="64" as="geometry"/>
+      </mxCell>
+    </Display>
+  </root>
+</mxGraphModel>
+    </textarea>
 
 
-
-
-
-    <div id="example_vensim" style="display:none">
-{UTF-8}
+<textarea id="example_vensim" style="display:none;">{UTF-8}
 predator birth fraction=
 	0.01
 	~	 [0,0.05,0.001]
@@ -507,266 +510,119 @@ Phases
 24:0
 25:12.012
 26:12.012
-</div>
+</textarea>
 
+<textarea id="example_xmile" style="display:none;"><?xml version="1.0" encoding="utf-8" ?>
+<xmile xmlns="http://www.systemdynamics.org/XMILE" version="1.0" level="3">
+    <header>
+        <smile version="1.0"></smile>
+        <name>SIR</name>
+        <uuid>03ab2dd2-6655-4e16-98ab-cb95abef1af9</uuid>
+        <vendor>SDLabs</vendor>
+        <product version="0.1">go-xmile</product>
+    </header>
+    <sim_specs time_units="Time">
+        <start>0</start>
+        <stop>100</stop>
+        <dt>0.03125</dt>
+    </sim_specs>
+    <dimensions></dimensions>
+    <model_units></model_units>
+    <equation_prefs xmlns="isee" order_by="module"></equation_prefs>
+    <model>
+        <variables>
+            <stock name="susceptible">
+                <eqn>total_population</eqn>
+                <outflow>succumbing</outflow>
+                <units>people</units>
+            </stock>
+            <stock name="infectious">
+                <eqn>5</eqn>
+                <inflow>succumbing</inflow>
+                <outflow>recovering</outflow>
+                <units>people</units>
+            </stock>
+            <stock name="recovered">
+                <eqn>0</eqn>
+                <inflow>recovering</inflow>
+                <units>people</units>
+            </stock>
+            <flow name="succumbing">
+                <eqn>susceptible*infectious/total_population*contact_infectivity</eqn>
+                <units>person/time</units>
+            </flow>
+            <flow name="recovering">
+                <eqn>infectious/duration</eqn>
+                <units>person/time</units>
+            </flow>
+            <aux name="total_population">
+                <eqn>1000</eqn>
+                <units>people</units>
+            </aux>
+            <aux name="duration">
+                <eqn>5</eqn>
+                <units>days</units>
+            </aux>
+            <aux name="contact_infectivity">
+                <eqn>0.3</eqn>
+            </aux>
+        </variables>
+        <views>
+            <view scroll_x="0" scroll_y="0" zoom="200" page_cols="2" converter_size="medium">
+                <!-- RM: First one added manually so that all influences are included... -->
+                <connector x="297" y="66" color="#FF007F" uid="0">
+                    <from>total_population</from>
+                    <to>susceptible</to>
+                </connector>
+                <connector x="297" y="66" color="#FF007F" uid="0">
+                    <from>duration</from>
+                    <to>recovering</to>
+                </connector>
+                <connector x="187" y="63" color="#FF007F" uid="1">
+                    <from>total_population</from>
+                    <to>succumbing</to>
+                </connector>
+                <connector x="102" y="63" color="#FF007F" uid="2">
+                    <from>contact_infectivity</from>
+                    <to>succumbing</to>
+                </connector>
+                <connector x="124" y="150" color="#FF007F" uid="3">
+                    <from>susceptible</from>
+                    <to>succumbing</to>
+                </connector>
+                <connector x="190" y="150" color="#FF007F" uid="4">
+                    <from>infectious</from>
+                    <to>succumbing</to>
+                </connector>
+                <connector x="234" y="149" color="#FF007F" uid="5">
+                    <from>infectious</from>
+                    <to>recovering</to>
+                </connector>
+                <stock x="102" y="135" color="blue" name="susceptible"></stock>
+                <stock x="212" y="134" color="blue" name="infectious"></stock>
+                <stock x="321" y="135" color="blue" name="recovered"></stock>
+                <flow x="157" y="135" color="blue" name="succumbing">
+                    <pts>
+                        <pt x="124" y="135"></pt>
+                        <pt x="190" y="135"></pt>
+                    </pts>
+                </flow>
+                <flow x="266" y="133" color="blue" name="recovering">
+                    <pts>
+                        <pt x="234" y="133"></pt>
+                        <pt x="299" y="133"></pt>
+                    </pts>
+                </flow>
+                <aux x="192" y="55" color="blue" name="total_population"></aux>
+                <aux x="299" y="57" color="blue" name="duration"></aux>
+                <aux x="98" y="55" color="blue" name="contact_infectivity"></aux>
+            </view>
+            <view name="interface" scroll_x="0" scroll_y="0" zoom="0" page_width="788" page_height="528"></view>
+        </views>
+    </model>
+</xmile>
+</textarea>
 
-
-
-    <div id="example_xmile" style="display:none">&lt;?xml version="1.0" encoding="utf-8" ?&gt;
-&lt;xmile version="1.0" level="3" xmlns="http://www.systemdynamics.org/XMILE" xmlns:isee="http://iseesystems.com/XMILE"&gt;
-    &lt;header&gt;
-        &lt;smile version="1.0"&gt;
-            &lt;uses_arrays&gt;1&lt;/uses_arrays&gt;
-        &lt;/smile&gt;
-        &lt;name&gt;Predator Prey Dynamics&lt;/name&gt;
-        &lt;uuid&gt;be75d15c-2d09-4cd8-84cb-fdc59b71fe05&lt;/uuid&gt;
-        &lt;vendor&gt;isee systems&lt;/vendor&gt;
-        &lt;product version="10.0.2" lang="en"&gt;iThink&lt;/product&gt;
-    &lt;/header&gt;
-    &lt;sim_specs time_units="Years"&gt;
-        &lt;start&gt;0&lt;/start&gt;
-        &lt;stop&gt;60&lt;/stop&gt;
-        &lt;dt&gt;0.125&lt;/dt&gt;
-        &lt;method&gt;RK4&lt;/method&gt;
-    &lt;/sim_specs&gt;
-    &lt;dimensions&gt;
-        &lt;dim name="Subscript_Set_1" size="1" /&gt;
-    &lt;/dimensions&gt;
-    &lt;model_units /&gt;
-    &lt;isee:prefs layer="interface" grid_width="14" grid_height="14" divide_by_zero_alert="true" show_module_prefix="true" hide_transparent_buttons="true"&gt;
-        &lt;isee:window width="827" height="557" /&gt;
-        &lt;isee:security /&gt;
-        &lt;isee:print_setup width="586" height="767" orientation="portrait" /&gt;
-    &lt;/isee:prefs&gt;
-    &lt;isee:equation_prefs order_by="sector" /&gt;
-    &lt;model&gt;
-        &lt;aux name="area"&gt;
-            &lt;doc&gt;The area of the ecosystem is defined as 1000 hectares.&lt;/doc&gt;
-            &lt;eqn&gt;1E3&lt;/eqn&gt;
-            &lt;display x="209" y="248" color="black" /&gt;
-        &lt;/aux&gt;
-        &lt;flow name="hare_births"&gt;
-            &lt;doc&gt;A compounding process is used to depict hare births. The births flow is defined as the product of Hares and their natality. This process works just like compounding interest in a savings account.&lt;/doc&gt;
-            &lt;eqn&gt;Hares*hare_birth__fraction&lt;/eqn&gt;
-            &lt;non_negative /&gt;
-            &lt;display x="226" y="150" color="#7F00FF"&gt;
-                &lt;label_side&gt;top&lt;/label_side&gt;
-                &lt;pts&gt;
-                    &lt;pt x="135" y="150" /&gt;
-                    &lt;pt x="318" y="150" /&gt;
-                &lt;/pts&gt;
-            &lt;/display&gt;
-        &lt;/flow&gt;
-        &lt;flow name="hare_deaths"&gt;
-            &lt;doc&gt;In this external resource process, lynx are the resource underwriting the consumption of hares. Each lynx has a productivity, given by hare kills per lynx.&lt;/doc&gt;
-            &lt;eqn&gt;Lynx*hares_killed__per_lynx&lt;/eqn&gt;
-            &lt;non_negative /&gt;
-            &lt;display x="482" y="149" color="#7F00FF"&gt;
-                &lt;label_side&gt;top&lt;/label_side&gt;
-                &lt;pts&gt;
-                    &lt;pt x="362" y="149" /&gt;
-                    &lt;pt x="602" y="149" /&gt;
-                &lt;/pts&gt;
-            &lt;/display&gt;
-        &lt;/flow&gt;
-        &lt;aux name="hare_\ndensity"&gt;
-            &lt;doc&gt;This equation calculates the average density of hares in the ecosystem.&lt;/doc&gt;
-            &lt;eqn&gt;Hares/area&lt;/eqn&gt;
-            &lt;display x="310" y="242" color="#7F00FF"&gt;
-                &lt;label_side&gt;right&lt;/label_side&gt;
-                &lt;label_angle&gt;61&lt;/label_angle&gt;
-            &lt;/display&gt;
-        &lt;/aux&gt;
-        &lt;aux name="hare_birth_\nfraction"&gt;
-            &lt;doc&gt;Each hare in the ecosystem is assumed to produce 1.25 offspring (on average) per year.&lt;/doc&gt;
-            &lt;eqn&gt;1.25&lt;/eqn&gt;
-            &lt;display x="172" y="208" color="#7F00FF"&gt;
-                &lt;label_side&gt;left&lt;/label_side&gt;
-                &lt;label_angle&gt;168&lt;/label_angle&gt;
-            &lt;/display&gt;
-        &lt;/aux&gt;
-        &lt;flow name="lynx\n_births"&gt;
-            &lt;doc&gt;A compounding process is used to depict lynx births. The births flow is defined as the product of lynx and their natality. This process works just like compounding interest in a savings account.&lt;/doc&gt;
-            &lt;eqn&gt;Lynx*lynx_birth__fraction&lt;/eqn&gt;
-            &lt;non_negative /&gt;
-            &lt;display x="525" y="341" color="red"&gt;
-                &lt;label_side&gt;right&lt;/label_side&gt;
-                &lt;label_angle&gt;62&lt;/label_angle&gt;
-                &lt;pts&gt;
-                    &lt;pt x="607" y="341" /&gt;
-                    &lt;pt x="444" y="341" /&gt;
-                &lt;/pts&gt;
-            &lt;/display&gt;
-        &lt;/flow&gt;
-        &lt;flow name="lynx_\ndeaths"&gt;
-            &lt;doc&gt;This is a draining process. Some fraction of the lynx population will die each year. The portion that dies, in turn, depends on the density of hares in the ecosystem.&lt;/doc&gt;
-            &lt;eqn&gt;Lynx*lynx_death__fraction&lt;/eqn&gt;
-            &lt;non_negative /&gt;
-            &lt;display x="341" y="342" color="red"&gt;
-                &lt;label_side&gt;top&lt;/label_side&gt;
-                &lt;label_angle&gt;128&lt;/label_angle&gt;
-                &lt;pts&gt;
-                    &lt;pt x="400" y="342" /&gt;
-                    &lt;pt x="282" y="342" /&gt;
-                &lt;/pts&gt;
-            &lt;/display&gt;
-        &lt;/flow&gt;
-        &lt;aux name="lynx_birth_\nfraction"&gt;
-            &lt;doc&gt;On average, each lynx will generate .25 offspring per year.&lt;/doc&gt;
-            &lt;eqn&gt;.25&lt;/eqn&gt;
-            &lt;display x="580" y="378" color="red" /&gt;
-        &lt;/aux&gt;
-        &lt;stock name="Hares"&gt;
-            &lt;doc&gt;Initially, there are 50000 hares in the ecosystem.&lt;/doc&gt;
-            &lt;eqn&gt;5E4&lt;/eqn&gt;
-            &lt;inflow&gt;hare_births&lt;/inflow&gt;
-            &lt;outflow&gt;hare_deaths&lt;/outflow&gt;
-            &lt;display x="340" y="151" color="#7F00FF"&gt;
-                &lt;label_side&gt;center&lt;/label_side&gt;
-            &lt;/display&gt;
-        &lt;/stock&gt;
-&lt;!--
-        &lt;stock name="Hares"&gt;
-            &lt;eqn&gt;5E4&lt;/eqn&gt;
-            &lt;inflow&gt;hare_births&lt;/inflow&gt;
-            &lt;outflow&gt;hare_deaths&lt;/outflow&gt;
-            &lt;display color="purple" x="285" y="81" nmpos="center"/&gt;
-        &lt;/stock&gt;
---&gt;
-        &lt;stock name="Lynx"&gt;
-            &lt;doc&gt;Initially, there are 1250 lynx.&lt;/doc&gt;
-            &lt;eqn&gt;1250&lt;/eqn&gt;
-            &lt;inflow&gt;lynx__births&lt;/inflow&gt;
-            &lt;outflow&gt;lynx__deaths&lt;/outflow&gt;
-            &lt;outflow&gt;one_time_lynx_harvest&lt;/outflow&gt;
-            &lt;display x="422" y="338" color="red"&gt;
-                &lt;label_side&gt;center&lt;/label_side&gt;
-            &lt;/display&gt;
-        &lt;/stock&gt;
-        &lt;aux name="hares_killed\n_per_lynx"&gt;
-            &lt;doc&gt;The number of hares killed per lynx (per year) increases with the density of hares in the ecosystem. Note that when density is 0 (there are no hares), kills per lynx per year must be 0.&lt;/doc&gt;
-            &lt;eqn&gt;hare__density&lt;/eqn&gt;
-            &lt;gf discrete="false"&gt;
-                &lt;xpts&gt;0,50,100,150,200,250,300,350,400,450,500&lt;/xpts&gt;
-                &lt;ypts&gt;3.8899999999999998e-305,50,100,150,200,250,300,350,400,450,500&lt;/ypts&gt;
-                &lt;xscale min="0" max="500" /&gt;
-                &lt;yscale min="0" max="1000" /&gt;
-            &lt;/gf&gt;
-            &lt;display x="412" y="251" color="red"&gt;
-                &lt;label_angle&gt;323&lt;/label_angle&gt;
-            &lt;/display&gt;
-        &lt;/aux&gt;
-        &lt;aux name="lynx_death_\nfraction"&gt;
-            &lt;doc&gt;Lynx mortality -- the fraction of the lynx population that dies each year, is assumed to depend on hare density. With fewer hares, a greater fraction of the lynx population will starve.&lt;/doc&gt;
-            &lt;eqn&gt;hare__density&lt;/eqn&gt;
-            &lt;gf discrete="false"&gt;
-                &lt;xpts&gt;0,10,20,30,40,50,60,70,80,90,100&lt;/xpts&gt;
-                &lt;ypts&gt;0.94000000000000006,0.66000000000000003,0.40000000000000002,0.34999999999999998,0.29999999999999999,0.25,0.20000000000000001,0.14999999999999999,0.10000000000000001,0.070000000000000007,0.050000000000000003&lt;/ypts&gt;
-                &lt;xscale min="0" max="100" /&gt;
-                &lt;yscale min="0" max="1" /&gt;
-            &lt;/gf&gt;
-            &lt;display x="223" y="320" color="red"&gt;
-                &lt;label_side&gt;left&lt;/label_side&gt;
-                &lt;label_angle&gt;225&lt;/label_angle&gt;
-            &lt;/display&gt;
-        &lt;/aux&gt;
-        &lt;flow name="one_time_lynx_harvest"&gt;
-            &lt;doc&gt;This test input uses a PULSE function to remove some number of Lynx from the system at time 4. This harvesting effectively knocks the system out of steady state, thus enabiling its latent dynamics to unfold.&lt;/doc&gt;
-            &lt;eqn&gt;0*size_of_1_time__lynx_harvest&lt;/eqn&gt;
-            &lt;non_negative /&gt;
-            &lt;display x="352" y="409" color="red"&gt;
-                &lt;label_angle&gt;348&lt;/label_angle&gt;
-                &lt;pts&gt;
-                    &lt;pt x="420" y="355" /&gt;
-                    &lt;pt x="420" y="409" /&gt;
-                    &lt;pt x="284" y="409" /&gt;
-                &lt;/pts&gt;
-            &lt;/display&gt;
-        &lt;/flow&gt;
-        &lt;aux name="size_of_1_time_\nlynx_harvest"&gt;
-            &lt;eqn&gt;0&lt;/eqn&gt;
-            &lt;display x="220" y="427" color="red"&gt;
-                &lt;label_side&gt;left&lt;/label_side&gt;
-                &lt;label_angle&gt;188&lt;/label_angle&gt;
-            &lt;/display&gt;
-        &lt;/aux&gt;
-        &lt;display show_pages="false" page_width="586" page_height="767" page_sequence="row" page_rows="2" page_cols="1" isee:show_values_on_hover="true" isee:converter_size="medium" zoom="100" report_flows="summed" scroll_x="0" scroll_y="0"&gt;
-            &lt;connector x="318" y="162" uid="0" color="#7F00FF"&gt;
-                &lt;from&gt;Hares&lt;/from&gt;
-                &lt;to&gt;hare_births&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;connector x="176" y="200" uid="1" color="#7F00FF"&gt;
-                &lt;from&gt;hare_birth__fraction&lt;/from&gt;
-                &lt;to&gt;hare_births&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;connector x="441" y="356" uid="2" color="red"&gt;
-                &lt;from&gt;Lynx&lt;/from&gt;
-                &lt;to&gt;lynx__births&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;connector x="573" y="373" uid="3" color="red"&gt;
-                &lt;from&gt;lynx_birth__fraction&lt;/from&gt;
-                &lt;to&gt;lynx__births&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;connector x="407" y="355" uid="4" color="red"&gt;
-                &lt;from&gt;Lynx&lt;/from&gt;
-                &lt;to&gt;lynx__deaths&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;connector x="225" y="329" uid="5" color="red"&gt;
-                &lt;from&gt;lynx_death__fraction&lt;/from&gt;
-                &lt;to&gt;lynx__deaths&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;connector x="318" y="168" uid="6" color="#7F00FF"&gt;
-                &lt;from&gt;Hares&lt;/from&gt;
-                &lt;to&gt;hare__density&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;connector x="302" y="243" uid="7" color="red"&gt;
-                &lt;from&gt;hare__density&lt;/from&gt;
-                &lt;to&gt;lynx_death__fraction&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;connector x="443" y="327" uid="8" color="red"&gt;
-                &lt;from&gt;Lynx&lt;/from&gt;
-                &lt;to&gt;hare_deaths&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;connector x="317" y="246" uid="9" color="red"&gt;
-                &lt;from&gt;hare__density&lt;/from&gt;
-                &lt;to&gt;hares_killed__per_lynx&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;connector x="419" y="247" uid="10" color="red"&gt;
-                &lt;from&gt;hares_killed__per_lynx&lt;/from&gt;
-                &lt;to&gt;hare_deaths&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;connector x="217" y="243" uid="11" color="black"&gt;
-                &lt;from&gt;area&lt;/from&gt;
-                &lt;to&gt;hare__density&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;connector x="230" y="428" uid="12" color="red"&gt;
-                &lt;from&gt;size_of_1_time__lynx_harvest&lt;/from&gt;
-                &lt;to&gt;one_time_lynx_harvest&lt;/to&gt;
-            &lt;/connector&gt;
-            &lt;button x="663" y="15" width="26" height="26" uid="13" appearance="opaque" background="white" color="white" style="square"&gt;
-                &lt;image width="26" height="25"&gt;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAZCAIAAACgvKk3AAAA8klEQVQ4je1UIRKDMBDc7fQ5CGRdkJUV/Q+X/1RUViYOieA/V5GGYSBJoVRUdNWFzC57m+Q49B2+h8MXtf5yu3DMbVT1qcxMXom0XFWfVDWuCCRqkkvFcrMEEPnLGrf7Y5OcAvDek5YU0pLWez8xO8d7d03jAKiKc01c8jO5lwsRAGqMmX1fInuy0Z2qtqG2VqI0c4pluTF4tVZE4FxjjAHaHGHtyYpABLHfbHZr3Y0tA7oru0AmLYB4t3dnpyqAfuhu6DtyGlCoGdyFLRG5Xs5r3Q19t3xDJEO7SS0AiWdcRpg0OdbmeVf+/WZ3Zfz2cH8C3cBniqQhz2w=&lt;/image&gt;
-                &lt;popup x="-405" y="56" width="410" height="82" background="yellow" color="black"&gt;
-                    &lt;text_box font-family="Arial" font-size="13"&gt;Double-click on the boxes and circles to view a brief textual description of the logic of the system.&lt;/text_box&gt;
-                &lt;/popup&gt;
-            &lt;/button&gt;
-            &lt;button x="688" y="15" width="28" height="26" uid="14" appearance="opaque" background="white" color="white" style="square"&gt;
-                &lt;link target="interface" x="0" y="0" /&gt;
-                &lt;image width="27" height="25"&gt;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAAZCAIAAABPfsIJAAABBUlEQVRIie3VMW6EMBAF0D9RzuCCK3ilTbfUKShS7Ck4AZ19gJyCU7igpE6ZYlokKrdI5gBsMZJFYVjCoo0UZSpsxPPMyNjE3184LvT58nIgJ/EvPlF0TXt6y+PzfLhHdE1bluU0TVEx1u7P0TWtMUYpRURzdCVe73JE5JwDICgRmX2iFCtcURQAnHMRXRHTVQunlIpcCCHP84j+TExy8kprHdGlnqZzTHLjOM7RpRwTfbx+vAOfkavrWuattV3XAciyDMDSobVph1dVJQtsiTUxhCCVMrP3/gBROADee2beKC7uxznBzH3fAxiG4a5IyQZv+duSH+rzJZ3jI5fPnzlxf1m8ASWIjnq6OMe7&lt;/image&gt;
-            &lt;/button&gt;
-            &lt;button x="586" y="16" width="52" height="24" uid="15" appearance="opaque" background="black" color="white" style="square"&gt;
-                &lt;link target="interface" x="1576" y="0" /&gt;
-                &lt;image width="49" height="22"&gt;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADEAAAAWCAIAAADmV+PFAAAA/ElEQVRIie2VQQqDMBBFJyWnEVxY8DTuu+kRpJcQ3JieQXdeomAWFnucdBGwIZnEEZRU8JPVGGdevpmRKaXgz8Q/bxmb4ae268tHeYmNgehkouloTEl63aPkYlrue1BU2doC0zgQscLCfSqq7N5QU0zjoNdWviI+mUCuW1KwRT9muHmnG9FBNJXNZAI9nRFfCwCxTGCiaP/c2j4ghEkKVucKcoAXuh+RRQCEWxwAQpimcUhSljUKAOSNUbk89XxwPvNwJgtrq1ZahYXPAo1FzG7dJ7cBzYgJ4cPyzidib6MHdYMWSvj10Bzf78OFdbT/XSydTDTxtutjM9j6ArvMjcQTzsdL&lt;/image&gt;
-            &lt;/button&gt;
-            &lt;graphics_frame x="5" y="1" uid="16" width="314" height="86" border-color="#0CA0FF" fill="none"&gt;
-                &lt;image width="300" height="68"&gt;data:image/png;base64,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&lt;/image&gt;
-            &lt;/graphics_frame&gt;
-            &lt;graphics_frame x="65" y="93" uid="17" width="618" height="380" border-color="black" border-style="ridge" border-width="5" fill="light" /&gt;
-        &lt;/display&gt;
-        &lt;interface scroll_x="0" scroll_y="0" zoom="100"&gt;
-        &lt;/interface&gt;
-    &lt;/model&gt;
-&lt;/xmile&gt;
-   </div>
 
 
 

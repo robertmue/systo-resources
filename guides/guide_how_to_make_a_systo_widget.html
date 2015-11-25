@@ -15,7 +15,15 @@
             border:solid 2px black;
             margin-left:20px;
             padding:10px;
-            background:#ffe0ff;
+            background:#fff0ff;
+            display:inline-block;
+        }
+
+        div.box {
+            border:solid 2px black;
+            margin-left:20px;
+            padding:10px;
+            background:#ffffe0;
             display:inline-block;
         }
 
@@ -23,7 +31,7 @@
             border:solid 2px black;
             margin-left:20px;
             padding:10px;
-            background:#ffffe0;
+            background:#f8f8f8;
             display:inline-block;
         }
         </style>
@@ -215,7 +223,70 @@
         </ul>
         That is quite an achievement!</p>
 
-        [[ Explanation of the jQuery syntax and structure ]]
+<!-- Need to box this up -->
+        <div class="box">
+        <h3>Anatomy of a widget</h3>
+        <table><tr>
+        <td><pre class="widget">
+<span style="color:#a00000">$(function() {</span>  
+    <span style="font-weight:bold;">$.widget(</span> "custom.colorize",
+    {               <span style="color:#606060">Start of the widget's "object-literal"</span> 
+        <span style="color:blue">options</span>: {
+            red: 255,
+            green: 0,
+            blue: 0,
+        },
+
+        <span style="color:blue">_create</span>: function() {
+            this.div = $('&lt;div&gt;&lt;/div&gt;');
+            this._refresh();
+        },
+ 
+        <span style="color:blue">_setOptions</span>: function(options) {
+            this._super( options );
+            this._refresh();
+        },
+ 
+        <span style="color:blue">_setOption</span>: function(key, value) {
+            this._super( key, value );
+            switch (key) {
+                case "red":
+                    .......;
+                    break;
+                case "green":
+                    .......;
+                    break;
+                case "blue":
+                    .......;
+                break;
+            };
+        },
+ 
+        <span style="color:blue">_refresh</span>: function() {
+            .......
+        },
+ 
+        <span style="color:blue">do</span>: function() {
+        },
+    }        <span style="color:#606060">// End of the widget's "object-literal"</span>
+    <span style="font-weight:bold;">)</span> 
+       <span style="color:#606060">// End of the widget definition</span>
+<span style="color:#a00000">}(jQuery))</span> 
+        </pre></td>
+
+        <td style="vertical-align:top; padding:10px;">
+            <p><span style="color:#a00000">$(function() {</span> ... <span style="color:#a00000">})</span><br/>
+            An "<a href="http://www.dofactory.com/tutorial/javascript-functions#section5">immediate function</a>" (or "self-invoking function"), which isolates the enclosed code from the global context, and associates the
+            # symbol with the the jQuery method.</p>
+
+            <p><span style="font-weight:bold;">$.widget(</span> ... <span style="color:#a00000">)</span><br/>
+            The widget definition (a jQuery method).   The method has 2 arguments:<br/>
+            - namepsace.widgetname - in this case, the namespace is "custom" and the widget name is "colorize";<br/>
+            - an "object literal", whose properties are the widget methods and static properties.</p>
+
+<p>[2] An "object literal" is a Javascript object consisting of zero or more name:value pairs.  The name is usually called a "property".   The collection of name:value pairs is comma-separated and enclosed in curly braces, e.g. {name1:value1, name2:value2}.  The widget is defined in terms of several of these, where the value can be an object (such as for the property "options"), or a method (function), such as for the property "_create".  The complete object literal is referred to as the "widget prototype".</p>
+        </td></tr></table>
+        </div>   <!-- End of <div id="box"> -->
 
         <h2>Step 3: Re-using the widget in the same page</h2>
         <p>As well as making life simpler for other people, you can use the widget to make life simpler for 

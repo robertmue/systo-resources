@@ -11,7 +11,7 @@ function generateSimulationFunction1(modelStr) {
 
 
 
-// This is the function for generating simulation code.   The following functions are private
+// This is the function for generating simulation code.   The functions following it are private
 // functions, defined within the scope of this function, down to 
 //   }; // End of SYSTO.generateSimulationFunction
 
