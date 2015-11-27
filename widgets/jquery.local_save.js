@@ -240,7 +240,7 @@
                 autoOpen: false,
                 height: 370,
                 width: 550,
-                modal: true,
+                modal: false,
                 buttons: {
                     "Save": function() {
                         // http://codereview.stackexchange.com/questions/35263/html5-file-api-demo
@@ -295,7 +295,8 @@
                             var modelPrepared = SYSTO.prepareModelForSaving(model, replaceParamValues);
                             var outputXmlStr, blob;
                             outputXmlStr = JSON.stringify(modelPrepared,null,3);
-                            outputXmlStr = 'SYSTO.models.'+model.meta.id+' = '+outputXmlStr+';';
+                             // Was saved as .js, now .json...
+                            //outputXmlStr = 'SYSTO.models.'+model.meta.id+' = '+outputXmlStr+';';  // Was saved as .js, now.json
                             //alert(JSON.stringify(model.meta));
                             // If the string is null or empty, do nothing.
                             if (!outputXmlStr) {
@@ -303,7 +304,7 @@
                             }
                             blob = new Blob([outputXmlStr], { type: 'text/plain' });
                             // Use the FileSaver.js interface to download the file.
-                            saveAs(blob, name+'.js');
+                            saveAs(blob, name+'.json');
                             $( this ).dialog( "close" );
                         } else {
                             alert('Error(s) in the form - please correct.'+

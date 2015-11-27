@@ -302,8 +302,8 @@ SYSTO.generateSimulationFunction = function (model) {
         }}
         nStock = stocks.length;
 
-        // TODO: replace this with Node.getInarcs['flow'] and Node.getOutarcs['flow'].
         // Build up list of inflows and ouflows for each state variable
+        // TODO: replace this with Node.getInarcs['flow'] and Node.getOutarcs['flow'].
         inflows = [];
         outflows = [];
         for (i=0; i<nStock; i++) {

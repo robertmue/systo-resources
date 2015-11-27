@@ -7,4 +7,7 @@
 ../js/action.js
 ../js/equation.js
 ../js/functions.js
+../js/FileSaver.js
+../js/process_query_string.js
+
 

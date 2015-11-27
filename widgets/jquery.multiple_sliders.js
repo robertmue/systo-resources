@@ -296,34 +296,36 @@
         for (var nodeId in nodeList) {
             var node = nodeList[nodeId];
             if (widget.options.selectNode(node)) {
-                if (node.extras.min_value) {
-                    var minval = parseFloat(node.extras.min_value.value);
-                    var maxval = parseFloat(node.extras.max_value.value);
-                } else {
-                    minval = 0;
-                    maxval = 100;
-                }
-                if (node.extras.equation) {
-                    //var value = parseFloat(node.workspace.jsequation);    // TODO: fix this.
-                    var value = parseFloat(node.extras.equation.value);    // TODO: fix this.
-                } else {
-                    value = 50;
-                }
-                if (value<minval) {
-                    if (value>0) {
-                        minval = 0;
+                if ($.isNumeric(parseFloat(node.extras.equation.value))) {
+                    if (node.extras.min_value) {
+                        var minval = parseFloat(node.extras.min_value.value);
+                        var maxval = parseFloat(node.extras.max_value.value);
                     } else {
-                        minval = value;
+                        minval = 0;
+                        maxval = 100;
                     }
+                    if (node.extras.equation) {
+                        //var value = parseFloat(node.workspace.jsequation);    // TODO: fix this.
+                        var value = parseFloat(node.extras.equation.value);    // TODO: fix this.
+                    } else {
+                        value = 50;
+                    }
+                    if (value<minval) {
+                        if (value>0) {
+                            minval = 0;
+                        } else {
+                            minval = value;
+                        }
+                    }
+                    if (value>maxval) {
+                        maxval = 2*value;
+                    }
+                    var sliderElement = $('<div class="slider1" style="float:left;'+
+                            'padding:5px; margin:1px; width:400px; height:16px;"></div>').
+                        slider1({modelId:modelId, modelIdArray:modelIdArray, label:node.label, id:nodeId, value:value, minval:minval, maxval:maxval});
+                    sliders[nodeId] = sliderElement;
+                    $(sliders_div).append(sliderElement);
                 }
-                if (value>maxval) {
-                    maxval = 2*value;
-                }
-                var sliderElement = $('<div class="slider1" style="float:left;'+
-                        'padding:5px; margin:1px; width:400px; height:16px;"></div>').
-                    slider1({modelId:modelId, modelIdArray:modelIdArray, label:node.label, id:nodeId, value:value, minval:minval, maxval:maxval});
-                sliders[nodeId] = sliderElement;
-                $(sliders_div).append(sliderElement);
             }
         }
     }

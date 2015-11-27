@@ -1470,15 +1470,35 @@ SYSTO.prepareModelForSaving = function (model, replaceParamValues) {
             centrey:node.centrey,
             text_shiftx:node.text_shiftx,
             text_shifty:node.text_shifty,
-            extras:node.extras};
+            extras:node.extras
+        };
     });
+
+    var arcs1 = {};
+    $.each(model.arcs, function(arcId, arc) {
+        arcs1[arcId] = {
+            id:arc.id,
+            type:arc.type,
+            label:arc.label,
+            start_node_id: arc.start_node_id,
+            end_node_id: arc.end_node_id,
+            curvature: arc.curvature,
+            along: arc.along,
+            node_id: arc.node_id,
+            line_colour: arc.line_colour,
+            line_width: arc.line_width,
+            fill_colour: arc.fill_colour
+        };
+    });
+
+
     if (replaceParamValues) {
         nodes1 = SYSTO.replaceParameterValues(model.nodes, nodes1);
     }
     var preparedModel = JSON.parse(JSON.stringify({
         meta:model.meta, 
         nodes:nodes1,
-        arcs:model.arcs, 
+        arcs:arcs1, 
         scenarios:model.scenarios}));
     return preparedModel;
 };

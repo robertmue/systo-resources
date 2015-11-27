@@ -122,6 +122,7 @@
             this._container = $(this.element).append(dialog);
             //$(this.element).css({zindex:5000});
 
+
             $('#sd_node_dialog_tabs').tabs({selected:0});
 
             $('#sd_node_dialog_tab_sketchgraph').

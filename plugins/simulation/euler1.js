@@ -76,18 +76,6 @@ SYSTO.plugins.codeGenerator.euler1 = function (model, sortedDynamicArray, simula
     code += 'var tstep = 1/nstep;' + line_break;
     code += line_break;
 
-    for (i=0;i<nStock; i++) {
-        node = initialStockArray[i];
-        code += 'var '+node.label+' = initialStockValues[\'' + node.id + '\'];' + line_break;
-    }
-    code += line_break;
-
-    for (i=0;i<nStock; i++) {
-        node = initialStockArray[i];
-        code += 'var d_'+node.label+' = 0;' + line_break;
-    }
-    code += line_break;
-
     for (i=0;i<nParameter; i++) {
         node = parameters[i];
         code += 'var '+node.label+' = parameterValues[\'' + node.id + '\'];' + line_break;
@@ -108,19 +96,27 @@ SYSTO.plugins.codeGenerator.euler1 = function (model, sortedDynamicArray, simula
     }
     code += line_break;
 
-    //code += 'iterations = 0;' + line_break;
-
-    code += 'var states = {};' + line_break;
-    for (i=0; i<nStock; i++) {
-        node = stocks[i];
-        code += 'states.' + node.label + ' = '+ node.label + ';' + line_break;
-    }
-    code += line_break;
+    // Removed code which sets states to their initial value (they
+    // may not have one...)
 
     code += 'var SIMTIME = 0;' + line_break;
     code += line_break;
 
-    code += 'var rates = calculateRates(states);' + line_break;
+    code += 'var initial = calculateInitial();' + line_break;
+    code += 'var states = initial.states;' + line_break;
+    code += 'var rates = initial.rates;' + line_break;
+    code += line_break;
+
+    for (i=0;i<nStock; i++) {
+        node = initialStockArray[i];
+        code += 'var '+node.label+' = states.' + node.label + ';' + line_break;
+    }
+    code += line_break;
+
+    for (i=0;i<nStock; i++) {
+        node = initialStockArray[i];
+        code += 'var d_'+node.label+' = 0;' + line_break;
+    }
     code += line_break;
 
     // Store values for all variables for initialised model.
@@ -186,6 +182,50 @@ SYSTO.plugins.codeGenerator.euler1 = function (model, sortedDynamicArray, simula
 
     code += 'return results;' + line_break;
 
+    // ================  function calculateInitial(states)
+    // 2015-11-25 RM Added this function to replace the calculateRates() call at the start of
+    // the simulation, in order to all for stock initial values to be calculated from some
+    // constant.   It's not a great way of doing it, since it basically duplicates all the
+    // model equations in the generated JavaScript, but it does avoid having a test for 
+    // time=0 in the main calculateRates() function.
+
+    code += line_break;
+    code += 'function calculateInitial() {' + line_break;
+
+    // Removed the bit that sets state variables to their equation value (they may not have one,
+    // if it is calculated from something else...)
+    n = sortedDynamicArray.length;
+    for (i=0;i<n; i++) {
+        node = sortedDynamicArray[i];
+        if (node.workspace.nodeSimProperties.simStage === 'dynamic') {  // Removed test for node being a stock
+            code += '    ' + node.label + ' = ' + node.workspace.jsequation + ';' + line_break;
+        }
+    }
+    code += line_break;
+
+    code += '    var states = {};' + line_break;
+    code += '    var rates = {};' + line_break;
+    for (i=0; i<nStock; i++) {
+        node = stocks[i];
+        code += '    states.'+node.label + ' = ' + node.workspace.jsequation + ';' + line_break;
+        code += '    rates.'+node.label + ' = 0';
+        
+        nInflow = inflows[i].length;
+        for (j=0; j<nInflow; j++) {
+            fromNode = inflows[i][j];
+            code += '+' + fromNode.label;
+        }
+        nOutflow = outflows[i].length;
+        for (j=0; j<outflows[i].length; j++) {
+            toNode = outflows[i][j];
+            code += '-' + toNode.label;
+        }
+        code += ';'+line_break;
+    }
+
+    code += '    return {states:states, rates:rates};' + line_break;
+    code += '}' + line_break;  // End of function calculateInitial()
+    code += line_break;
 
 
     // ================  function calculateRates(states)
