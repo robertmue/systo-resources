@@ -84,104 +84,7 @@
     // install the NodeLabelDraggingTool as a "mouse move" tool
     myDiagram.toolManager.mouseMoveTools.insertAt(0, new NodeLabelDraggingTool());
 
-    // SYSTEM DYNAMICS NODE diagram_gojsS
 
-    var stockTemplate = 
-      gojs(go.Node, "Auto",
-        {   locationObjectName: "ICON", 
-            locationSpot: go.Spot.Center, 
-            layerName: "Foreground", 
-            alignmentFocus:go.Spot.Default
-        },
-        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-        { selectionObjectName: "ICON" },
-        gojs(go.Shape, "Rectangle",
-          {
-            name: "ICON",
-            desiredSize: new go.Size(40, 25),
-            fill: "#e0e0e0",
-            stroke: "black",
-            portId: "",
-            fromLinkable: true,
-            fromLinkableSelfNode: true,
-            fromLinkableDuplicates: true,
-            toLinkable: true,
-            toLinkableSelfNode: true,
-            toLinkableDuplicates: true,
-            cursor: "pointer"
-          }
-        ),
-        gojs(go.Shape,  // provide interior area where the user can grab the node
-          { fill: "transparent", stroke: null, desiredSize: new go.Size(28, 16) }
-        ),
-        gojs(go.TextBlock,
-          {
-            font: "10pt helvetica, rial, sans-serif",
-            editable: true,  // editing the text automatically updates the model data
-            _isNodeLabel: true,
-            cursor: "move"  // visual hint that the user can do something with this node label
-          },
-          new go.Binding("text", "label").makeTwoWay(),
-          // The GraphObject.alignment property is what the NodeLabelDraggingTool modifies.
-          // This TwoWay binding saves any changes to the same named property on the node data.
-          new go.Binding("alignment", "alignment", go.Spot.parse).makeTwoWay(go.Spot.stringify)
-        )
-      );
-
-    var cloudTemplate = 
-      gojs("Node", "Auto",
-        { locationSpot: go.Spot.Center,
-          layerName: "Background" },  // always have regular nodes behind Links
-        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-        gojs("Shape", "Cloud",
-          { stroke: "black", fill: "white", desiredSize: new go.Size(40, 25), fill: "#e0e0e0",
-            portId: "", fromLinkable: true, toLinkable: true, cursor: "pointer" }),
-        gojs(go.Shape,  // provide interior area where the user can grab the node
-          { fill: "transparent", stroke: null, desiredSize: new go.Size(28, 16) }),
-          new go.Binding("alignment", "alignment", go.Spot.parse).makeTwoWay(go.Spot.stringify)
-      );
-
-    var valveTemplate = 
-      gojs(go.Node, "Spot",
-        { locationObjectName: "ICON", 
-            locationSpot: go.Spot.Center, 
-            layerName: "Foreground", 
-            movable: false,
-            alignmentFocus:go.Spot.None,   // Added 7 Jan 2016 as per email from GoJS Support 12 Nov 2015
-        },
-        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-        { selectionObjectName: "ICON" },
-        // define the node primary shape
-        gojs(go.Shape, "Ellipse",
-          {
-            name: "ICON",
-            desiredSize: new go.Size(25, 25),
-            fill: "#e0e0e0",
-            stroke: "black",
-            portId: "",
-            fromLinkable: true,
-            fromLinkableSelfNode: true,
-            fromLinkableDuplicates: true,
-            toLinkable: true,
-            toLinkableSelfNode: true,
-            toLinkableDuplicates: true,
-            cursor: "pointer"
-          }),
-        gojs(go.Shape,  // provide interior area where the user can grab the node
-          { fill: "transparent", stroke: null, desiredSize: new go.Size(20, 20) }),
-        gojs(go.TextBlock,
-          {
-            font: "10pt helvetica, arial, sans-serif",
-            editable: true,  // editing the text automatically updates the model data
-            _isNodeLabel: true,
-            cursor: "move"  // visual hint that the user can do something with this node label
-          },
-          new go.Binding("text", "label").makeTwoWay(),
-          // The GraphObject.alignment property is what the NodeLabelDraggingTool modifies.
-          // This TwoWay binding saves any changes to the same named property on the node data.
-          new go.Binding("alignment", "alignment", go.Spot.parse).makeTwoWay(go.Spot.stringify)
-          )
-      );
 
     var model = SYSTO.models[widget.options.modelId];
     var languageId = model.meta.language;
@@ -192,24 +95,30 @@
         createNodeTypeTemplate(nodeTypeId, nodeType);
     }
 
-    //myDiagram.nodeTemplateMap.add("stock", nodeTypeTemplate);  This doesn't work - gives weird error in load()!
-    //myDiagram.nodeTemplateMap.add("cloud", cloudTemplate);
-    //myDiagram.nodeTemplateMap.add("valve", valveTemplate);
-
     // SYSTEM DYNAMICS LINK diagram_gojsS
     var flowTemplate = 
       gojs("Link",
-        { relinkableFrom: true, relinkableTo: true, toShortLength: 2 },
-        gojs("Shape", { stroke: "blue", strokeWidth: 5 }),
-        gojs("Shape", { fill: "blue", stroke: null, toArrow: "Standard", scale:2.5 })
+        { relinkableFrom: true, relinkableTo: true, toShortLength: 8 },
+        gojs("Shape", { stroke: "#ff7070", strokeWidth: 4 }),
+        gojs("Shape", { fill: "#ff7070", stroke: null, toArrow: "Standard", scale:2 })
       );
 
     var influenceTemplate =
       gojs("Link",
-        { relinkableFrom: true, relinkableTo: true },
-        gojs("Shape", { stroke: "green", strokeWidth: 1.5}),
-        gojs("Shape", { fill: "green", stroke: null, toArrow: "Standard", scale:1.5 })
+        { relinkableFrom: true, relinkableTo: true, toShortLength: 3, curve: go.Link.Bezier  },
+        gojs("Shape", { stroke: "black", strokeWidth: 1.2}),
+        gojs("Shape", { fill: "black", stroke: null, toArrow: "Standard", scale:1.2 })
        );
+
+/*
+  diagram.linkTemplateMap.add("Comment",
+    $(go.Link,
+      { curve: go.Link.Bezier },
+      new go.Binding("curviness"),
+      $(go.Shape, { stroke: "brown" }),
+      $(go.Shape, { toArrow: "OpenTriangle", stroke: "brown" })
+    ));
+*/
 
     myDiagram.linkTemplateMap.add("flow", flowTemplate);
     myDiagram.linkTemplateMap.add("influence", influenceTemplate);
@@ -257,7 +166,8 @@
             var category = node.type;
             var label = node.label;
             var loc = node.centrex+" "+node.centrey;
-            var alignment = "0.5 0.5 "+node.text_shiftx+" "+node.text_shifty;
+            var shifty = -1*node.text_shifty;
+            var alignment = "0.5 0.5 "+node.text_shiftx+" "+shifty;
             var gojsNode = {key:key, category:category, label:label, loc:loc, alignment:alignment};
             gojsModel.nodeDataArray.push(gojsNode);
         }
@@ -278,6 +188,7 @@
             gojsModel.linkDataArray.push(gojsArc);
         }
 
+        console.debug(JSON.stringify(gojsModel,null,4));
         myDiagram.model = go.Model.fromJson(JSON.stringify(gojsModel));
     }
 
@@ -314,25 +225,37 @@
     // and are not familiar with GoJS's shorthand notation, to relate this code 
     // to the object reference documentation.
 
+
     function createNodeTypeTemplate(nodeTypeId, nodeType) {
 
-        var width = nodeType.width;
-        var height = nodeType.height;
-
-        var template = new go.Node(go.Panel.Auto);
+        var template = new go.Node(go.Panel.Spot);
         template.locationObjectName = "ICON";
         template.locationSpot = go.Spot.Center;
         template.layerName = "Foreground";
-        template.alignmentFocus = go.Spot.Default;
         template.selectionObjectName = "ICON";
         template.bind(new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify));
+        if (nodeTypeId === "valve") {       // TODO: fix this hack! Only for nodes attached to middle of arcs
+            template.alignmentFocus = go.Spot.None;
+            template.movable = false;
+        } else {
+            template.alignmentFocus = go.Spot.Default;
+        }
 
         var shape = new go.Shape();
-        shape.figure = "Rectangle";
+        if (nodeType.shape === "rectangle") {
+            shape.figure = "Rectangle";
+        } else if (nodeType.shape === "oval") {
+            shape.figure = "Ellipse";
+        }
         shape.name = "ICON";
-        shape.desiredSize = new go.Size(width, height);
-        shape.fill = "#e0e0e0";
-        shape.stroke = "black";
+        shape.desiredSize = new go.Size(nodeType.width, nodeType.height);
+        if (nodeTypeId === "variable") {   // TODO Fix this hack!
+            shape.fill = "white";
+            shape.stroke = "white";
+        } else {
+            shape.fill = "#e0e0e0";
+            shape.stroke = "black";
+        }
         shape.portId = "";
         shape.fromLinkable = true;
         shape.fromLinkableSelfNode = true;
@@ -343,19 +266,28 @@
         shape.cursor = "pointer";
         template.add(shape);
 
-        var shape1 = new go.Shape();
-        shape1.fill = "#e0e0e0";
-        shape1.stroke = null;
-        shape1.desiredSize = new go.Size(28, 16);
-        template.add(shape1);
+        if (nodeTypeId !== "valve") {   // TODO Fix this hack!
+            var shape1 = new go.Shape();
+            if (nodeTypeId === "variable") {   // TODO Fix this hack!
+                shape1.fill = "white";
+            } else {
+                shape1.fill = "#e0e0e0";
+            }
+            shape1.stroke = null;
+            var w = Math.max(nodeType.width-8,10);
+            var h = Math.max(nodeType.height-8,8);
+            shape1.desiredSize = new go.Size(w, h);
+            template.add(shape1);
+        }
 
         var label = new go.TextBlock();
-        label.font = "10pt helvetica, arial, sans-serif";
+        label.font = "9.5pt helvetica, arial, sans-serif";
         label.editable = true;  // editing the text automatically updates the model data
-        label._isNodeLabel = true;
+        // label._isNodeLabel = true;  // Wrong!   See email 9 Jan 2016, 00.37
+        label.setProperties({_isNodeLabel: true});
         label.cursor = "move";  // visual hint that the user can do something with this node label
         //label.text = "Hello";
-        //label.alignment = new go.Spot(0.5,0.5,-30,0);
+        //label.alignment = new go.Spot(0.5,0.5,-20,0);
         label.bind(new go.Binding("alignment", "alignment", go.Spot.parse).makeTwoWay(go.Spot.stringify));
         label.bind(new go.Binding("text", "label").makeTwoWay());
         template.add(label);
