@@ -167,8 +167,8 @@
             var label = node.label;
             var loc = node.centrex+" "+node.centrey;
             var shifty = -1*node.text_shifty;
-            var alignment = "0.5 0.5 "+node.text_shiftx+" "+shifty;
-            var gojsNode = {key:key, category:category, label:label, loc:loc, alignment:alignment};
+            var text_shift = "0.5 0.5 "+node.text_shiftx+" "+shifty;
+            var gojsNode = {key:key, category:category, label:label, loc:loc, text_shift:text_shift};
             gojsModel.nodeDataArray.push(gojsNode);
         }
 
@@ -228,73 +228,126 @@
 
     function createNodeTypeTemplate(nodeTypeId, nodeType) {
 
-        var template = new go.Node(go.Panel.Spot);
-        template.locationObjectName = "ICON";
-        template.locationSpot = go.Spot.Center;
-        template.layerName = "Foreground";
-        template.selectionObjectName = "ICON";
-        template.bind(new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify));
-        if (nodeTypeId === "valve") {       // TODO: fix this hack! Only for nodes attached to middle of arcs
-            template.alignmentFocus = go.Spot.None;
-            template.movable = false;
-        } else {
-            template.alignmentFocus = go.Spot.Default;
-        }
+        // Create a new node template, and set its properties.
 
-        var shape = new go.Shape();
-        if (nodeType.shape === "rectangle") {
-            shape.figure = "Rectangle";
-        } else if (nodeType.shape === "oval") {
-            shape.figure = "Ellipse";
-        }
-        shape.name = "ICON";
-        shape.desiredSize = new go.Size(nodeType.width, nodeType.height);
-        if (nodeTypeId === "variable") {   // TODO Fix this hack!
-            shape.fill = "white";
-            shape.stroke = "white";
-        } else {
-            shape.fill = "#e0e0e0";
-            shape.stroke = "black";
-        }
-        shape.portId = "";
-        shape.fromLinkable = true;
-        shape.fromLinkableSelfNode = true;
-        shape.fromLinkableDuplicates = true;
-        shape.toLinkable = true;
-        shape.toLinkableSelfNode = true;
-        shape.toLinkableDuplicates = true;
-        shape.cursor = "pointer";
-        template.add(shape);
+        if (nodeType.no_separate_symbol) {      // Just a text label - no symbol for the node.
+            myDiagram.nodeTemplateMap.add(nodeTypeId, template);
+            var template = new go.Node(go.Panel.Spot);   // or Auto?
+            template.locationObjectName = "ICON";
+            template.locationSpot = go.Spot.Center;
+            template.layerName = "Foreground";
+            template.selectionObjectName = "ICON";
+            template.bind(new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify));
 
-        if (nodeTypeId !== "valve") {   // TODO Fix this hack!
-            var shape1 = new go.Shape();
-            if (nodeTypeId === "variable") {   // TODO Fix this hack!
-                shape1.fill = "white";
+            var label = new go.TextBlock();
+            label.font = "9.5pt helvetica, arial, sans-serif";
+            label.stroke = 'black';
+            label.padding = 10;  // make some extra space for the shape around the text
+            label.isMultiline = false;  // don't allow newlines in text
+            label.editable = true;  // allow in-place editing by user
+            label.bind(new go.Binding("text", "label").makeTwoWay());
+            template.add(label);
+/*
+    myDiagram.nodeTemplate =
+      $(go.Node, "Auto",
+        { locationSpot: go.Spot.Center },
+        $(go.Shape, "RoundedRectangle",
+          {
+            fill: "white", // the default fill, if there is no data-binding
+            portId: "", cursor: "pointer",  // the Shape is the port, not the whole Node
+            // allow all kinds of links from and to this port
+            fromLinkable: true, fromLinkableSelfNode: true, fromLinkableDuplicates: true,
+            toLinkable: true, toLinkableSelfNode: true, toLinkableDuplicates: true
+          },
+          new go.Binding("fill", "color")),
+        $(go.TextBlock,
+          {
+            font: "bold 14px sans-serif",
+            stroke: '#333',
+            margin: 6,  // make some extra space for the shape around the text
+            isMultiline: false,  // don't allow newlines in text
+            editable: true  // allow in-place editing by user
+          },
+          new go.Binding("text", "text").makeTwoWay()),  // the label shows the node data's text
+      );
+*/
+
+        } else {        // This node type has a symbol (rectangle, circle, whatever)
+            myDiagram.nodeTemplateMap.add(nodeTypeId, template);
+            var template = new go.Node(go.Panel.Spot);
+            template.locationObjectName = "ICON";
+            template.locationSpot = go.Spot.Center;
+            template.layerName = "Foreground";
+            template.selectionObjectName = "ICON";
+            template.bind(new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify));
+            if (nodeTypeId === "valve") {       // TODO: fix this hack! Only for nodes attached to middle of arcs
+                template.alignmentFocus = go.Spot.None;
+                template.movable = false;
             } else {
-                shape1.fill = "#e0e0e0";
+                template.alignmentFocus = go.Spot.Default;
             }
-            shape1.stroke = null;
-            var w = Math.max(nodeType.width-8,10);
-            var h = Math.max(nodeType.height-8,8);
-            shape1.desiredSize = new go.Size(w, h);
-            template.add(shape1);
+
+            // Create the main shape for the node template.
+            var shape = new go.Shape();
+            if (nodeType.shape === "rectangle") {
+                shape.figure = "Rectangle";
+            } else if (nodeType.shape === "oval") {
+                shape.figure = "Ellipse";
+            }
+            shape.name = "ICON";
+            shape.desiredSize = new go.Size(nodeType.width, nodeType.height);
+            if (nodeTypeId === "variable") {        // TODO Fix this hack!
+                shape.fill = "white";
+                shape.stroke = "white";
+            } else {
+                shape.fill = "#e0e0e0";
+                shape.stroke = "black";
+            }
+            shape.portId = "";
+            shape.fromLinkable = true;
+            shape.fromLinkableSelfNode = true;
+            shape.fromLinkableDuplicates = true;
+            shape.toLinkable = true;
+            shape.toLinkableSelfNode = true;
+            shape.toLinkableDuplicates = true;
+            shape.cursor = "pointer";
+            template.add(shape);
+
+            // Create a section inside the node's shape which can be used to drag it around.
+            // This is not needed for nodes attached midway along an arc.
+            if (nodeTypeId !== "valve") {             // TODO Fix this hack!
+                var shape1 = new go.Shape();
+                if (nodeTypeId === "variable") {      // TODO Fix this hack!
+                    shape1.fill = "white";
+                } else {
+                    shape1.fill = "#e0e0e0";
+                }
+                shape1.stroke = null;
+                var w = Math.max(nodeType.width-8,10);
+                var h = Math.max(nodeType.height-8,8);
+                shape1.desiredSize = new go.Size(w, h);
+                template.add(shape1);
+            }
+
+            // Create the label for the node template.
+            var label = new go.TextBlock();
+            label.font = "9.5pt helvetica, arial, sans-serif";
+            label.editable = true;        
+            label.setProperties({_isNodeLabel: true});
+            label.cursor = "move";   
+            label.bind(new go.Binding("alignment", "text_shift", go.Spot.parse).makeTwoWay(go.Spot.stringify));
+            label.bind(new go.Binding("text", "label").makeTwoWay());
+            template.add(label);
         }
-
-        var label = new go.TextBlock();
-        label.font = "9.5pt helvetica, arial, sans-serif";
-        label.editable = true;  // editing the text automatically updates the model data
-        // label._isNodeLabel = true;  // Wrong!   See email 9 Jan 2016, 00.37
-        label.setProperties({_isNodeLabel: true});
-        label.cursor = "move";  // visual hint that the user can do something with this node label
-        //label.text = "Hello";
-        //label.alignment = new go.Spot(0.5,0.5,-20,0);
-        label.bind(new go.Binding("alignment", "alignment", go.Spot.parse).makeTwoWay(go.Spot.stringify));
-        label.bind(new go.Binding("text", "label").makeTwoWay());
-        template.add(label);
-
         myDiagram.nodeTemplateMap.add(nodeTypeId, template);
         
     }
 
+        // Some coding hints:
+        // label.editable = true;         // Editing the text automatically updates the model data
+        // label.cursor = "move";         // Visual hint the user can do something with this node label
+        // label._isNodeLabel = true;  // Wrong!   See email 9 Jan 2016, 00.37
+        // label.text = "Hello";                            // Useful to see how the text and alignment 
+        // label.alignment = new go.Spot(0.5,0.5,-20,0);    // properties can be set explicitly.
 
 })(jQuery);
