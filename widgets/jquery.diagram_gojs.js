@@ -28,11 +28,18 @@
 
             var div = $('<div>diagram_gojs</div>');
             this._container = $(this.element).append(div);
+            this.div = div;
+
+            myDiagram = new go.Diagram(this.element[0]);
+
+            $(document).on('diagram_modified_event', {}, function(event, parameters) {
+                gojs_init(self, myDiagram);
+            });
 
             this._setOptions({
             });
 
-            gojs_init(this);
+            gojs_init(this, myDiagram);
         },
 
         _destroy: function () {
@@ -67,68 +74,60 @@
     });
 
 
-  function gojs_init(widget) {
+  function gojs_init(widget, myDiagram) {
 
-    var gojs = go.GraphObject.make;
-
-    myDiagram =
-      gojs(go.Diagram, "diagram2",  // create a Diagram for the DIV HTML element
-        {
-          initialContentAlignment: go.Spot.Center,
-          "LinkDrawn": maybeChangeLinkCategory,     // these two DiagramEvents call a
-          "LinkRelinked": maybeChangeLinkCategory,  // function that is defined below
-          "undoManager.isEnabled": true,
-          "animationManager.isEnabled":false   // !! See email from GoJS Support, 7 Jan 2016
-        });
+    myDiagram.initialContentAlignment = go.Spot.Center;
+    myDiagram.LinkDrawn = maybeChangeLinkCategory;     // these two DiagramEvents call a
+    myDiagram.LinkRelinked = maybeChangeLinkCategory;  // function that is defined below
+    myDiagram.undoManager.isEnabled = true;
+    myDiagram.autoScrollRegion = 0;
+    myDiagram.initialContentAlignment = go.Spot.Default;
+    myDiagram.contentAlignment = go.Spot.Center;
+    myDiagram.animationManager.isEnabled =false;   // !! See email from GoJS Support, 7 Jan 2016
 
     // install the NodeLabelDraggingTool as a "mouse move" tool
     myDiagram.toolManager.mouseMoveTools.insertAt(0, new NodeLabelDraggingTool());
 
+    // Much easier to attach event listeners to nodes, links etc, so that's what I have done.
+    // Will need this for adding new nodes etc.
+    // It's tricky to work out what the "subject" is...
+/*
+    myDiagram.addDiagramListener("ObjectSingleClicked",function(DiagramEvent) {
+        part = DiagramEvent.subject.part;
+        console.debug(part);
+        if (part instanceof go.Node) {
+            alert(part.data.key);
+            console.debug('node!');
+        }
+    });
+*/
 
+
+    // The following 15 lines generate a separate node or link template for
+    // every node and arc (GoJS link) defined in the Systo graph language definition.
+    // Note that Systo says "arc" where GoJS says "link".
 
     var model = SYSTO.models[widget.options.modelId];
     var languageId = model.meta.language;
     var language = SYSTO.languages[languageId];
+
     var nodeTypes = language.NodeType;
     for (var nodeTypeId in nodeTypes) {
         var nodeType = nodeTypes[nodeTypeId];
         createNodeTypeTemplate(nodeTypeId, nodeType);
     }
 
-    // SYSTEM DYNAMICS LINK diagram_gojsS
-    var flowTemplate = 
-      gojs("Link",
-        { relinkableFrom: true, relinkableTo: true, toShortLength: 8 },
-        gojs("Shape", { stroke: "#ff7070", strokeWidth: 4 }),
-        gojs("Shape", { fill: "#ff7070", stroke: null, toArrow: "Standard", scale:2 })
-      );
-
-    var influenceTemplate =
-      gojs("Link",
-        { relinkableFrom: true, relinkableTo: true, toShortLength: 3, curve: go.Link.Bezier  },
-        gojs("Shape", { stroke: "black", strokeWidth: 1.2}),
-        gojs("Shape", { fill: "black", stroke: null, toArrow: "Standard", scale:1.2 })
-       );
-
-/*
-  diagram.linkTemplateMap.add("Comment",
-    $(go.Link,
-      { curve: go.Link.Bezier },
-      new go.Binding("curviness"),
-      $(go.Shape, { stroke: "brown" }),
-      $(go.Shape, { toArrow: "OpenTriangle", stroke: "brown" })
-    ));
-*/
-
-    myDiagram.linkTemplateMap.add("flow", flowTemplate);
-    myDiagram.linkTemplateMap.add("influence", influenceTemplate);
+    var arcTypes = language.ArcType;
+    for (var arcTypeId in arcTypes) {
+        var arcType = arcTypes[arcTypeId];
+        createLinkTypeTemplate(arcTypeId, arcType);
+    }
 
     // GraphLinksModel support for link label nodes requires specifying two properties.
-    myDiagram.model =
-      gojs(go.GraphLinksModel,
-        { linkLabelKeysProperty: "labelKeys" });
+    myDiagram.model = new go.GraphLinksModel();
+    myDiagram.model.linkLabelKeysProperty = "labKeys";
 
-    // Whenever a new Link is drawng by the LinkingTool, it also adds a node data object
+    // Whenever a new Link is drawn by the LinkingTool, it also adds a node data object
     // that acts as the label node for the link, to allow links to be drawn to/from the link.
     myDiagram.toolManager.linkingTool.archetypeLabelNodeData =
       { category: "valve" };
@@ -219,11 +218,16 @@
 
     // I am using long-winded approach to begin with (as described in 
     // http://gojs.net/latest/intro/buildingObjects.html "Building with Code").  
-    // Partly personal preference; partly because I think it is easier this way 
-    // to produce custom templates for different node types; and partly because 
-    // I think is easier for people who want to understand or adapt this code, 
-    // and are not familiar with GoJS's shorthand notation, to relate this code 
-    // to the object reference documentation.
+    // Three main reasons:
+    // 1. Personal preference;
+    // 2. Because I think it is easier this way to produce customise the templates  
+    //    for different node types;
+    // 3. Because I think is easier for people who want to understand or adapt this
+    //    code, and are not familiar with GoJS's shorthand notation, to relate this 
+    //    code to the object reference documentation: all classes and properties are
+    //    explicit.
+    // 4. I don't like the fact that some properties (compound properties) have to be
+    //    quoted, e.g. "undoManager.isEnabled" rather than undoManager.isEnabled.
 
 
     function createNodeTypeTemplate(nodeTypeId, nodeType) {
@@ -247,30 +251,6 @@
             label.editable = true;  // allow in-place editing by user
             label.bind(new go.Binding("text", "label").makeTwoWay());
             template.add(label);
-/*
-    myDiagram.nodeTemplate =
-      $(go.Node, "Auto",
-        { locationSpot: go.Spot.Center },
-        $(go.Shape, "RoundedRectangle",
-          {
-            fill: "white", // the default fill, if there is no data-binding
-            portId: "", cursor: "pointer",  // the Shape is the port, not the whole Node
-            // allow all kinds of links from and to this port
-            fromLinkable: true, fromLinkableSelfNode: true, fromLinkableDuplicates: true,
-            toLinkable: true, toLinkableSelfNode: true, toLinkableDuplicates: true
-          },
-          new go.Binding("fill", "color")),
-        $(go.TextBlock,
-          {
-            font: "bold 14px sans-serif",
-            stroke: '#333',
-            margin: 6,  // make some extra space for the shape around the text
-            isMultiline: false,  // don't allow newlines in text
-            editable: true  // allow in-place editing by user
-          },
-          new go.Binding("text", "text").makeTwoWay()),  // the label shows the node data's text
-      );
-*/
 
         } else {        // This node type has a symbol (rectangle, circle, whatever)
             myDiagram.nodeTemplateMap.add(nodeTypeId, template);
@@ -296,13 +276,8 @@
             }
             shape.name = "ICON";
             shape.desiredSize = new go.Size(nodeType.width, nodeType.height);
-            if (nodeTypeId === "variable") {        // TODO Fix this hack!
-                shape.fill = "white";
-                shape.stroke = "white";
-            } else {
-                shape.fill = "#e0e0e0";
-                shape.stroke = "black";
-            }
+            shape.fill = "yellow";
+            shape.stroke = "black";
             shape.portId = "";
             shape.fromLinkable = true;
             shape.fromLinkableSelfNode = true;
@@ -310,22 +285,20 @@
             shape.toLinkable = true;
             shape.toLinkableSelfNode = true;
             shape.toLinkableDuplicates = true;
-            shape.cursor = "pointer";
+            shape.cursor = "pointer";   
+            shape.click = function(e, node) {alert('shape');};
             template.add(shape);
 
             // Create a section inside the node's shape which can be used to drag it around.
             // This is not needed for nodes attached midway along an arc.
             if (nodeTypeId !== "valve") {             // TODO Fix this hack!
                 var shape1 = new go.Shape();
-                if (nodeTypeId === "variable") {      // TODO Fix this hack!
-                    shape1.fill = "white";
-                } else {
-                    shape1.fill = "#e0e0e0";
-                }
+                shape1.fill = "red";
                 shape1.stroke = null;
                 var w = Math.max(nodeType.width-8,10);
                 var h = Math.max(nodeType.height-8,8);
                 shape1.desiredSize = new go.Size(w, h);
+                shape1.click = function(e, shape1) {alert(shape1.panel.data.key);};
                 template.add(shape1);
             }
 
@@ -343,11 +316,42 @@
         
     }
 
-        // Some coding hints:
-        // label.editable = true;         // Editing the text automatically updates the model data
-        // label.cursor = "move";         // Visual hint the user can do something with this node label
-        // label._isNodeLabel = true;  // Wrong!   See email 9 Jan 2016, 00.37
-        // label.text = "Hello";                            // Useful to see how the text and alignment 
-        // label.alignment = new go.Spot(0.5,0.5,-20,0);    // properties can be set explicitly.
+
+
+    function createLinkTypeTemplate(arcTypeId, arcType) {
+
+        // Create a new link (Systo arc) template, and set its properties.
+
+        var template = new go.Link();  
+        template.relinkableFrom = true;
+        template.relinkableTo = true;
+        template.toShortLength = 8;
+        if (arcTypeId === "influence") {
+            template.curve = go.Link.Bezier;
+        }
+        
+        var shape = new go.Shape();
+        shape.stroke = arcType.fill_colour.set.normal;
+        shape.strokeWidth = arcType.line_width.set.normal;
+        template.add(shape);
+
+        var arrowheadShape = new go.Shape();
+        arrowheadShape.fill = arcType.fill_colour.set.normal;
+        arrowheadShape.stroke = null;
+        arrowheadShape.toArrow = "Standard";
+        arrowheadShape.scale = arcType.arrowhead.width/2.5;
+        template.add(arrowheadShape);
+
+        myDiagram.linkTemplateMap.add(arcTypeId, template);
+    }
+
 
 })(jQuery);
+
+// Some coding hints:
+// label.editable = true;         // Editing the text automatically updates the model data
+// label.cursor = "move";         // Visual hint the user can do something with this node label
+// label._isNodeLabel = true;  // Wrong!   See email 9 Jan 2016, 00.37
+// label.text = "Hello";                            // Useful to see how the text and alignment 
+// label.alignment = new go.Spot(0.5,0.5,-20,0);    // properties can be set explicitly.
+
