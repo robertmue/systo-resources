@@ -30,7 +30,200 @@
             this._container = $(this.element).append(div);
             this.div = div;
 
+
             myDiagram = new go.Diagram(this.element[0]);
+            myDiagram.initialContentAlignment = go.Spot.Center;
+            myDiagram.LinkDrawn = maybeChangeLinkCategory;     // these two DiagramEvents call a
+            myDiagram.LinkRelinked = maybeChangeLinkCategory;  // function that is defined below
+            myDiagram.undoManager.isEnabled = true;
+            myDiagram.autoScrollRegion = 0;
+            myDiagram.initialContentAlignment = go.Spot.Default;
+            myDiagram.contentAlignment = go.Spot.Center;
+            myDiagram.animationManager.isEnabled =false;   // !! See email from GoJS Support, 7 Jan 2016
+            myDiagram.toolManager.clickCreatingTool.archetypeNodeData = { key:"Start", category: "Start"},
+		    myDiagram.toolManager.clickCreatingTool.isDoubleClick = false,    // RM
+            //myDiagram.linkingTool = new CustomLinkingTool(),  // defined below to automatically turn on allowLink
+            myDiagram.toolManager.hoverDelay = 100  // how quickly tooltips are shown
+
+            // GraphLinksModel support for link label nodes requires specifying two properties.
+            myDiagram.model = new go.GraphLinksModel();
+            myDiagram.model.linkLabelKeysProperty = "labKeys";
+
+
+            myDiagram.addDiagramListener("BackgroundDoubleClicked", 
+                function(e) {
+                    myDiagram.findNodesByExample({category:"Start"}).each(function(T) {
+                        myDiagram.remove(T);
+                    });
+                }
+            );
+
+
+            // This is lifted from Grafcet.html on the GoJS Samples site.
+            // Included here as a basis for similar in Systo.
+            // when the document is modified, add a "*" to the title and enable the "Save" button
+            myDiagram.addDiagramListener("Modified", function(e) {
+              var button = document.getElementById("saveModel");
+              if (button) button.disabled = !myDiagram.isModified;
+              var idx = document.title.indexOf("*");
+              if (myDiagram.isModified) {
+                if (idx < 0) document.title += "*";
+              } else {
+                if (idx >= 0) document.title = document.title.substr(0, idx); 
+              }
+            });
+
+            // Whenever a new Link is drawn by the LinkingTool, it also adds a node data object
+            // that acts as the label node for the link, to allow links to be drawn to/from the link.
+            myDiagram.toolManager.linkingTool.archetypeLabelNodeData =
+              { category: "valve" };
+
+
+    GOJS = go.GraphObject.make;
+
+    myDiagram.nodeTemplateMap.add("Startxx",
+      GOJS(go.Node, "Vertical", commonNodeStyle(),
+        { locationObjectName: "STEPPANEL", selectionObjectName: "STEPPANEL",alignment:new go.Spot(0.5,0.5,-20,0) }
+      ));
+
+/*
+            var template1 = new go.Node(go.Panel.Vertical);
+            myDiagram.nodeTemplateMap.add("Start", template1);
+            template1.locationSpot = go.Spot.Center;
+
+            // Create the main shape for the node template.
+            var shape = new go.Shape();
+            shape.figure = "Rectangle";
+            shape.desiredSize = new go.Size(30,40);
+            shape.fill = "yellow";
+            shape.stroke = "black";
+            template1.add(shape);
+            shape.selectionAdornmentTemplate = commandsAdornment;  // shared selection Adornment
+            shape.bind(new go.Binding("location", "location", go.Point.parse).makeTwoWay(go.Point.stringify));
+*/
+
+    function canAddStep(adorn) {
+      var node = adorn.adornedPart;
+      if (node.category === "" || node.category === "Start") {
+        return node.findLinksOutOf().count === 0;
+      } else if (node.category === "Parallel" || node.category === "Exclusive") {
+        return true;
+      }
+      return false;
+    }
+
+
+    // a helper function that declares common properties for all kinds of nodes
+    function commonNodeStyle() {
+      return [
+        {
+          locationSpot: go.Spot.Center,
+          selectionAdornmentTemplate: commandsAdornment  // shared selection Adornment
+        },
+        new go.Binding("location", "location", go.Point.parse).makeTwoWay(go.Point.stringify),
+      ];
+    }
+
+
+    var commandsAdornment =
+      GOJS(go.Adornment, "Position",
+        GOJS(go.Panel, "Auto", {position: new go.Point(15,12)},
+          GOJS(go.Shape, { fill: null, stroke: "deepskyblue", strokeWidth: 2 }),
+          GOJS(go.Placeholder)
+        ),
+        GOJS(go.Panel, "Vertical",    
+          { defaultStretch: go.GraphObject.Vertical },
+          GOJS("Button" ,
+            GOJS(go.Shape,
+              { geometryString: "F M0 0 L20 0 20 14 0 14 z", stroke:"red",
+                fill: "red", margin: 3}),
+            { click: addStock, toolTip: makeTooltip("Add stock") },
+            new go.Binding("visible", "", canAddStep).ofObject()),
+          GOJS("Button",
+            GOJS(go.Shape,
+              { geometryString: "F M0 0 L20 0 20 14 0 14 z",
+                fill: "yellow", margin: 3}),
+            { click: addCloud, toolTip: makeTooltip("Add cloud") },
+            new go.Binding("visible", "", canAddStep).ofObject()),
+          GOJS("Button",
+            GOJS(go.Shape,
+              { geometryString: "F M0 0 L20 0 20 14 0 14 z",
+                fill: "blue", margin: 3 }),
+            { click: addVariable, toolTip: makeTooltip("Add variable") },
+            new go.Binding("visible", "", canAddStep).ofObject())
+        )
+      );
+
+    function makeTooltip(str) {  // a helper function for defining tooltips for buttons
+      return GOJS(go.Adornment, go.Panel.Auto,
+               GOJS(go.Shape, { fill: "#FFFFCC" }),
+               GOJS(go.TextBlock, str, {margin: 4, stroke:"black", font:"15px sans-serif" }));
+    }
+
+    // Commands for adding new Nodes
+    // RM
+    function addStock(e, obj) {
+      myDiagram.findNodesByExample({category:"Start"}).each(function(T) {
+        myDiagram.remove(T);
+      });
+      var node = obj.part.adornedPart;
+      var model = myDiagram.model;
+      model.startTransaction("add stock");
+      var loc = node.location.copy();
+      var nodedata = {key:"stock", category:'stock', label:"stock", location: go.Point.stringify(loc), loc: go.Point.stringify(loc)};
+      model.addNodeData(nodedata);
+      var newnode = myDiagram.findNodeForData(nodedata);
+      myDiagram.select(newnode);
+      model.commitTransaction("add stock");
+      myDiagram.remove(node);
+      console.debug(model.toJson());
+    }
+
+    function addCloud(e, obj) {
+      myDiagram.findNodesByExample({category:"Start"}).each(function(T) {
+        myDiagram.remove(T);
+      });
+      var node = obj.part.adornedPart;
+      var model = myDiagram.model;
+      model.startTransaction("add cloud");
+      var loc = node.location.copy();
+      var nodedata = {key:"cloud", category:'cloud', label:"cloud", location: go.Point.stringify(loc), loc: go.Point.stringify(loc)};
+      model.addNodeData(nodedata);
+      var newnode = myDiagram.findNodeForData(nodedata);
+      myDiagram.select(newnode);
+      model.commitTransaction("add cloud");
+      myDiagram.remove(node);
+    }
+
+    function addVariable(e, obj) {
+      myDiagram.findNodesByExample({category:"Start"}).each(function(T) {
+        myDiagram.remove(T);
+      });
+      var node = obj.part.adornedPart;
+      var model = myDiagram.model;
+      model.startTransaction("add variable");
+      var loc = node.location.copy();
+      var nodedata = {category:'variable', label:"variable", location: go.Point.stringify(loc), loc: go.Point.stringify(loc)};
+      model.addNodeData(nodedata);
+      var newnode = myDiagram.findNodeForData(nodedata);
+      myDiagram.select(newnode);
+      model.commitTransaction("add variable");
+      myDiagram.remove(node);
+    }
+
+
+
+
+
+            // this DiagramEvent handler is called during the linking or relinking transactions
+            function maybeChangeLinkCategory(e) {
+              var link = e.subject;
+              var linktolink = (link.fromNode.isLinkLabel || link.toNode.isLinkLabel);
+              e.diagram.model.setCategoryForLinkData(link.data, (linktolink ? "influence" : ""));
+            }
+
+            // install the NodeLabelDraggingTool as a "mouse move" tool
+            myDiagram.toolManager.mouseMoveTools.insertAt(0, new NodeLabelDraggingTool());
 
             $(document).on('diagram_modified_event', {}, function(event, parameters) {
                 gojs_init(self, myDiagram);
@@ -76,18 +269,6 @@
 
   function gojs_init(widget, myDiagram) {
 
-    myDiagram.initialContentAlignment = go.Spot.Center;
-    myDiagram.LinkDrawn = maybeChangeLinkCategory;     // these two DiagramEvents call a
-    myDiagram.LinkRelinked = maybeChangeLinkCategory;  // function that is defined below
-    myDiagram.undoManager.isEnabled = true;
-    myDiagram.autoScrollRegion = 0;
-    myDiagram.initialContentAlignment = go.Spot.Default;
-    myDiagram.contentAlignment = go.Spot.Center;
-    myDiagram.animationManager.isEnabled =false;   // !! See email from GoJS Support, 7 Jan 2016
-
-    // install the NodeLabelDraggingTool as a "mouse move" tool
-    myDiagram.toolManager.mouseMoveTools.insertAt(0, new NodeLabelDraggingTool());
-
     // Much easier to attach event listeners to nodes, links etc, so that's what I have done.
     // Will need this for adding new nodes etc.
     // It's tricky to work out what the "subject" is...
@@ -121,22 +302,6 @@
     for (var arcTypeId in arcTypes) {
         var arcType = arcTypes[arcTypeId];
         createLinkTypeTemplate(arcTypeId, arcType);
-    }
-
-    // GraphLinksModel support for link label nodes requires specifying two properties.
-    myDiagram.model = new go.GraphLinksModel();
-    myDiagram.model.linkLabelKeysProperty = "labKeys";
-
-    // Whenever a new Link is drawn by the LinkingTool, it also adds a node data object
-    // that acts as the label node for the link, to allow links to be drawn to/from the link.
-    myDiagram.toolManager.linkingTool.archetypeLabelNodeData =
-      { category: "valve" };
-
-    // this DiagramEvent handler is called during the linking or relinking transactions
-    function maybeChangeLinkCategory(e) {
-      var link = e.subject;
-      var linktolink = (link.fromNode.isLinkLabel || link.toNode.isLinkLabel);
-      e.diagram.model.setCategoryForLinkData(link.data, (linktolink ? "influence" : ""));
     }
 
     load(model);
@@ -187,7 +352,7 @@
             gojsModel.linkDataArray.push(gojsArc);
         }
 
-        console.debug(JSON.stringify(gojsModel,null,4));
+        //console.debug(JSON.stringify(gojsModel,null,4));
         myDiagram.model = go.Model.fromJson(JSON.stringify(gojsModel));
     }
 
@@ -235,8 +400,8 @@
         // Create a new node template, and set its properties.
 
         if (nodeType.no_separate_symbol) {      // Just a text label - no symbol for the node.
-            myDiagram.nodeTemplateMap.add(nodeTypeId, template);
             var template = new go.Node(go.Panel.Spot);   // or Auto?
+            myDiagram.nodeTemplateMap.add(nodeTypeId, template);
             template.locationObjectName = "ICON";
             template.locationSpot = go.Spot.Center;
             template.layerName = "Foreground";
@@ -253,8 +418,8 @@
             template.add(label);
 
         } else {        // This node type has a symbol (rectangle, circle, whatever)
-            myDiagram.nodeTemplateMap.add(nodeTypeId, template);
             var template = new go.Node(go.Panel.Spot);
+            myDiagram.nodeTemplateMap.add(nodeTypeId, template);
             template.locationObjectName = "ICON";
             template.locationSpot = go.Spot.Center;
             template.layerName = "Foreground";
