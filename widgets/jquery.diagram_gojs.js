@@ -34,159 +34,111 @@
             GOJS = go.GraphObject.make;
 
             myDiagram = new go.Diagram(this.element[0]);
-            myDiagram.initialContentAlignment = go.Spot.Center;
-            myDiagram.animationManager.isEnabled =false;   // !! See email from GoJS Support, 7 Jan 2016
-            myDiagram.toolManager.clickCreatingTool.archetypeNodeData = { key:"Start", category: "Start"},
-	        myDiagram.toolManager.clickCreatingTool.isDoubleClick = false,    // RM
-            myDiagram.toolManager.hoverDelay = 100  // how quickly tooltips are shown
 
+            // Diagram properties and methods:
+            myDiagram.initialContentAlignment = go.Spot.Center;
             myDiagram.addDiagramListener("BackgroundDoubleClicked", 
-                function(e) {
-                    myDiagram.findNodesByExample({category:"Start"}).each(function(T) {
-                        myDiagram.remove(T);
-                    });
-                }
+                function(e) {removeNodePopup();}
             );
 
+            // Diagram.animationManager:
+            myDiagram.animationManager.isEnabled =false;   // !! See email from GoJS Support, 7 Jan 2016
+            // Diagram.toolManager:
+            myDiagram.toolManager.clickCreatingTool.archetypeNodeData = 
+                { key:"Start", category: "Start"},
+	        myDiagram.toolManager.clickCreatingTool.isDoubleClick = false,    // RM
+            myDiagram.toolManager.hoverDelay = 100  // how quickly tooltips are shown
+            myDiagram.toolManager.clickCreatingTool.doStart = 
+                function () {removeNodePopup();
+            };
 
-// ============================================================================
+            // ------------------------------------------------------------------
+            // Popup for choosing type of node to add to diagram
+            myDiagram.nodeTemplateMap.add("Start",
+                GOJS(go.Node, "Auto",
+                  { locationSpot: go.Spot.Center },
+                  GOJS(go.Shape, "Rectangle",
+                    { fill: "white",stroke:"white" }),
+                  GOJS(go.Panel, "Vertical",
+                    { },
+                    GOJS("Button",
+                      {width:60,
+                        click: addCloud },
+                      GOJS(go.TextBlock, "Cloud")),
+                    GOJS("Button",
+                      {width:60,
+                        click: addStock },
+                      GOJS(go.TextBlock, "Stock")),
+                    GOJS("Button",
+                     {width:60,
+                        click: addVariable },
+                      GOJS(go.TextBlock, "Variable"))
+                  )
+                )
+            );
 
-    var startTemplate =
-        GOJS(go.Node, "Auto",
-          { locationSpot: go.Spot.Center },
-          GOJS(go.Shape, "Rectangle",
-            { fill: "white",stroke:"white" }),
-          GOJS(go.Panel, "Vertical",
-            { },
-            GOJS("Button",
-              {width:60,
-                click: addCloud },
-              GOJS(go.TextBlock, "Cloud")),
-            GOJS("Button",
-              {width:60,
-                click: addStock },
-              GOJS(go.TextBlock, "Stock")),
-            GOJS("Button",
-             {width:60,
-                click: addVariable },
-              GOJS(go.TextBlock, "Variable"))
-          )
-        );
+            function addStock(e,obj) {
+                addSystoNode(e, obj, "stock");
+            }
+            function addCloud(e,obj) {
+                addSystoNode(e, obj, "cloud");
+            }
+            function addVariable(e,obj) {
+                addSystoNode(e, obj, "variable");
+            }
 
-    myDiagram.nodeTemplateMap.add("Start", startTemplate);
-
-    // This implements a selection Adornment that is a vertical bar of node-type buttons
-    // that appear when the user clicks on a blank part of the diagram.  Each button has a click
-    //  function to insert an instance of that node-type, a tooltip for a textual description.
-    var selectionAdornment =
-      GOJS(go.Adornment, "Position",
-        GOJS(go.Panel, "Auto", {position: new go.Point(15,12)},
-          GOJS(go.Shape, { fill: null, stroke: "deepskyblue", strokeWidth: 2 }),
-          GOJS(go.Placeholder)
-        ),
-        GOJS(go.Panel, "Vertical",    
-          { defaultStretch: go.GraphObject.Vertical },
-          GOJS("Button",
-            GOJS(go.Shape,
-              { geometryString: "F M0 0 L20 0 20 14 0 14 z",
-                fill: "yellow", margin: 3}),
-            { click: addCloud, toolTip: makeTooltip("Add cloud") }),
-          GOJS("Button" ,
-            GOJS(go.Shape,
-              { geometryString: "F M0 0 L20 0 20 14 0 14 z", stroke:"red",
-                fill: "red", margin: 3}),
-            { click: addStock, toolTip: makeTooltip("Add stock") }),
-          GOJS("Button",
-            GOJS(go.Shape,
-              { geometryString: "F M0 0 L20 0 20 14 0 14 z",
-                fill: "blue", margin: 3 }),
-            { click: addVariable, toolTip: makeTooltip("Add variable") })
-        )
-      );
-
-    function addStock(e,obj) {
-        addSystoNode(e, obj, "stock1");
-    }
-    function addCloud(e,obj) {
-        addSystoNode(e, obj, "cloud1");
-    }
-    function addVariable(e,obj) {
-        addSystoNode(e, obj, "variable1");
-    }
-
-    function addSystoNode(e, obj, type) {
-        var node = myDiagram.findNodeForKey("Start");
-        myDiagram.findNodesByExample({category:"Start"}).each(function(T) {
-            myDiagram.remove(T);
-        });
-        var model = myDiagram.model;
-        model.startTransaction("add "+type);
-        var loc = node.position;
-        loc.x = loc.x+8;
-        loc.y = loc.y+20;
-        var nodedata = {
-            key:type, 
-            category:type, 
-            label:type, 
-            location: go.Point.stringify(loc), 
-            loc: go.Point.stringify(loc)
-        };
-        model.addNodeData(nodedata);
-        var newnode = myDiagram.findNodeForData(nodedata);
-        myDiagram.select(newnode);
-        model.commitTransaction("add "+type);
-        myDiagram.remove(node);
-    }
+            function addSystoNode(e, obj, type) {
+                var node = myDiagram.findNodeForKey("Start");
+                removeNodePopup();
+                var model = myDiagram.model;
+                model.startTransaction("add "+type);
+                var loc = node.position;
+                loc.x = loc.x+28;
+                loc.y = loc.y+25;
+                var shiftx = 0;
+                var shifty = 22;
+                var nodeId = type+Math.floor(1000*Math.random());
+                var nodedata = {
+                    key:nodeId, 
+                    category:type, 
+                    label:nodeId, 
+                    loc:loc.x+" "+loc.y, // ... or go.Point.stringify(loc)
+                    text_shift:"0.5 0.5 "+shiftx+" "+shifty
+                };
+                model.addNodeData(nodedata);
+                var newnode = myDiagram.findNodeForData(nodedata);
+                myDiagram.select(newnode);
+                model.commitTransaction("add "+type);
+                myDiagram.remove(node);
+                
+                // Add node to the Systo model
+                SYSTO.state.languageId = "system_dynamics";  // TODO: Shouldn't have to do this here
+                var nodeTypeId = type;
+                var currentModelId = SYSTO.state.currentModelId;
+                var systoModel = SYSTO.models[currentModelId];
+                var newNodeId = getNewNodeId(systoModel, nodeTypeId);
+                var action = new Action(systoModel, 'create_node', {
+                    mode:nodeTypeId, 
+                    nodeId:newNodeId,   
+                    diagramx:loc.x, 
+                    diagramy:loc.y}
+                );
+                action.doAction();
+            }
 
 
-    // Systo node-type templates
-
-    var stockTemplate =
-      GOJS(go.Node, "Auto",  // the Shape will go around the TextBlock
-        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-        GOJS(go.Shape, "RoundedRectangle", {fill:"red"}),
-        GOJS(go.TextBlock, {margin:3,text:"Stocky"})
-    );
-
-    var cloudTemplate =
-      GOJS(go.Node, "Auto",  // the Shape will go around the TextBlock
-        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-        GOJS(go.Shape, "RoundedRectangle", {fill:"yellow"}),
-        GOJS(go.TextBlock, {margin:3,text:"Cloudy"})
-    );
-
-    var variableTemplate =
-      GOJS(go.Node, "Auto",  // the Shape will go around the TextBlock
-        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-        GOJS(go.Shape, "RoundedRectangle", {fill:"blue"}),
-        GOJS(go.TextBlock, {margin:3,text:"Var"})
-    );
-
-    myDiagram.nodeTemplateMap.add("stock1",stockTemplate);
-    myDiagram.nodeTemplateMap.add("cloud1",cloudTemplate);
-    myDiagram.nodeTemplateMap.add("variable1",variableTemplate);
+            function makeTooltip(str) {  // a helper function for defining tooltips for buttons
+              return GOJS(go.Adornment, go.Panel.Auto,
+                       GOJS(go.Shape, { fill: "#FFFFCC" }),
+                       GOJS(go.TextBlock,str,{margin:4,stroke:"black",font:"15px sans-serif"}));
+            }
 
 
-
-
-
-
-// ===========================================================================
-
+            // -------------------------------------------------------------
             // Whenever a new Link is drawn by the LinkingTool, it also adds a node data object
             // that acts as the label node for the link, to allow links to be drawn to/from the link.
             myDiagram.toolManager.linkingTool.archetypeLabelNodeData =
               { category: "valve" };
-
-
-
-
-    function makeTooltip(str) {  // a helper function for defining tooltips for buttons
-      return GOJS(go.Adornment, go.Panel.Auto,
-               GOJS(go.Shape, { fill: "#FFFFCC" }),
-               GOJS(go.TextBlock, str, {margin: 4, stroke:"black", font:"15px sans-serif" }));
-    }
-
 
 
 
@@ -202,6 +154,25 @@
 
             $(document).on('diagram_modified_event', {}, function(event, parameters) {
                 //gojs_init(self, myDiagram);
+            });
+
+
+            // Adapted from https://jqueryui.com/dialog/#modal-form
+            var dialog = $( "#node_dialog_form" ).dialog({
+              autoOpen: false,
+              height: 300,
+              width: 350,
+              modal: false,
+              buttons: {
+                "Create an account": addUser,
+                Cancel: function() {
+                  dialog.dialog( "close" );
+                }
+              },
+              close: function() {
+                form[ 0 ].reset();
+                allFields.removeClass( "ui-state-error" );
+              }
             });
 
             this._setOptions({
@@ -242,53 +213,39 @@
     });
 
 
-  function gojs_init(widget, myDiagram) {
+    function gojs_init(widget, myDiagram) {
 
-    // Much easier to attach event listeners to nodes, links etc, so that's what I have done.
-    // Will need this for adding new nodes etc.
-    // It's tricky to work out what the "subject" is...
-/*
-    myDiagram.addDiagramListener("ObjectSingleClicked",function(DiagramEvent) {
-        part = DiagramEvent.subject.part;
-        console.debug(part);
-        if (part instanceof go.Node) {
-            alert(part.data.key);
-            console.debug('node!');
-        }
-    });
-*/
+      // The following 15 lines generate a separate node or link template for
+      // every node and arc (GoJS link) defined in the Systo graph language definition.
+      // Note that Systo says "arc" where GoJS says "link".
 
+      var model = SYSTO.models[widget.options.modelId];
+      var languageId = model.meta.language;
+      var language = SYSTO.languages[languageId];
 
-    // The following 15 lines generate a separate node or link template for
-    // every node and arc (GoJS link) defined in the Systo graph language definition.
-    // Note that Systo says "arc" where GoJS says "link".
+      var nodeTypes = language.NodeType;
+      for (var nodeTypeId in nodeTypes) {
+          var nodeType = nodeTypes[nodeTypeId];
+          createNodeTypeTemplate(nodeTypeId, nodeType);
+      }
 
-    var model = SYSTO.models[widget.options.modelId];
-    var languageId = model.meta.language;
-    var language = SYSTO.languages[languageId];
+      var arcTypes = language.ArcType;
+      for (var arcTypeId in arcTypes) {
+          var arcType = arcTypes[arcTypeId];
+          createLinkTypeTemplate(arcTypeId, arcType);
+      }
 
-    var nodeTypes = language.NodeType;
-    for (var nodeTypeId in nodeTypes) {
-        var nodeType = nodeTypes[nodeTypeId];
-        createNodeTypeTemplate(nodeTypeId, nodeType);
+      load(model);
     }
 
-    var arcTypes = language.ArcType;
-    for (var arcTypeId in arcTypes) {
-        var arcType = arcTypes[arcTypeId];
-        createLinkTypeTemplate(arcTypeId, arcType);
+    // Show the diagram's model in JSON format
+    function save() {
+      document.getElementById("mySavedModel").value = myDiagram.model.toJson();
+      myDiagram.isModified = false;
     }
 
-    load(model);
-  }
 
-  // Show the diagram's model in JSON format
-  function save() {
-    document.getElementById("mySavedModel").value = myDiagram.model.toJson();
-    myDiagram.isModified = false;
-  }
-
-
+    // Converts model from Systo to GoJS graph format
     function load(model) {
 
         var gojsModel = { 
@@ -331,45 +288,8 @@
         myDiagram.model = go.Model.fromJson(JSON.stringify(gojsModel));
     }
 
-/*
-    myDiagram.model = go.Model.fromJson(JSON.stringify(
-        { "class": "go.GraphLinksModel",
-          "linkLabelKeysProperty": "labelKeys",
-          "nodeDataArray": [ 
-            {"key":"grass", "category":"stock", "label":"Grass", "loc":"27 14", "alignment":"0.5 0.5 0 -22"},
-            {"key":"cloud1", "category":"cloud", "label":"Cloud1", "loc":"328 14"},
-            {"key":"sheep", "category":"stock", "label":"Sheep", "loc":"29 186", "alignment":"0.5 0.5 0 22"},
-            {"key":"cloud2", "category":"cloud", "label":"Cloud2", "loc":"329 184"},
-            {"key":"A-B", "category":"valve", "label":"grass_loss", "alignment":"0.5 0.5 0 -20" },
-            {"key":"G-D", "category":"valve", "label":"grazing", "alignment":"0.5 0.5 0 20" },
-            {"key":"A-G", "category":"valve",  "label":"sheep_loss", "alignment":"0.5 0.5 -50 0" }
-          ],
-          "linkDataArray": [ 
-            {"from":"grass", "to":"cloud1", "category":"flow", "labelKeys":[ "A-B" ]},
-            {"from":"sheep", "to":"cloud2", "category":"flow", "labelKeys":[ "G-D" ]},
-            {"from":"sheep", "to":"grass", "category":"flow", "labelKeys":[ "A-G" ]},
-            {"from":"grass", "to":"G-D", "category":"influence", "labelKeys":[ "A-G-D" ]},
-            {"from":"A-B", "to":"G-D", "category":"influence", "labelKeys":[ "A-B-G-D" ]}
-          ]
-        }
-    ));
-*/
-
-
-    // I am using long-winded approach to begin with (as described in 
-    // http://gojs.net/latest/intro/buildingObjects.html "Building with Code").  
-    // Three main reasons:
-    // 1. Personal preference;
-    // 2. Because I think it is easier this way to produce customise the templates  
-    //    for different node types;
-    // 3. Because I think is easier for people who want to understand or adapt this
-    //    code, and are not familiar with GoJS's shorthand notation, to relate this 
-    //    code to the object reference documentation: all classes and properties are
-    //    explicit.
-    // 4. I don't like the fact that some properties (compound properties) have to be
-    //    quoted, e.g. "undoManager.isEnabled" rather than undoManager.isEnabled.
-
-
+    // --------------------------------------------------------------------------------
+    // Templates
     function createNodeTypeTemplate(nodeTypeId, nodeType) {
 
         // Create a new node template, and set its properties.
@@ -416,8 +336,8 @@
             }
             shape.name = "ICON";
             shape.desiredSize = new go.Size(nodeType.width, nodeType.height);
-            shape.fill = "yellow";
-            shape.stroke = "black";
+            shape.fill = nodeType.fill_colour.set.normal;
+            shape.stroke = nodeType.border_colour.set.normal;
             shape.portId = "";
             shape.fromLinkable = true;
             shape.fromLinkableSelfNode = true;
@@ -426,19 +346,26 @@
             shape.toLinkableSelfNode = true;
             shape.toLinkableDuplicates = true;
             shape.cursor = "pointer";   
-            shape.click = function(e, node) {alert('shape');};
+            shape.doubleClick = function(e, node) {
+                    removeNodePopup();
+                    displayNodePanel();
+                };
             template.add(shape);
 
             // Create a section inside the node's shape which can be used to drag it around.
             // This is not needed for nodes attached midway along an arc.
             if (nodeTypeId !== "valve") {             // TODO Fix this hack!
                 var shape1 = new go.Shape();
-                shape1.fill = "red";
+                shape1.fill = nodeType.fill_colour.set.normal;
                 shape1.stroke = null;
                 var w = Math.max(nodeType.width-8,10);
                 var h = Math.max(nodeType.height-8,8);
                 shape1.desiredSize = new go.Size(w, h);
-                shape1.click = function(e, shape1) {alert(shape1.panel.data.key);};
+                shape1.bind(new go.Binding("nodeId", "key"));
+                shape1.doubleClick = function(e, shape1) {
+                    removeNodePopup();
+                    displayNodePanel(shape1.nodeId);
+                };
                 template.add(shape1);
             }
 
@@ -486,6 +413,24 @@
     }
 
 
+    function displayNodePanel(text) {
+        $("#node_dialog_form").dialog("open");
+    }
+
+
+ 
+    function addUser() {
+        console.debug('Adding a user!');
+    }
+
+
+
+    function removeNodePopup() {
+        myDiagram.findNodesByExample({category:"Start"}).each(function(T) {
+            myDiagram.remove(T);
+        });
+    }
+
 })(jQuery);
 
 // Some coding hints:
@@ -495,3 +440,121 @@
 // label.text = "Hello";                            // Useful to see how the text and alignment 
 // label.alignment = new go.Spot(0.5,0.5,-20,0);    // properties can be set explicitly.
 
+/*
+    myDiagram.model = go.Model.fromJson(JSON.stringify(
+        { "class": "go.GraphLinksModel",
+          "linkLabelKeysProperty": "labelKeys",
+          "nodeDataArray": [ 
+            {"key":"grass", "category":"stock", "label":"Grass", "loc":"27 14", "alignment":"0.5 0.5 0 -22"},
+            {"key":"cloud1", "category":"cloud", "label":"Cloud1", "loc":"328 14"},
+            {"key":"sheep", "category":"stock", "label":"Sheep", "loc":"29 186", "alignment":"0.5 0.5 0 22"},
+            {"key":"cloud2", "category":"cloud", "label":"Cloud2", "loc":"329 184"},
+            {"key":"A-B", "category":"valve", "label":"grass_loss", "alignment":"0.5 0.5 0 -20" },
+            {"key":"G-D", "category":"valve", "label":"grazing", "alignment":"0.5 0.5 0 20" },
+            {"key":"A-G", "category":"valve",  "label":"sheep_loss", "alignment":"0.5 0.5 -50 0" }
+          ],
+          "linkDataArray": [ 
+            {"from":"grass", "to":"cloud1", "category":"flow", "labelKeys":[ "A-B" ]},
+            {"from":"sheep", "to":"cloud2", "category":"flow", "labelKeys":[ "G-D" ]},
+            {"from":"sheep", "to":"grass", "category":"flow", "labelKeys":[ "A-G" ]},
+            {"from":"grass", "to":"G-D", "category":"influence", "labelKeys":[ "A-G-D" ]},
+            {"from":"A-B", "to":"G-D", "category":"influence", "labelKeys":[ "A-B-G-D" ]}
+          ]
+        }
+    ));
+*/
+
+
+    // I am using long-winded approach to begin with (as described in 
+    // http://gojs.net/latest/intro/buildingObjects.html "Building with Code").  
+    // Three main reasons:
+    // 1. Personal preference;
+    // 2. Because I think it is easier this way to produce customise the templates  
+    //    for different node types;
+    // 3. Because I think is easier for people who want to understand or adapt this
+    //    code, and are not familiar with GoJS's shorthand notation, to relate this 
+    //    code to the object reference documentation: all classes and properties are
+    //    explicit.
+    // 4. I don't like the fact that some properties (compound properties) have to be
+    //    quoted, e.g. "undoManager.isEnabled" rather than undoManager.isEnabled.
+
+
+    // Much easier to attach event listeners to nodes, links etc, so that's what I have done.
+    // Will need this for adding new nodes etc.
+    // It's tricky to work out what the "subject" is...
+/*
+    myDiagram.addDiagramListener("ObjectSingleClicked",function(DiagramEvent) {
+        part = DiagramEvent.subject.part;
+        console.debug(part);
+        if (part instanceof go.Node) {
+            alert(part.data.key);
+            console.debug('node!');
+        }
+    });
+*/
+
+
+    // Kept to show use of geometryString
+    // This implements a selection Adornment that is a vertical bar of node-type buttons
+    // that appear when the user clicks on a blank part of the diagram.  Each button has a click
+    //  function to insert an instance of that node-type, a tooltip for a textual description.
+/*
+    var selectionAdornment =
+      GOJS(go.Adornment, "Position",
+        GOJS(go.Panel, "Auto", {position: new go.Point(15,12)},
+          GOJS(go.Shape, { fill: null, stroke: "deepskyblue", strokeWidth: 2 }),
+          GOJS(go.Placeholder)
+        ),
+        GOJS(go.Panel, "Vertical",    
+          { defaultStretch: go.GraphObject.Vertical },
+          GOJS("Button",
+            GOJS(go.Shape,
+              { geometryString: "F M0 0 L20 0 20 14 0 14 z",
+                fill: "yellow", margin: 3}),
+            { click: addCloud, toolTip: makeTooltip("Add cloud") }),
+          GOJS("Button" ,
+            GOJS(go.Shape,
+              { geometryString: "F M0 0 L20 0 20 14 0 14 z", stroke:"red",
+                fill: "red", margin: 3}),
+            { click: addStock, toolTip: makeTooltip("Add stock") }),
+          GOJS("Button",
+            GOJS(go.Shape,
+              { geometryString: "F M0 0 L20 0 20 14 0 14 z",
+                fill: "blue", margin: 3 }),
+            { click: addVariable, toolTip: makeTooltip("Add variable") })
+        )
+      );
+*/
+
+
+
+// Used during initial development of the node popup:
+
+
+    // Systo node-type templates
+/*
+    var stockTemplate =
+      GOJS(go.Node, "Auto",  // the Shape will go around the TextBlock
+        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+        GOJS(go.Shape, "RoundedRectangle", {fill:"red"}),
+        GOJS(go.TextBlock, {margin:3,text:"Stocky"})
+    );
+
+    var cloudTemplate =
+      GOJS(go.Node, "Auto",  // the Shape will go around the TextBlock
+        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+        GOJS(go.Shape, "RoundedRectangle", {fill:"yellow"}),
+        GOJS(go.TextBlock, {margin:3,text:"Cloudy"})
+    );
+
+    var variableTemplate =
+      GOJS(go.Node, "Auto",  // the Shape will go around the TextBlock
+        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+        GOJS(go.Shape, "RoundedRectangle", {fill:"blue"}),
+        GOJS(go.TextBlock, {margin:3,text:"Var"})
+    );
+
+    myDiagram.nodeTemplateMap.add("stock1",stockTemplate);
+    myDiagram.nodeTemplateMap.add("cloud1",cloudTemplate);
+    myDiagram.nodeTemplateMap.add("variable1",variableTemplate);
+*/
