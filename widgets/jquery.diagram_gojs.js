@@ -134,6 +134,17 @@
             }
 
 
+
+            // -------------------------------------------------------------------------------
+            myDiagram.nodeTemplateMap.add("dialog",
+                    GOJS(go.Node, "Auto",  {width:200, layerName:"Foreground", location:new go.Point(200,-20)},
+                        GOJS(go.Shape, "Rectangle", {fill:"white"}),
+                        GOJS(go.TextBlock, {margin:3, editable:true, text:"Equation", textAlign:"left", width:180,
+                            click:function() {}, doubleClick:function() {}})
+                    )
+                );
+
+
             // -------------------------------------------------------------
             // Whenever a new Link is drawn by the LinkingTool, it also adds a node data object
             // that acts as the label node for the link, to allow links to be drawn to/from the link.
@@ -154,25 +165,6 @@
 
             $(document).on('diagram_modified_event', {}, function(event, parameters) {
                 //gojs_init(self, myDiagram);
-            });
-
-
-            // Adapted from https://jqueryui.com/dialog/#modal-form
-            var dialog = $( "#node_dialog_form" ).dialog({
-              autoOpen: false,
-              height: 300,
-              width: 350,
-              modal: false,
-              buttons: {
-                "Create an account": addUser,
-                Cancel: function() {
-                  dialog.dialog( "close" );
-                }
-              },
-              close: function() {
-                form[ 0 ].reset();
-                allFields.removeClass( "ui-state-error" );
-              }
             });
 
             this._setOptions({
@@ -288,6 +280,7 @@
         myDiagram.model = go.Model.fromJson(JSON.stringify(gojsModel));
     }
 
+
     // --------------------------------------------------------------------------------
     // Templates
     function createNodeTypeTemplate(nodeTypeId, nodeType) {
@@ -346,7 +339,7 @@
             shape.toLinkableSelfNode = true;
             shape.toLinkableDuplicates = true;
             shape.cursor = "pointer";   
-            shape.doubleClick = function(e, node) {
+            shape.click = function(e, node) {
                     removeNodePopup();
                     displayNodePanel();
                 };
@@ -362,7 +355,7 @@
                 var h = Math.max(nodeType.height-8,8);
                 shape1.desiredSize = new go.Size(w, h);
                 shape1.bind(new go.Binding("nodeId", "key"));
-                shape1.doubleClick = function(e, shape1) {
+                shape1.click = function(e, shape1) {
                     removeNodePopup();
                     displayNodePanel(shape1.nodeId);
                 };
@@ -383,6 +376,17 @@
         
     }
 
+
+    function displayNodePanel(nodeId) {
+        var model = myDiagram.model;
+        var nodedata = {
+            key:nodeId, 
+            category:"dialog", 
+            label:nodeId, 
+            loc:"200 150"
+        };
+        model.addNodeData(nodedata);
+    }
 
 
     function createLinkTypeTemplate(arcTypeId, arcType) {
@@ -411,18 +415,6 @@
 
         myDiagram.linkTemplateMap.add(arcTypeId, template);
     }
-
-
-    function displayNodePanel(text) {
-        $("#node_dialog_form").dialog("open");
-    }
-
-
- 
-    function addUser() {
-        console.debug('Adding a user!');
-    }
-
 
 
     function removeNodePopup() {
