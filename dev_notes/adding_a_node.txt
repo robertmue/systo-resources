@@ -1,0 +1,45 @@
+
+24 Jan 2016
+From projects/Systo/systo_widgets/jquery.diagram_gojs.js
+========================================================
+Test page: Projects/Systo/example_gojs.html
+Adding a node when diagram background is clicked.   In this example, node type is set conventionally, by selecting a node in the jquery.toolbar.js widget.   Note that it does not interact with the GoJS mechanism for recording diagram transactions.
+
+            // Add the Diagram event listeners
+            myDiagram.addDiagramListener("BackgroundSingleClicked", function(event) {
+                var point = event.diagram.lastInput.documentPoint;
+                var nodeTypeId = SYSTO.state.nodeTypeId;
+                myDiagram.model.addNodeData({key:'new', category:nodeTypeId, label:'New',loc:point.x+' '+point.y});
+            });
+
+                // Whenever a new Link is drawng by the LinkingTool, it also adds a node data object
+                // that acts as the label node for the link, to allow links to be drawn to/from the link.
+                myDiagram.toolManager.linkingTool.archetypeLabelNodeData =
+                  { category: "valve" };
+
+                // this DiagramEvent handler is called during the linking or relinking transactions
+                function maybeChangeLinkCategory(e) {
+                  var link = e.subject;
+                  var linktolink = (link.fromNode.isLinkLabel || link.toNode.isLinkLabel);
+                  e.diagram.model.setCategoryForLinkData(link.data, (linktolink ? "influence" : ""));
+                }
+
+                //load();
+
+                $(document).on('change_model_listener', {}, function(event, parameters) {
+                    console.debug(111);
+                    console.debug(parameters);
+                    if (!parameters.packageId || parameters.packageId === self.options.packageId) {
+                        console.debug(222);
+                        var oldModelId = parameters.oldModelId;
+                        var newModelId = parameters.newModelId;
+                        $('.nodePanel').remove();
+                        self.model = SYSTO.models[newModelId];
+                        self.options.modelId = newModelId;
+                        var language = SYSTO.languages[self.model.meta.language];
+                        createGojsTemplates(language);
+                        load(self.options.modelId);
+                    }
+                });
+
+

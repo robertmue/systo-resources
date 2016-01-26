@@ -35,59 +35,83 @@
 
             myDiagram = new go.Diagram(this.element[0]);
 
-            // Diagram properties and methods:
+            // Diagram properties
             myDiagram.initialContentAlignment = go.Spot.Center;
+
+            // Diagram event listeners
             myDiagram.addDiagramListener("BackgroundDoubleClicked", 
                 function(e) {removeNodePopup();}
             );
 
-            // Diagram.animationManager:
+/*
+            myDiagram.addDiagramListener("BackgroundSingleClicked", function(event) {   // *** Method 2 ***
+                removeNodePopup();
+                var point = event.diagram.lastInput.documentPoint;
+                var nodeTypeId = SYSTO.state.nodeTypeId;
+                var pointx = point.x+62;
+                var pointy = point.y;
+                myDiagram.model.addNodeData({key:'stock1', category:"stock", label:"",loc:point.x+' '+point.y});
+                myDiagram.model.addNodeData({key:'Start', category:"Start", label:"",loc:pointx+' '+pointy});
+            });
+*/
+            myDiagram.addDiagramListener("BackgroundSingleClicked", function(event) {      // *** Method 3 ***
+                var point = event.diagram.lastInput.documentPoint;
+                var nodeTypeId = SYSTO.state.nodeTypeId;
+                addNode(event, nodeTypeId, point);
+                //myDiagram.model.addNodeData({key:'stock1', category:nodeTypeId, label:'Stock',loc:point.x+' '+point.y});
+            });
+            // Same as Method 1, but more flexibility than simply adding a node.
+
+            // Diagram.animationManager
             myDiagram.animationManager.isEnabled =false;   // !! See email from GoJS Support, 7 Jan 2016
-            // Diagram.toolManager:
+
+            // Diagram.toolManager
+            myDiagram.toolManager.hoverDelay = 100  // how quickly tooltips are shown
+
+/*
+            // Diagram.toolManager.clickCreatingTool  *** Method 1 ***
             myDiagram.toolManager.clickCreatingTool.archetypeNodeData = 
                 { key:"Start", category: "Start"},
 	        myDiagram.toolManager.clickCreatingTool.isDoubleClick = false,    // RM
-            myDiagram.toolManager.hoverDelay = 100  // how quickly tooltips are shown
             myDiagram.toolManager.clickCreatingTool.doStart = 
                 function () {removeNodePopup();
             };
+*/
 
             // ------------------------------------------------------------------
             // Popup for choosing type of node to add to diagram
             myDiagram.nodeTemplateMap.add("Start",
                 GOJS(go.Node, "Auto",
                   { locationSpot: go.Spot.Center },
+                  new go.Binding("location", "loc", go.Point.parse),   // Only if Method 2 used
                   GOJS(go.Shape, "Rectangle",
                     { fill: "white",stroke:"white" }),
                   GOJS(go.Panel, "Vertical",
                     { },
+                      GOJS(go.TextBlock, "Change to:", {width:67, textAlign:"left"}),
                     GOJS("Button",
-                      {width:60,
+                      {width:75, 
                         click: addCloud },
-                      GOJS(go.TextBlock, "Cloud")),
+                      GOJS(go.TextBlock, "Cloud", {width:67, textAlign:"left"})),
                     GOJS("Button",
-                      {width:60,
-                        click: addStock },
-                      GOJS(go.TextBlock, "Stock")),
-                    GOJS("Button",
-                     {width:60,
+                     {width:75,
                         click: addVariable },
-                      GOJS(go.TextBlock, "Variable"))
+                      GOJS(go.TextBlock, "Variable", {width:67, textAlign:"left"}))
                   )
                 )
             );
 
-            function addStock(e,obj) {
-                addSystoNode(e, obj, "stock");
+            function addStock(e) {
+                addSystoNode(e, "stock");
             }
-            function addCloud(e,obj) {
-                addSystoNode(e, obj, "cloud");
+            function addCloud(e) {
+                addSystoNode(e, "cloud");
             }
-            function addVariable(e,obj) {
-                addSystoNode(e, obj, "variable");
+            function addVariable(e) {
+                addSystoNode(e, "variable");
             }
-
-            function addSystoNode(e, obj, type) {
+/*
+            function addSystoNode(e, type) {
                 var node = myDiagram.findNodeForKey("Start");
                 removeNodePopup();
                 var model = myDiagram.model;
@@ -102,6 +126,7 @@
                     key:nodeId, 
                     category:type, 
                     label:nodeId, 
+                    click: function() {removeNodePopup();},
                     loc:loc.x+" "+loc.y, // ... or go.Point.stringify(loc)
                     text_shift:"0.5 0.5 "+shiftx+" "+shifty
                 };
@@ -122,6 +147,39 @@
                     nodeId:newNodeId,   
                     diagramx:loc.x, 
                     diagramy:loc.y}
+                );
+                action.doAction();
+            }
+*/
+
+            function addNode(e, nodeTypeId, point) {
+                SYSTO.state.languageId = "system_dynamics";  // TODO: Shouldn't have to do this here
+                var currentModelId = SYSTO.state.currentModelId;
+                var systoModel = SYSTO.models[currentModelId];
+                var newNodeId = getNewNodeId(systoModel, nodeTypeId);
+
+                var model = myDiagram.model;
+                loc = {x:point.x+28, y:point.y+25};
+                var shiftx = 0;
+                var shifty = 22;
+                var nodedata = {
+                    key:newNodeId, 
+                    category:nodeTypeId, 
+                    label:newNodeId, 
+                    click: function() {removeNodePopup();},
+                    loc:point.x+" "+point.y, // ... or go.Point.stringify(loc)
+                    text_shift:"0.5 0.5 "+shiftx+" "+shifty
+                };
+                model.addNodeData(nodedata);
+                var newnode = myDiagram.findNodeForData(nodedata);
+                myDiagram.select(newnode);
+                
+                // Add node to the Systo model
+                var action = new Action(systoModel, 'create_node', {
+                    mode:nodeTypeId, 
+                    nodeId:newNodeId,   
+                    diagramx:point.x, 
+                    diagramy:point.y}
                 );
                 action.doAction();
             }

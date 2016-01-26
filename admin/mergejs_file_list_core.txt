@@ -9,5 +9,7 @@
 ../js/functions.js
 ../js/FileSaver.js
 ../js/process_query_string.js
+../js/go.js
+../js/NodeLabelDraggingTool.js
 
 

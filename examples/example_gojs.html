@@ -23,12 +23,12 @@
     <script type="text/javascript" src="../languages/system_dynamics.js"></script>
 
     <!-- Model, held as a Javascript object literal -->
-    <script type="text/javascript" src="../models/cascade.js"></script>
+    <script type="text/javascript" src="../models/miniworld.js"></script>
 
     <!-- This page's custom script -->
     <script>
         $(document).ready(function() {
-            var modelId = 'cascade';
+            var modelId = 'miniworld';
             SYSTO.prepareModel(modelId);
             $('#diagram1').diagram({modelId:modelId});
             $('#diagram2').diagram_gojs({modelId:modelId});
