@@ -17,6 +17,7 @@
         },
 
         options: {
+            allowEditing: true,
             modelId: null
         },
 
@@ -29,6 +30,23 @@
             var div = $('<div>diagram_gojs</div>');
             this._container = $(this.element).append(div);
             this.div = div;
+
+            if (this.options.allowEditing && $('#dialog_sd_node').length=== 0) {
+                $('body').append('<div id="dialog_sd_node" style="height:700px; position:relative; z-index:17000"></div>');
+                $('#dialog_sd_node').dialog_sd_node();
+            }
+
+
+            // ======================================== Listeners (custom event habdlers)
+
+            $(document).on('change_model_listener', {}, function(event, parameters) {
+                console.debug('@log. listener: diagram.js: change_model_listener: '+JSON.stringify(parameters));
+                self.options.modelId = parameters.newModelId;
+                var model = SYSTO.models[parameters.newModelId];
+                self.model = model;
+                gojs_init(self, myDiagram);
+                //event.stopPropagation();
+            });
 
 
             GOJS = go.GraphObject.make;
@@ -152,6 +170,13 @@
             }
 */
 
+/*
+             $('#dialog_sd_node').
+                data('modelId',widget.options.modelId).
+                data('nodeId',node.id).
+                dialog('open');
+*/
+
             function addNode(e, nodeTypeId, point) {
                 SYSTO.state.languageId = "system_dynamics";  // TODO: Shouldn't have to do this here
                 var currentModelId = SYSTO.state.currentModelId;
@@ -161,18 +186,18 @@
                 var model = myDiagram.model;
                 loc = {x:point.x+28, y:point.y+25};
                 var shiftx = 0;
-                var shifty = 22;
+                var shifty = 25;
                 var nodedata = {
                     key:newNodeId, 
                     category:nodeTypeId, 
                     label:newNodeId, 
-                    click: function() {removeNodePopup();},
                     loc:point.x+" "+point.y, // ... or go.Point.stringify(loc)
                     text_shift:"0.5 0.5 "+shiftx+" "+shifty
                 };
                 model.addNodeData(nodedata);
-                var newnode = myDiagram.findNodeForData(nodedata);
-                myDiagram.select(newnode);
+                var newNode = myDiagram.findNodeForData(nodedata);
+                //newNode.doubleClick = function() {alert(654);};
+                myDiagram.select(newNode);
                 
                 // Add node to the Systo model
                 var action = new Action(systoModel, 'create_node', {
@@ -262,6 +287,31 @@
         }
     });
 
+NodeLabelDraggingTool.prototype.findLabel = function() {
+
+  var diagram = this.diagram;
+
+  var e = diagram.firstInput;
+
+  var elt = diagram.findObjectAt(e.documentPoint, null, null);
+
+ 
+
+  if (elt === null || !(elt.part instanceof go.Node)) return null;
+
+  while (elt.panel !== null) {
+
+    if (elt._isNodeLabel && elt.panel.type === go.Panel.Spot && elt.panel.elt(0) !== elt) return elt;
+
+    elt = elt.panel;
+
+  }
+
+  return null;
+
+};
+
+
 
     function gojs_init(widget, myDiagram) {
 
@@ -276,7 +326,7 @@
       var nodeTypes = language.NodeType;
       for (var nodeTypeId in nodeTypes) {
           var nodeType = nodeTypes[nodeTypeId];
-          createNodeTypeTemplate(nodeTypeId, nodeType);
+          createNodeTypeTemplate(nodeTypeId, nodeType, widget);
       }
 
       var arcTypes = language.ArcType;
@@ -310,11 +360,20 @@
             var node = nodeList[nodeId];
             var key = node.id;
             var category = node.type;
-            var label = node.label;
+            if (node.type !== "cloud") {
+                var has_equation = true;
+                var label = node.label;
+            } else {
+                has_equation = false;
+            }
             var loc = node.centrex+" "+node.centrey;
-            var shifty = -1*node.text_shifty;
+            var shifty = -1*node.text_shifty+20;
             var text_shift = "0.5 0.5 "+node.text_shiftx+" "+shifty;
-            var gojsNode = {key:key, category:category, label:label, loc:loc, text_shift:text_shift};
+            if (node.extras && node.extras.equation) {
+                var equation = node.extras.equation.value;
+            }
+            var gojsNode = {key:key, category:category, label:label, loc:loc, text_shift:text_shift, equation:equation, has_equation:has_equation};
+            console.debug(JSON.stringify(gojsNode));
             gojsModel.nodeDataArray.push(gojsNode);
         }
 
@@ -341,8 +400,9 @@
 
     // --------------------------------------------------------------------------------
     // Templates
-    function createNodeTypeTemplate(nodeTypeId, nodeType) {
+    function createNodeTypeTemplate(nodeTypeId, nodeType, widget) {
 
+        var equationVisibility = true;
         // Create a new node template, and set its properties.
 
         if (nodeType.no_separate_symbol) {      // Just a text label - no symbol for the node.
@@ -362,6 +422,7 @@
             label.editable = true;  // allow in-place editing by user
             label.bind(new go.Binding("text", "label").makeTwoWay());
             template.add(label);
+
 
         } else {        // This node type has a symbol (rectangle, circle, whatever)
             var template = new go.Node(go.Panel.Spot);
@@ -397,9 +458,12 @@
             shape.toLinkableSelfNode = true;
             shape.toLinkableDuplicates = true;
             shape.cursor = "pointer";   
-            shape.click = function(e, node) {
-                    removeNodePopup();
-                    displayNodePanel();
+            shape.doubleClick = function(e, node) {
+                removeNodePopup();
+                $('#dialog_sd_node').
+                    data('modelId',widget.options.modelId).
+                    data('nodeId',node.id).
+                    dialog('open');
                 };
             template.add(shape);
 
@@ -413,9 +477,12 @@
                 var h = Math.max(nodeType.height-8,8);
                 shape1.desiredSize = new go.Size(w, h);
                 shape1.bind(new go.Binding("nodeId", "key"));
-                shape1.click = function(e, shape1) {
+                shape1.doubleClick = function(e, node) {
                     removeNodePopup();
-                    displayNodePanel(shape1.nodeId);
+                    $('#dialog_sd_node').
+                        data('modelId',widget.options.modelId).
+                        data('nodeId',node.id).
+                        dialog('open');
                 };
                 template.add(shape1);
             }
@@ -426,13 +493,94 @@
             label.editable = true;        
             label.setProperties({_isNodeLabel: true});
             label.cursor = "move";   
-            label.bind(new go.Binding("alignment", "text_shift", go.Spot.parse).makeTwoWay(go.Spot.stringify));
             label.bind(new go.Binding("text", "label").makeTwoWay());
-            template.add(label);
+            label.bind(new go.Binding("alignment", "text_shift", go.Spot.parse).makeTwoWay(go.Spot.stringify));
+            //template.add(label);
+
+            // Create the equation field for the node template.
+            var equation = new go.TextBlock();
+            equation.maxSize = new go.Size(200,NaN);
+            equation.margin = 5;
+            equation.background = "#ffe0e0";
+            equation.font = "9.5pt helvetica, arial, sans-serif";
+            equation.editable = true;   
+            equation.bind(new go.Binding("visible", "has_equation"));
+            equation.setProperties({_isNodeLabel: true});
+            equation.cursor = "move";   
+            equation.bind(new go.Binding("text", "equation").makeTwoWay());
+            // equation.bind(new go.Binding("alignment", "text_shift", go.Spot.parse).makeTwoWay(go.Spot.stringify));
+            equation.bind(new go.Binding("alignment", "text_shift", function(spotString) {
+                  var spot = go.Spot.parse(spotString);
+                  spot.offsetY += 15;
+                  return spot;}
+                ).makeTwoWay(go.Spot.stringify)
+              );
+            //template.add(equation);
+
+            var table = new go.Panel(go.Panel.Table);
+            table.setProperties({_isNodeLabel: true});
+            table.alignment = new go.Spot(0,0,0,50);
+            //var columnDef = new go.RowColumnDefinition();
+            //columnDef.column = 1;
+            //columnDef.width = 100;
+            //table.add(columnDef);
+            var label = new go.TextBlock();
+            label.font = "9.5pt bold helvetica, arial, sans-serif";
+            label.background = "#ffe0e0";
+            label.editable = true;        
+            label.maxSize = new go.Size(120,NaN);
+            label.row = 0;
+            label.column = 0;
+            label.bind(new go.Binding("text", "label").makeTwoWay());
+            table.add(label);
+            var equation = new go.TextBlock();
+            equation.font = "9.5pt helvetica, arial, sans-serif";
+            equation.background = "#f0f0ff";
+            equation.editable = true;        
+            equation.maxSize = new go.Size(120,NaN);
+            equation.row = 1;
+            equation.column = 0;
+            equation.bind(new go.Binding("text", "equation").makeTwoWay());
+            table.add(equation);
+            template.add(table);
+            
+
         }
         myDiagram.nodeTemplateMap.add(nodeTypeId, template);
-        
     }
+
+/*
+    $(go.Part, go.Panel.Table,  // or "Table"
+        $(go.TextBlock, "row 0\ncol 0",
+          { row: 0, column: 0, margin: 2, background: "lightgray" }),
+        $(go.TextBlock, "row 0\ncol 1",
+          { row: 0, column: 1, margin: 2, background: "lightgray" }),
+        $(go.TextBlock, "row 1\ncol 0",
+          { row: 1, column: 0, margin: 2, background: "lightgray" }),
+        $(go.TextBlock, "row 1\ncol 2",
+          { row: 1, column: 2, margin: 2, background: "lightgray" })
+    )
+*/
+/*
+        $(go.TextBlock,
+          {
+            alignment: new go.Spot(0.5,0.5,0,20),    // initial value for properties can be set explicitly.
+            visible:equationVisibility,
+            font: "bold 11pt helvetica, bold arial, sans-serif",
+            editable: true,  // editing the text automatically updates the model data
+            _isNodeLabel: true,
+            cursor: "move"  // visual hint that the user can do something with this node label
+          },
+          new go.Binding("text", "equ").makeTwoWay(),
+          // The GraphObject.alignment property is what the NodeLabelDraggingTool modifies.
+          // This TwoWay binding saves any changes to the same named property on the node data.
+          new go.Binding("alignment", "alignment", function(spotString) {
+              var spot = go.Spot.parse(spotString);
+              spot.offsetY += 20;
+              return spot;}
+            ).makeTwoWay(go.Spot.stringify)
+          )
+*/
 
 
     function displayNodePanel(nodeId) {
@@ -608,3 +756,12 @@
     myDiagram.nodeTemplateMap.add("cloud1",cloudTemplate);
     myDiagram.nodeTemplateMap.add("variable1",variableTemplate);
 */
+
+/*insert text at caret
+http://stackoverflow.com/questions/1064089/inserting-a-text-where-cursor-is-using-javascript-jquery
+Contains links to:
+http://web.archive.org/web/20110102112946/http://www.scottklarr.com/topic/425/how-to-insert-text-into-a-textarea-where-the-cursor-is/
+http://jsfiddle.net/NaHTw/4/
+
+*/
+
