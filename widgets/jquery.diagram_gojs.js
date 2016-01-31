@@ -287,29 +287,21 @@
         }
     });
 
-NodeLabelDraggingTool.prototype.findLabel = function() {
 
-  var diagram = this.diagram;
+    // Provided by GoJS support, 30 Jan 2016, to fix a bug
+    // - refusal to allow a table GraphObject to be dragged around like a label
 
-  var e = diagram.firstInput;
-
-  var elt = diagram.findObjectAt(e.documentPoint, null, null);
-
- 
-
-  if (elt === null || !(elt.part instanceof go.Node)) return null;
-
-  while (elt.panel !== null) {
-
-    if (elt._isNodeLabel && elt.panel.type === go.Panel.Spot && elt.panel.elt(0) !== elt) return elt;
-
-    elt = elt.panel;
-
-  }
-
-  return null;
-
-};
+    NodeLabelDraggingTool.prototype.findLabel = function() {
+      var diagram = this.diagram;
+      var e = diagram.firstInput;
+      var elt = diagram.findObjectAt(e.documentPoint, null, null);
+      if (elt === null || !(elt.part instanceof go.Node)) return null;
+      while (elt.panel !== null) {
+        if (elt._isNodeLabel && elt.panel.type === go.Panel.Spot && elt.panel.elt(0) !== elt) return elt;
+        elt = elt.panel;
+      }
+      return null;
+    };
 
 
 
@@ -346,7 +338,7 @@ NodeLabelDraggingTool.prototype.findLabel = function() {
 
 
     // Converts model from Systo to GoJS graph format
-    function load(model) {
+    function load(systoModel) {
 
         var gojsModel = { 
             "class": "go.GraphLinksModel",
@@ -355,7 +347,7 @@ NodeLabelDraggingTool.prototype.findLabel = function() {
             linkDataArray: []
         }
 
-        var nodeList = model.nodes;
+        var nodeList = systoModel.nodes;
         for (var nodeId in nodeList) {
             var node = nodeList[nodeId];
             var key = node.id;
@@ -377,15 +369,16 @@ NodeLabelDraggingTool.prototype.findLabel = function() {
             gojsModel.nodeDataArray.push(gojsNode);
         }
 
-        var arcList = model.arcs;
+        var arcList = systoModel.arcs;
         for (var arcId in arcList) {
             var arc = arcList[arcId];
+            var key = arcId;   // Not actually use in GoJS, but so an be pushed back to Systo.
             var category = arc.type;
             var from = arc.start_node_id;
             var to = arc.end_node_id;
             if (arc.node_id) {
                 var labelKeys = [arc.node_id];
-                var gojsArc = {category:category, from:from, to:to, labelKeys:labelKeys};
+                var gojsArc = {key:key, category:category, from:from, to:to, labelKeys:labelKeys};
             } else {
                 gojsArc = {category:category, from:from, to:to};
             }
@@ -396,6 +389,54 @@ NodeLabelDraggingTool.prototype.findLabel = function() {
         //console.debug(JSON.stringify(gojsModel,null,4));
         myDiagram.model = go.Model.fromJson(JSON.stringify(gojsModel));
     }
+
+
+    function convertFromGojsToSystoFormat(gojsModel) {
+
+        var systoModel = {
+            meta:{},
+            nodes:{},
+            arcs:{},
+            scenarios:{}
+        };
+
+        for (var i=0; i<gojsModel.nodeDataArray.length; i++) {
+            var gojsNode = gojsModel.nodeDataArray[i];
+            var systoNode = {};
+            systoNode.id = gojsNode.key;
+            systoNode.label = gojsNode.label;
+            var loc = go.Point.parse(gojsNode.loc);
+            systoNode.centrex = loc.x;
+            systoNode.centrey = loc.y;
+            var alignment = go.Spot.parse(gojsNode.alignment);
+            systoNode.text_shiftx = alignment.offsetx;
+            systoNode.text_shifty = alignment.offsety;
+            systoNode.extras = {
+                equation: {type:long_text, value:gojsNode.equation, default_value:""},
+                min_value: {type:short_text, value:"", default_value:""},
+                max_value: {type:short_text, value:"", default_value:""},
+                documentation: {type:long_text, value:"", default_value:""},
+                comments: {type:long_text, value:"", default_value:""}
+             }
+             systoModel.nodes[systoNode.id] = systoNode;
+        }
+
+        for (j=0; j<gojsModel.linkDataArray.length; j++) {
+            var gojsLink = gojsModel.linkDataArray[j];
+            var systoArc = {};
+            systoArc.id = gojsArc.id;
+            systoArc.type = gojsLink.category;
+            systoArc.start_node_id = gojsLink.from;
+            systoArc.end_node_id = gojsLink.to;
+            if (gojsArc.labKeys) {
+                systoArc.node_id = gojsArc.labLeys[0]; // Should be able to safely assume it's a 1-element array
+            }
+            systoModel.arcs[systoArc.id] = systoArc;
+        }
+
+        SYSTO.models[modelId] = systoModel;
+    }
+
 
 
     // --------------------------------------------------------------------------------
