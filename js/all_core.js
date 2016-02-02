@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Sat Jan 30 19:06:44 GMT 2016  */
+/* Last merge : Mon Feb 1 19:08:51 GMT 2016  */
 
 /* Merging order :
 
@@ -36,6 +36,7 @@
 // JSHint: 5 Sept 2014 - a couple of issues remaining
 
 var SYSTO = {};
+SYSTO.gojs = {};  // Temporary measure, to hold GoJS diagram(s)
 SYSTO.models = {};
 SYSTO.modelInstances = {};
 SYSTO.languages = {};
@@ -2468,6 +2469,86 @@ SYSTO.validateModelJson = function (json) {
 SYSTO.Model = function(args) {
 	this.object_literal = args.model_object_literal;
 };
+
+
+
+// ======================================  GoJS  ========================================
+
+SYSTO.convertGojsToSysto = function(gojsModel) {
+
+        console.debug(gojsModel);
+        var systoModel = {
+            meta:{
+                //modelId: SYSTO.state.currentModelId,
+                modelId: "gojs",
+                language: "system_dynamics",
+                name:'GoJS'
+            },
+            nodes:{},
+            arcs:{},
+            scenarios: {
+                default:{
+                    simulation_settings:{
+                        start_time: 0,
+                        end_time: 100,
+                        nstep: 10,
+                        display_interval: 1,
+                        integration_method: 'euler'
+                    }
+                }
+            },
+            workspace:{}
+        };
+
+        console.debug("Number of nodes = "+gojsModel.nodeDataArray.length);
+        console.debug(JSON.stringify(gojsModel.nodeDataArray));
+        for (var i=0; i<gojsModel.nodeDataArray.length; i++) {
+            console.debug("Node "+i);
+            var gojsNode = gojsModel.nodeDataArray[i];
+            var systoNode = {};
+            systoNode.id = gojsNode.key;
+            systoNode.label = gojsNode.label;
+            var loc = go.Point.parse(gojsNode.loc);
+            systoNode.centrex = loc.x;
+            systoNode.centrey = loc.y;
+            var alignment = go.Spot.parse(gojsNode.alignment);
+            systoNode.text_shiftx = alignment.offsetX;
+            systoNode.text_shifty = alignment.offsetY;
+            systoNode.extras = {
+                equation: {type:"long_text", value:gojsNode.equation, default_value:""},
+                min_value: {type:"short_text", value:"", default_value:""},
+                max_value: {type:"short_text", value:"", default_value:""},
+                documentation: {type:"long_text", value:"", default_value:""},
+                comments: {type:"long_text", value:"", default_value:""}
+             };
+             systoModel.nodes[systoNode.id] = systoNode;
+        }
+
+        console.debug('links: '+gojsModel.linkDataArray.length);
+        console.debug(gojsModel.linkDataArray.length);
+        for (j=0; j<gojsModel.linkDataArray.length; j++) {
+            var gojsLink = gojsModel.linkDataArray[j];
+            console.debug(gojsLink);
+            SYSTO.state.languageId = "system_dynamics";  // TODO: Shouldn't have to do this here
+            //var currentModelId = SYSTO.state.currentModelId;
+            //var systoModel = SYSTO.models[currentModelId];
+            arcId = getNewArcId(systoModel, gojsLink.category);
+            var systoArc = {};
+            systoArc.id = arcId;
+            systoArc.type = gojsLink.category;
+            systoArc.start_node_id = gojsLink.from;
+            systoArc.end_node_id = gojsLink.to;
+            if (gojsLink.labKeys) {
+                systoArc.node_id = gojsLink.labKeys[0]; // Should be able to safely assume it's a 1-element array
+            }
+            systoModel.arcs[arcId] = systoArc;
+        }
+        console.debug(JSON.stringify(systoModel,null,4));
+        return systoModel;
+    };
+
+
+
 
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

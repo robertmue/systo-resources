@@ -203,9 +203,15 @@
 
             runButton = $('<div style="clear:both; margin-top:10px;"><button style="font-size:14px;">Run</button></div>').
                 click(function() {
-                    var modelId = SYSTO.state.currentModelId;
-                    var model = SYSTO.models[modelId];
-                    console.debug(JSON.stringify(model.scenarios.default.simulation_settings));
+                    //var modelId = SYSTO.state.currentModelId;
+                    //SYSTO.models[modelId] = model;
+
+                    // Hacky in so many ways.  TODO: Fix!
+                    //var gojsModel = SYSTO.gojs.currentModel;
+                    var gojsModel = myDiagram.model;
+                    console.debug(gojsModel);
+                    var model = SYSTO.convertGojsToSysto(gojsModel);
+                    console.debug(model);
                     SYSTO.generateSimulationFunction(model);
                     model.workspace.modelChanged = false;
                     SYSTO.trigger({

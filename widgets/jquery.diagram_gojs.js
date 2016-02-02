@@ -52,6 +52,7 @@
             GOJS = go.GraphObject.make;
 
             myDiagram = new go.Diagram(this.element[0]);
+            SYSTO.gojs.currentModel = myDiagram.model;
 
             // Diagram properties
             myDiagram.initialContentAlignment = go.Spot.Center;
@@ -60,6 +61,23 @@
             myDiagram.addDiagramListener("BackgroundDoubleClicked", 
                 function(e) {removeNodePopup();}
             );
+
+
+            myDiagram.addDiagramListener("LinkDrawn",
+              function(e) {
+                console.debug(e.subject);
+                var link = e.subject;
+
+                var fromNode = link.fromNode;
+                var toNode = link.toNode;
+                if ((fromNode.category==="stock" || fromNode.category==="cloud") && 
+                        (toNode.category==="stock" || toNode.category=="cloud")) {
+                    link.category = "flow";
+                } else {
+                    link.category = "influence";
+                }
+
+              });
 
 /*
             myDiagram.addDiagramListener("BackgroundSingleClicked", function(event) {   // *** Method 2 ***
@@ -200,6 +218,12 @@
                 myDiagram.select(newNode);
                 
                 // Add node to the Systo model
+/* 1 Feb 2016 We can either update the Systo model on an action-by-action basis, or 
+   convert the model in one go (using convertGojsToSysto), when it is ready to run.
+   I will try the latter initially, since that totally avoids the risk of missing some
+   operation on the model.  In any case, the longer-term plan is to get rid of the Systo
+   data model altogether, so there is little point in wasting effort on action-by-action
+   synching.
                 var action = new Action(systoModel, 'create_node', {
                     mode:nodeTypeId, 
                     nodeId:newNodeId,   
@@ -207,6 +231,7 @@
                     diagramy:point.y}
                 );
                 action.doAction();
+*/
             }
 
 
@@ -391,10 +416,14 @@
     }
 
 
-    function convertFromGojsToSystoFormat(gojsModel) {
+/*  Shifted to GoJS section of systo.js
+    function convertGojsToSysto(gojsModel) {
 
         var systoModel = {
-            meta:{},
+            meta:{
+                modelId:"fred", 
+                language:"system_dynamics"
+            },
             nodes:{},
             arcs:{},
             scenarios:{}
@@ -436,7 +465,7 @@
 
         SYSTO.models[modelId] = systoModel;
     }
-
+*/
 
 
     // --------------------------------------------------------------------------------
