@@ -2,7 +2,6 @@
 ../widgets/jquery.auto_layout.js
 ../widgets/jquery.compare_models_text.js
 ../widgets/jquery.diagram.js
-../widgets/jquery.diagram_gojs.js
 ../widgets/jquery.diagram_svg.js
 ../widgets/jquery.dialog_choose_tutorial.js
 ../widgets/jquery.dialog_diagram_options.js

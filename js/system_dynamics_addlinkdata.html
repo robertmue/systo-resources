@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal System Dynamics diagramming in GoJS</title>
+    <script src="go.js"></script>
+    <script src="NodeLabelDraggingTool.js"></script>
+    <script>
+    // SD is a global variable, to avoid polluting global namespace and to make the global
+    // nature of the individual variables obvious.
+    var SD = {
+        mode: "pointer",   // Set to default mode.  Alternatives are "add_node" and "add_link".
+        nodeType: null,    // Only set when user clicks on an add_node button.
+        linkType: null,    // Only set when user click on an add_link button.
+        nodeCounter: 0,    // Use for auto-naming new nodes and links.   Actually,
+        linkCounter: 0     // redundant, since GoJS maintains this information.
+    };
+    var myDiagram;
+
+    function init() {
+        myDiagram = new go.Diagram("myDiagram");
+
+        myDiagram.initialContentAlignment = go.Spot.Center;
+        myDiagram.undoManager.isEnabled = true;
+
+            myDiagram.allowLink = false;  // linking is only started via buttons, not modelessly;
+
+            // see the "startLink..." functions and CustomLinkingTool defined below
+            //myDiagram.linkingTool = new CustomLinkingTool();  // defined below to automatically turn on allowLink
+
+        myDiagram.animationManager.isEnabled =false;   // !! See email from GoJS Support, 7 Jan 2016
+
+        // install the NodeLabelDraggingTool as a "mouse move" tool
+        myDiagram.toolManager.mouseMoveTools.insertAt(0, new NodeLabelDraggingTool());
+
+        myDiagram.toolManager.linkingTool.portGravity = 0;
+        //myDiagram.toolManager.linkingTool.archetypeLinkData = {category:"flow"};
+        //myDiagram.model.setCategoryForLinkData(myDiagram.toolManager.linkingTool.archetypeLinkData, "flow");
+
+/*
+        myDiagram.toolManager.draggingTool.doMouseDown = function() {
+          go.DraggingTool.prototype.doMouseDown.call(this);
+          console.debug(123);
+        }
+
+        myDiagram.toolManager.draggingTool.doMouseMove = function() {
+          go.DraggingTool.prototype.doMouseMove.call(this);
+          console.debug(456);
+        }
+*/
+        myDiagram.addDiagramListener("BackgroundSingleClicked", function(event) { 
+            if (SD.mode === "add_node") {
+                var point = event.diagram.lastInput.documentPoint;
+                var model = myDiagram.model;
+                loc = {x:point.x+28, y:point.y+25};
+                var shiftx = 0;
+                var shifty = 25;
+                SD.nodeCounter += 1;
+                var newNodeId = SD.nodeType+SD.nodeCounter;
+                var nodedata = {
+                    key:newNodeId, 
+                    category:SD.nodeType, 
+                    label:newNodeId, 
+                    loc:point.x+" "+point.y, // ... or go.Point.stringify(loc)
+                    text_shift:"0.5 0.5 "+shiftx+" "+shifty
+                };
+                model.addNodeData(nodedata);
+                var newNode = myDiagram.findNodeForData(nodedata);
+                myDiagram.select(newNode);
+            }
+        });
+
+        
+        myDiagram.addDiagramListener("LinkDrawn",
+          function(e) {
+            var link = e.subject;
+            console.debug(link.labelNodes.first().type);
+            var fromNode = link.fromNode;
+            var toNode = link.toNode;
+            if (SD.mode === "add_link" && SD.linkType === "flow") {
+                link.category = "flow";
+            } else {
+                link.category = "influence";
+                myDiagram.remove(link.labelNodes.first());
+            }
+            console.debug(myDiagram.model.toJson());
+
+          });
+
+        // GraphLinksModel support for link label nodes requires specifying two properties.
+        myDiagram.model = go.GraphObject.make(go.GraphLinksModel, { linkLabelKeysProperty: "labelKeys" });
+
+        // Whenever a new Link is drawng by the LinkingTool, it also adds a node data object
+        // that acts as the label node for the link, to allow links to be drawn to/from the link.
+        myDiagram.toolManager.linkingTool.archetypeLabelNodeData = 
+           { category: "valve" };
+
+        buildTemplates();
+
+        load();
+    }
+
+
+
+    function startLink(event, object) {
+        if (SD.mode !== "add_link") return;
+        console.debug(event);
+        console.debug(object.part.category);
+        var node = object.part;
+        node.isActionable = true;
+        var tool = myDiagram.toolManager.linkingTool;
+        // to control what kind of Link is created,
+        // change the LinkingTool.archetypeLinkData's category
+        myDiagram.model.setCategoryForLinkData(tool.archetypeLinkData, SD.linkType);
+        // also change the text indicating the condition, which the user can edit
+        tool.archetypeLinkData.text = SD.linkType;
+        tool.startObject = node.port;
+        myDiagram.currentTool = tool;
+        tool.doActivate();
+    }
+
+/*
+  // This custom LinkingTool just turns on Diagram.allowLink when it starts,
+  // and turns it off again when it stops so that users cannot draw new links modelessly.
+  function CustomLinkingTool() {
+    go.LinkingTool.call(this);
+  }
+  go.Diagram.inherit(CustomLinkingTool, go.LinkingTool);
+
+  // user-drawn linking is normally disabled,
+  // but needs to be turned on when using this tool
+  /** @override */
+/*
+  CustomLinkingTool.prototype.doStart = function() {
+    this.diagram.allowLink = true;
+    go.LinkingTool.prototype.doStart.call(this);
+  };
+*/
+  /** @override */
+/*
+  CustomLinkingTool.prototype.doStop = function() {
+    go.LinkingTool.prototype.doStop.call(this);
+    this.diagram.allowLink = false;
+  };
+  // end CustomLinkingTool
+*/
+
+    // ============================= function buildTemplates()
+    function buildTemplates() {
+        var $ = go.GraphObject.make;  //Only used for templates
+
+        var stockTemplate = 
+            $(go.Node, 
+                {   type:go.Panel.Spot, 
+                    locationObjectName: "STOCK_MAIN_SHAPE",  
+                    selectionObjectName: "STOCK_MAIN_SHAPE", 
+                    locationSpot: go.Spot.Center,
+                    layerName: "Background", 
+                    alignmentFocus: go.Spot.None,
+                    isActionable: false,
+                    actionDown: startLink
+                 },
+
+                new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+
+                $(go.Shape, 
+                    {   figure:"Rectangle", 
+                        name: "STOCK_MAIN_SHAPE", 
+                        stroke: "black", 
+                        fill: "#f0f0f0", 
+                        desiredSize: new go.Size(50, 30),
+                        portId: "", // So a link can be dragged from the Node: see /GraphObject.html#portId
+                        fromLinkable: true, 
+                        toLinkable: true, 
+                        cursor: "pointer" 
+                    }
+                ),
+
+                $(go.TextBlock,
+                    {   margin: 2, 
+                        font: "bold 11pt helvetica, bold arial, sans-serif",
+                        editable:true, 
+                        _isNodeLabel: true, 
+                        alignment: new go.Spot(0.5,0.5,0,30)    // initial value
+                    },
+                    new go.Binding("text", "label").makeTwoWay(),
+                    new go.Binding("alignment", "label_offset", go.Spot.parse).makeTwoWay(go.Spot.stringify)
+                )
+            );
+
+
+        var cloudTemplate = 
+            $(go.Node, 
+                {   type:go.Panel.Spot, 
+                    locationObjectName: "CLOUD_MAIN_SHAPE",  
+                    selectionObjectName: "CLOUD_MAIN_SHAPE", 
+                    locationSpot: go.Spot.Center,
+                    layerName: "Background", 
+                    alignmentFocus: go.Spot.None, 
+                    isActionable: false,
+                    actionDown: startLink
+                },
+
+                new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+
+                $(go.Shape, 
+                    {   figure:"Cloud", 
+                        name: "CLOUD_MAIN_SHAPE", 
+                        stroke: "black", 
+                        fill: "#f0f0f0", 
+                        desiredSize: new go.Size(35, 35),
+                        portId: "", // So a link can be dragged from the Node: see /GraphObject.html#portId
+                        fromLinkable: true, 
+                        toLinkable: true, 
+                        cursor: "pointer" 
+                    }
+                )
+           );
+
+
+        var valveTemplate = 
+            $(go.Node, 
+                {   type: go.Panel.Spot, 
+                    locationObjectName: "VALVE_MAIN_SHAPE",  
+                    selectionObjectName: "VALVE_MAIN_SHAPE", 
+                    locationSpot: go.Spot.Center,
+                    layerName: "Foreground", 
+                    alignmentFocus: go.Spot.None, 
+                    isActionable: false,   // But draggable! If set to true, then can't drag, but 
+                                           // then can't edit or drag label!
+                    actionDown: startLink
+                },
+
+                new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+
+                $(go.Shape, 
+                    {   figure: "Ellipse", 
+                        name: "VALVE_MAIN_SHAPE", 
+                        stroke: "black", 
+                        fill: "#f0f0f0", 
+                        desiredSize: new go.Size(20, 20),
+                        portId: "", // So a link can be dragged from the Node: see /GraphObject.html#portId
+                        fromLinkable: true, 
+                        toLinkable: true, 
+                        cursor: "pointer"                    }
+                ),
+
+                $(go.TextBlock,
+                    {   margin: 2, 
+                        font: "bold 11pt helvetica, bold arial, sans-serif",
+                        editable:true, 
+                        _isNodeLabel: true, 
+                        alignment: new go.Spot(0.5,0.5,0,20)    // initial value
+                    },
+                    new go.Binding("text", "label").makeTwoWay(),
+                    new go.Binding("alignment", "label_offset", go.Spot.parse).makeTwoWay(go.Spot.stringify)
+                )
+            );
+/*
+            var template = new go.Node(go.Panel.Spot);   // or Auto?
+            myDiagram.nodeTemplateMap.add(nodeTypeId, template);
+            template.locationObjectName = "ICON";
+            template.locationSpot = go.Spot.Center;
+            template.layerName = "Foreground";
+            template.selectionObjectName = "ICON";
+            template.bind(new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify));
+
+            var label = new go.TextBlock();
+            label.font = "9.5pt helvetica, arial, sans-serif";
+            label.stroke = 'black';
+            label.padding = 10;  // make some extra space for the shape around the text
+            label.isMultiline = false;  // don't allow newlines in text
+            label.editable = true;  // allow in-place editing by user
+            label.bind(new go.Binding("text", "label").makeTwoWay());
+            template.add(label);
+*/
+        var variableTemplate = 
+            $(go.Node, 
+                {   type:go.Panel.Auto, 
+                    locationObjectName: "VARIABLE_MAIN_SHAPE",  
+                    selectionObjectName: "VARIABLE_MAIN_SHAPE", 
+                    locationSpot: go.Spot.Center,
+                    layerName: "Background", 
+                    alignmentFocus: go.Spot.None,
+                    isActionable: false,
+                    actionDown: startLink
+                 },
+
+                new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+
+                $(go.Shape, 
+                    {   figure:"Rectangle", 
+                        name: "VARIABLE_MAIN_SHAPE", 
+                        stroke: null, 
+                        fill: "white", 
+                        portId: "", // So a link can be dragged from the Node: see /GraphObject.html#portId
+                        fromLinkable: true, 
+                        toLinkable: true, 
+                        cursor: "pointer" 
+                    }
+                ),
+
+                $(go.TextBlock,
+                    {   margin: 2, 
+                        name: "VARIABLE_MAIN_SHAPE",
+                        font: "bold 11pt helvetica, bold arial, sans-serif",
+                        // padding: 10,
+                        isMultiline: false,
+                        editable:true,
+                        // portId: "", // So a link can be dragged from the Node: see /GraphObject.html#portId
+                        fromLinkable: true, 
+                        toLinkable: true, 
+                        // _isNodeLabel: true, 
+                        // alignment: new go.Spot(0.5,0.5,0,30)    // initial value
+                    },
+                    new go.Binding("text", "label").makeTwoWay()
+                    // new go.Binding("alignment", "label_offset", go.Spot.parse).makeTwoWay(go.Spot.stringify)
+                )
+            );
+
+        myDiagram.nodeTemplateMap.add("stock", stockTemplate);
+        myDiagram.nodeTemplateMap.add("cloud", cloudTemplate);
+        myDiagram.nodeTemplateMap.add("valve", valveTemplate);
+        myDiagram.nodeTemplateMap.add("variable", variableTemplate);
+
+
+        // Link templates
+        var flowTemplate = 
+            $(go.Link,
+                {   toShortLength: 8
+                },
+
+                $(go.Shape, 
+                    {   stroke: "blue", 
+                        strokeWidth: 5 
+                    }
+                ),
+
+                $(go.Shape, 
+                    {   fill: "blue", 
+                        stroke: null, 
+                        toArrow: "Standard", 
+                        scale: 2.5 })
+            );
+
+
+        var influenceTemplate =
+            $(go.Link,
+                {   curve: go.Link.Bezier, 
+                    toShortLength: 8
+                },
+
+                $(go.Shape, 
+                    {   stroke: "green", 
+                        strokeWidth: 1.5
+                    }
+                ),
+
+                $(go.Shape, 
+                    {   fill: "green", 
+                        stroke: null, 
+                        toArrow: "Standard", 
+                        scale: 1.5 
+                    }
+                )
+            );
+
+        myDiagram.linkTemplateMap.add("flow", flowTemplate);
+        myDiagram.linkTemplateMap.add("influence", influenceTemplate);
+    }
+
+
+
+    // =============================== function load()
+    function load() {
+        myDiagram.model = go.Model.fromJson(document.getElementById("mySavedModel").value);
+    }
+
+
+    // Switches the "nActionable" property for all nides:
+    // false (default) - mousedown and drag on a node moves it;
+    // true (when you click on the Flow or Influence button) - mousedown and drag draws a link.
+    function setNodesMode(booleanValue) {
+        var nodes = myDiagram.nodes;
+        while (nodes.next()) {
+            var node = nodes.value;
+            if (node.category !== "valve") {
+                node.isActionable = booleanValue;
+            }
+        }
+    }
+
+
+    </script>
+</head>
+
+<body onload="init()">
+    <button onclick="SD.mode='pointer'; setNodesMode(false);">Pointer</button>
+    <button onclick="SD.mode='add_node'; SD.nodeType='stock';" style="margin-left:20px; background:#ffe0e0">Stock</button>
+    <button onclick="SD.mode='add_node'; SD.nodeType='cloud';" style="background:#ffe0e0">Cloud</button>
+    <button onclick="SD.mode='add_node'; SD.nodeType='variable';" style="background:#ffe0e0">Variable</button>
+    <button onclick="SD.mode='add_link'; SD.linkType='flow'; setNodesMode(true);" style="margin-left:20px; background:#e0ffe0">Flow</button>
+    <button onclick="SD.mode='add_link'; SD.linkType='influence'; setNodesMode(true);" style="background:#e0ffe0">Influence</button>
+
+    <div id="myDiagram" style="width:600px; height:500px; border:solid 1px black"></div>
+
+    <textarea id="mySavedModel" style="display:none; width:100%; height:400px">
+    { "class": "go.GraphLinksModel",
+      "linkLabelKeysProperty": "labelKeys",
+      "nodeDataArray": [ 
+        {"key":"grass", "category":"stock", "label":"Grass", "loc":"30 220", "label_offset":"0.5 0.5 0 30"},
+        {"key":"cloud1", "category":"cloud", "loc":"200 220"},
+        {"key":"sheep", "category":"stock", "label":"Sheep", "loc":"30 20","label_offset":"0.5 0.5 0 -30"},
+        {"key":"cloud2", "category":"cloud", "loc":"200 20"},
+        {"key":"cloud3", "category":"cloud", "loc":"-150 220"},
+        {"key":"grass_loss", "category":"valve", "label":"grass_loss","label_offset":"0.5 0.5 0 20" },
+        {"key":"grazing", "category":"valve", "label":"grazing","label_offset":"0.5 0.5 45 0" },
+        {"key":"growth", "category":"valve", "label":"growth","label_offset":"0.5 0.5 0 20" },
+        {"key":"sheep_loss", "category":"valve",  "label":"sheep_loss","label_offset":"0.5 0.5 0 20" }
+     ],
+      "linkDataArray": [ 
+        {"from":"grass", "to":"cloud1", "category":"flow", "labelKeys":[ "grass_loss" ]},
+        {"from":"sheep", "to":"cloud2", "category":"flow", "labelKeys":[ "sheep_loss" ]},
+        {"from":"grass", "to":"sheep", "category":"flow", "labelKeys":[ "grazing" ]},
+        {"from":"cloud3", "to":"grass", "category":"flow", "labelKeys":[ "growth" ]},
+        {"from":"grass", "to":"grass_loss", "category":"influence"},
+        {"from":"sheep", "to":"sheep_loss", "category":"influence"},
+        {"from":"grass", "to":"growth", "category":"influence"},
+        {"from":"grass", "to":"grazing", "category":"influence"},
+        {"from":"sheep", "to":"grazing", "category":"influence"}
+     ]
+    }
+    </textarea>
+</body>
+</html>
+

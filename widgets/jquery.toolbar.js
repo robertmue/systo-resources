@@ -748,6 +748,11 @@ function createArcButton(arcTypeId, arcType, first, widget) {
                 action:'clicked on arc ('+arcTypeId+') button', 
                 event_type: 'message_listener', 
                 parameters: {message:instructions}});
+            SYSTO.trigger({
+                file:'jquery.toolbar.js', 
+                action:'clicked on arc ('+arcTypeId+') button', 
+                event_type: 'add_node_or_arc_listener', 
+                parameters: {mode:'add_arc', itemTypeId:arcTypeId}});
             $( this ).css({'border':'solid 1px black', 'background-color':backgroundClicked});
             widget.state.toolbarButton = arcTypeId;
             widget.state.status = 'add_arc';

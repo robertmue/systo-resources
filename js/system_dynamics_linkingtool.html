@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal System Dynamics diagramming in GoJS</title>
+    <script src="go.js"></script>
+    <script src="NodeLabelDraggingTool.js"></script>
+    <script>
+    var mode = "pointer";
+    var node_type;
+    var arc_type;
+    var nodeCounter = 0;
+    var linkCounter = 0;
+
+    function init() {
+
+        myDiagram = new go.Diagram("myDiagram");
+
+        myDiagram.initialContentAlignment = go.Spot.Center;
+        myDiagram.undoManager.isEnabled = true;
+
+        myDiagram.animationManager.isEnabled =false;   // !! See email from GoJS Support, 7 Jan 2016
+
+        // install the NodeLabelDraggingTool as a "mouse move" tool
+        myDiagram.toolManager.mouseMoveTools.insertAt(0, new NodeLabelDraggingTool());
+
+        myDiagram.toolManager.linkingTool.portGravity = 0;
+        //myDiagram.toolManager.linkingTool.archetypeLinkData = {category:"flow"};
+        //myDiagram.model.setCategoryForLinkData(myDiagram.toolManager.linkingTool.archetypeLinkData, "flow");
+
+        myDiagram.addDiagramListener("BackgroundSingleClicked", function(event) { 
+            if (mode === "add_node") {
+                var point = event.diagram.lastInput.documentPoint;
+                var model = myDiagram.model;
+                loc = {x:point.x+28, y:point.y+25};
+                var shiftx = 0;
+                var shifty = 25;
+                nodeCounter += 1;
+                var newNodeId = node_type+nodeCounter;
+                var nodedata = {
+                    key:newNodeId, 
+                    category:node_type, 
+                    label:newNodeId, 
+                    loc:point.x+" "+point.y, // ... or go.Point.stringify(loc)
+                    text_shift:"0.5 0.5 "+shiftx+" "+shifty
+                };
+                model.addNodeData(nodedata);
+                var newNode = myDiagram.findNodeForData(nodedata);
+                myDiagram.select(newNode);
+            }
+        });
+
+        
+        myDiagram.addDiagramListener("LinkDrawn",
+          function(e) {
+            var link = e.subject;
+            console.debug(link.labelNodes.first().type);
+            var fromNode = link.fromNode;
+            var toNode = link.toNode;
+            if (mode === "add_link" && link_type === "flow") {
+                link.category = "flow";
+            } else {
+                link.category = "influence";
+                myDiagram.remove(link.labelNodes.first());
+            }
+            console.debug(myDiagram.model.toJson());
+
+          });
+
+        // GraphLinksModel support for link label nodes requires specifying two properties.
+        myDiagram.model = go.GraphObject.make(go.GraphLinksModel, { linkLabelKeysProperty: "labelKeys" });
+
+        // Whenever a new Link is drawng by the LinkingTool, it also adds a node data object
+        // that acts as the label node for the link, to allow links to be drawn to/from the link.
+        myDiagram.toolManager.linkingTool.archetypeLabelNodeData = 
+           { category: "valve" };
+
+        buildTemplates(myDiagram);
+
+        load(myDiagram);
+    }
+
+
+    // ============================= function buildTemplates()
+    function buildTemplates(myDiagram) {
+        var $ = go.GraphObject.make;  //Only used for templates
+
+        var stockTemplate = 
+            $(go.Node, 
+                {   type:go.Panel.Spot, 
+                    locationObjectName: "STOCK_MAIN_SHAPE",  
+                    selectionObjectName: "STOCK_MAIN_SHAPE", 
+                    locationSpot: go.Spot.Center,
+                    layerName: "Background", 
+                    alignmentFocus: go.Spot.None 
+                },
+
+                new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+
+                $(go.Shape, 
+                    {   figure:"Rectangle", 
+                        name: "STOCK_MAIN_SHAPE", 
+                        stroke: "black", 
+                        fill: "white", 
+                        desiredSize: new go.Size(60, 40),
+                        portId: "", // So a link can be dragged from the Node: see /GraphObject.html#portId
+                        fromLinkable: true, 
+                        toLinkable: true, 
+                        cursor: "pointer" 
+                    }
+                ),
+
+                $(go.Shape,  // provide interior area where the user can grab the node
+                    {   fill: "#f0f0f0", 
+                        stroke: null, 
+                        desiredSize: new go.Size(40, 20) 
+                    }
+                ),
+
+                $(go.TextBlock,
+                    {   margin: 2, 
+                        font: "bold 11pt helvetica, bold arial, sans-serif",
+                        editable:true, 
+                        _isNodeLabel: true, 
+                        alignment: new go.Spot(0.5,0.5,0,30)    // initial value
+                    },
+                    new go.Binding("text", "label").makeTwoWay(),
+                    new go.Binding("alignment", "label_offset", go.Spot.parse).makeTwoWay(go.Spot.stringify)
+                )
+            );
+
+
+        var cloudTemplate = 
+            $(go.Node, 
+                {   type:go.Panel.Spot, 
+                    locationObjectName: "CLOUD_MAIN_SHAPE",  
+                    selectionObjectName: "CLOUD_MAIN_SHAPE", 
+                    locationSpot: go.Spot.Center,
+                    layerName: "Background", 
+                    alignmentFocus: go.Spot.None 
+                },
+
+                new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+
+                $(go.Shape, 
+                    {   figure:"Cloud", 
+                        name: "CLOUD_MAIN_SHAPE", 
+                        stroke: "black", 
+                        fill: "white", 
+                        desiredSize: new go.Size(40, 40),
+                        portId: "", // So a link can be dragged from the Node: see /GraphObject.html#portId
+                        fromLinkable: true, 
+                        toLinkable: true, 
+                        cursor: "pointer" 
+                    }
+                ),
+
+                $(go.Shape,  // provide interior area where the user can grab the node
+                    {   fill: "#f0f0f0", 
+                        stroke: null, 
+                        desiredSize: new go.Size(20, 20) 
+                    }
+                )
+            );
+
+
+        var valveTemplate = 
+            $(go.Node, 
+                {   type: go.Panel.Spot, 
+                    locationObjectName: "VALVE_MAIN_SHAPE",  
+                    selectionObjectName: "VALVE_MAIN_SHAPE", 
+                    locationSpot: go.Spot.Center,
+                    layerName: "Foreground", 
+                    alignmentFocus: go.Spot.None 
+                },
+
+                new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+
+                $(go.Shape, 
+                    {   figure: "Ellipse", 
+                        name: "VALVE_MAIN_SHAPE", 
+                        stroke: "black", 
+                        fill: "white", 
+                        desiredSize: new go.Size(25, 25),
+                        portId: "", // So a link can be dragged from the Node: see /GraphObject.html#portId
+                        fromLinkable: true, 
+                        toLinkable: true, 
+                        cursor: "pointer" 
+                    }
+                ),
+
+                $(go.TextBlock,
+                    {   margin: 2, 
+                        font: "bold 11pt helvetica, bold arial, sans-serif",
+                        editable:true, 
+                        _isNodeLabel: true, 
+                        alignment: new go.Spot(0.5,0.5,0,20)    // initial value
+                    },
+                    new go.Binding("text", "label").makeTwoWay(),
+                    new go.Binding("alignment", "label_offset", go.Spot.parse).makeTwoWay(go.Spot.stringify)
+                )
+            );
+
+        myDiagram.nodeTemplateMap.add("stock", stockTemplate);
+        myDiagram.nodeTemplateMap.add("cloud", cloudTemplate);
+        myDiagram.nodeTemplateMap.add("valve", valveTemplate);
+
+
+        // Link templates
+        var flowTemplate = 
+            $(go.Link,
+                {   toShortLength: 8
+                },
+
+                $(go.Shape, 
+                    {   stroke: "blue", 
+                        strokeWidth: 5 
+                    }
+                ),
+
+                $(go.Shape, 
+                    {   fill: "blue", 
+                        stroke: null, 
+                        toArrow: "Standard", 
+                        scale: 2.5 })
+            );
+
+
+        var influenceTemplate =
+            $(go.Link,
+                {   curve: go.Link.Bezier, 
+                    toShortLength: 8
+                },
+
+                $(go.Shape, 
+                    {   stroke: "green", 
+                        strokeWidth: 1.5
+                    }
+                ),
+
+                $(go.Shape, 
+                    {   fill: "green", 
+                        stroke: null, 
+                        toArrow: "Standard", 
+                        scale: 1.5 
+                    }
+                )
+            );
+
+        myDiagram.linkTemplateMap.add("flow", flowTemplate);
+        myDiagram.linkTemplateMap.add("influence", influenceTemplate);
+    }
+
+
+
+    // =============================== function load()
+    function load(myDiagram) {
+        myDiagram.model = go.Model.fromJson(document.getElementById("mySavedModel").value);
+    }
+
+
+    </script>
+</head>
+
+<body onload="init()">
+    <button onclick="mode='pointer';">Pointer</button>
+    <button onclick="mode='add_node'; node_type='stock';" style="background:#ffe0e0">Stock</button>
+    <button onclick="mode='add_node'; node_type='cloud';" style="background:#ffe0e0">Cloud</button>
+    <button onclick="mode='add_node'; node_type='variable';" style="background:#ffe0e0">Variable</button>
+    <button onclick="mode='add_link'; link_type='flow';" style="background:#e0ffe0">Flow</button>
+    <button onclick="mode='add_link'; link_type='influence';" style="background:#e0ffe0">Influence</button>
+
+    <div id="myDiagram" style="width:600px; height:500px; border:solid 1px black"></div>
+
+    <textarea id="mySavedModel" style="display:none; width:100%; height:400px">
+    { "class": "go.GraphLinksModel",
+      "linkLabelKeysProperty": "labelKeys",
+      "nodeDataArray": [ 
+        {"key":"grass", "category":"stock", "label":"Grass", "loc":"30 220", "label_offset":"0.5 0.5 0 30"},
+        {"key":"cloud1", "category":"cloud", "loc":"200 220"},
+        {"key":"sheep", "category":"stock", "label":"Sheep", "loc":"30 20","label_offset":"0.5 0.5 0 -30"},
+        {"key":"cloud2", "category":"cloud", "loc":"200 20"},
+        {"key":"grass_loss", "category":"valve", "label":"grass_loss","label_offset":"0.5 0.5 0 20" },
+        {"key":"grazing", "category":"valve", "label":"grazing","label_offset":"0.5 0.5 45 0" },
+        {"key":"sheep_loss", "category":"valve",  "label":"sheep_loss","label_offset":"0.5 0.5 0 20" }
+     ],
+      "linkDataArray": [ 
+        {"from":"grass", "to":"cloud1", "category":"flow", "labelKeys":[ "grass_loss" ]},
+        {"from":"sheep", "to":"cloud2", "category":"flow", "labelKeys":[ "sheep_loss" ]},
+        {"from":"grass", "to":"sheep", "category":"flow", "labelKeys":[ "grazing" ]},
+        {"from":"grass", "to":"grass_loss", "category":"influence"},
+        {"from":"sheep", "to":"sheep_loss", "category":"influence"},
+        {"from":"grass", "to":"grazing", "category":"influence"},
+        {"from":"sheep", "to":"grazing", "category":"influence"}
+     ]
+    }
+    </textarea>
+</body>
+</html>
+

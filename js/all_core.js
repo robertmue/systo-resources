@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Mon Feb 1 19:08:51 GMT 2016  */
+/* Last merge : Mon Feb 8 21:26:14 GMT 2016  */
 
 /* Merging order :
 
@@ -2538,8 +2538,8 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
             systoArc.type = gojsLink.category;
             systoArc.start_node_id = gojsLink.from;
             systoArc.end_node_id = gojsLink.to;
-            if (gojsLink.labKeys) {
-                systoArc.node_id = gojsLink.labKeys[0]; // Should be able to safely assume it's a 1-element array
+            if (gojsLink.labelKeys) {
+                systoArc.node_id = gojsLink.labelKeys[0]; // Should be able to safely assume it's a 1-element array
             }
             systoModel.arcs[arcId] = systoArc;
         }

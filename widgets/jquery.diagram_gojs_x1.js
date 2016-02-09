@@ -2,14 +2,7 @@
 
   /***********************************************************
    *         diagram_gojs widget
-   * 8 Feb 2016 This version based on systemDynamics.html (see emails with GoJS support, 5 Feb 2016)
-   * This version uses traditional toolbar-modal approach
    ***********************************************************
-
-    // TODO: change myDiagram from being a global variable.
-    // TODO: check that calling gojsInit() from change_model_listener really re-initialises everything,
-            including language, re-building of templates, etc.
-
    */
     $.widget('systo.diagram_gojs', {
         meta:{
@@ -31,12 +24,10 @@
         widgetEventPrefix: 'diagram_gojs:',
 
         _create: function () {
-            console.debug('@log. creating_widget: diagram_gojs');
-            SD = {nodeCounter:{stock:0, cloud:0, variable:0, valve:0}};
             var self = this;
             this.element.addClass('diagram_gojs-1');
 
-            var div = $('<div id="myDiagram">diagram_gojs</div>');
+            var div = $('<div>diagram_gojs</div>');
             this._container = $(this.element).append(div);
             this.div = div;
 
@@ -49,23 +40,245 @@
             // ======================================== Listeners (custom event habdlers)
 
             $(document).on('change_model_listener', {}, function(event, parameters) {
-                console.debug('@log. listener: jquery.diagram_gojs.js: change_model_listener: '+JSON.stringify(parameters));
+                console.debug('@log. listener: diagram.js: change_model_listener: '+JSON.stringify(parameters));
                 self.options.modelId = parameters.newModelId;
                 var model = SYSTO.models[parameters.newModelId];
                 self.model = model;
-                load(model);
+                gojs_init(self, myDiagram);
                 //event.stopPropagation();
             });
 
-            $(document).on('add_node_or_arc_listener', {}, function(event, parameters) {
-                console.debug('@log. listener: jquery.diagram_gojs.js: add_node_or_arc_listener: '+JSON.stringify(parameters));
-                setMode(parameters.mode, parameters.itemTypeId);
-            });
 
-            gojsInit(this);
+            GOJS = go.GraphObject.make;
+
+            myDiagram = new go.Diagram(this.element[0]);
+            SYSTO.gojs.currentModel = myDiagram.model;
+
+            // Diagram properties
+            myDiagram.initialContentAlignment = go.Spot.Center;
+
+            // Diagram event listeners
+            myDiagram.addDiagramListener("BackgroundDoubleClicked", 
+                function(e) {removeNodePopup();}
+            );
+
+
+            myDiagram.addDiagramListener("LinkDrawn",
+              function(e) {
+                console.debug(e.subject);
+                var link = e.subject;
+
+                var fromNode = link.fromNode;
+                var toNode = link.toNode;
+                if ((fromNode.category==="stock" || fromNode.category==="cloud") && 
+                        (toNode.category==="stock" || toNode.category=="cloud")) {
+                    link.category = "flow";
+                } else {
+                    link.category = "influence";
+                }
+
+              });
+
+/*
+            myDiagram.addDiagramListener("BackgroundSingleClicked", function(event) {   // *** Method 2 ***
+                removeNodePopup();
+                var point = event.diagram.lastInput.documentPoint;
+                var nodeTypeId = SYSTO.state.nodeTypeId;
+                var pointx = point.x+62;
+                var pointy = point.y;
+                myDiagram.model.addNodeData({key:'stock1', category:"stock", label:"",loc:point.x+' '+point.y});
+                myDiagram.model.addNodeData({key:'Start', category:"Start", label:"",loc:pointx+' '+pointy});
+            });
+*/
+            myDiagram.addDiagramListener("BackgroundSingleClicked", function(event) {      // *** Method 3 ***
+                var point = event.diagram.lastInput.documentPoint;
+                var nodeTypeId = SYSTO.state.nodeTypeId;
+                addNode(event, nodeTypeId, point);
+                //myDiagram.model.addNodeData({key:'stock1', category:nodeTypeId, label:'Stock',loc:point.x+' '+point.y});
+            });
+            // Same as Method 1, but more flexibility than simply adding a node.
+
+            // Diagram.animationManager
+            myDiagram.animationManager.isEnabled =false;   // !! See email from GoJS Support, 7 Jan 2016
+
+            // Diagram.toolManager
+            myDiagram.toolManager.hoverDelay = 100  // how quickly tooltips are shown
+
+/*
+            // Diagram.toolManager.clickCreatingTool  *** Method 1 ***
+            myDiagram.toolManager.clickCreatingTool.archetypeNodeData = 
+                { key:"Start", category: "Start"},
+	        myDiagram.toolManager.clickCreatingTool.isDoubleClick = false,    // RM
+            myDiagram.toolManager.clickCreatingTool.doStart = 
+                function () {removeNodePopup();
+            };
+*/
+
+            // ------------------------------------------------------------------
+            // Popup for choosing type of node to add to diagram
+            myDiagram.nodeTemplateMap.add("Start",
+                GOJS(go.Node, "Auto",
+                  { locationSpot: go.Spot.Center },
+                  new go.Binding("location", "loc", go.Point.parse),   // Only if Method 2 used
+                  GOJS(go.Shape, "Rectangle",
+                    { fill: "white",stroke:"white" }),
+                  GOJS(go.Panel, "Vertical",
+                    { },
+                      GOJS(go.TextBlock, "Change to:", {width:67, textAlign:"left"}),
+                    GOJS("Button",
+                      {width:75, 
+                        click: addCloud },
+                      GOJS(go.TextBlock, "Cloud", {width:67, textAlign:"left"})),
+                    GOJS("Button",
+                     {width:75,
+                        click: addVariable },
+                      GOJS(go.TextBlock, "Variable", {width:67, textAlign:"left"}))
+                  )
+                )
+            );
+
+            function addStock(e) {
+                addSystoNode(e, "stock");
+            }
+            function addCloud(e) {
+                addSystoNode(e, "cloud");
+            }
+            function addVariable(e) {
+                addSystoNode(e, "variable");
+            }
+/*
+            function addSystoNode(e, type) {
+                var node = myDiagram.findNodeForKey("Start");
+                removeNodePopup();
+                var model = myDiagram.model;
+                model.startTransaction("add "+type);
+                var loc = node.position;
+                loc.x = loc.x+28;
+                loc.y = loc.y+25;
+                var shiftx = 0;
+                var shifty = 22;
+                var nodeId = type+Math.floor(1000*Math.random());
+                var nodedata = {
+                    key:nodeId, 
+                    category:type, 
+                    label:nodeId, 
+                    click: function() {removeNodePopup();},
+                    loc:loc.x+" "+loc.y, // ... or go.Point.stringify(loc)
+                    text_shift:"0.5 0.5 "+shiftx+" "+shifty
+                };
+                model.addNodeData(nodedata);
+                var newnode = myDiagram.findNodeForData(nodedata);
+                myDiagram.select(newnode);
+                model.commitTransaction("add "+type);
+                myDiagram.remove(node);
+                
+                // Add node to the Systo model
+                SYSTO.state.languageId = "system_dynamics";  // TODO: Shouldn't have to do this here
+                var nodeTypeId = type;
+                var currentModelId = SYSTO.state.currentModelId;
+                var systoModel = SYSTO.models[currentModelId];
+                var newNodeId = getNewNodeId(systoModel, nodeTypeId);
+                var action = new Action(systoModel, 'create_node', {
+                    mode:nodeTypeId, 
+                    nodeId:newNodeId,   
+                    diagramx:loc.x, 
+                    diagramy:loc.y}
+                );
+                action.doAction();
+            }
+*/
+
+/*
+             $('#dialog_sd_node').
+                data('modelId',widget.options.modelId).
+                data('nodeId',node.id).
+                dialog('open');
+*/
+
+            function addNode(e, nodeTypeId, point) {
+                SYSTO.state.languageId = "system_dynamics";  // TODO: Shouldn't have to do this here
+                var currentModelId = SYSTO.state.currentModelId;
+                var systoModel = SYSTO.models[currentModelId];
+                var newNodeId = getNewNodeId(systoModel, nodeTypeId);
+
+                var model = myDiagram.model;
+                loc = {x:point.x+28, y:point.y+25};
+                var shiftx = 0;
+                var shifty = 25;
+                var nodedata = {
+                    key:newNodeId, 
+                    category:nodeTypeId, 
+                    label:newNodeId, 
+                    loc:point.x+" "+point.y, // ... or go.Point.stringify(loc)
+                    text_shift:"0.5 0.5 "+shiftx+" "+shifty
+                };
+                model.addNodeData(nodedata);
+                var newNode = myDiagram.findNodeForData(nodedata);
+                //newNode.doubleClick = function() {alert(654);};
+                myDiagram.select(newNode);
+                
+                // Add node to the Systo model
+/* 1 Feb 2016 We can either update the Systo model on an action-by-action basis, or 
+   convert the model in one go (using convertGojsToSysto), when it is ready to run.
+   I will try the latter initially, since that totally avoids the risk of missing some
+   operation on the model.  In any case, the longer-term plan is to get rid of the Systo
+   data model altogether, so there is little point in wasting effort on action-by-action
+   synching.
+                var action = new Action(systoModel, 'create_node', {
+                    mode:nodeTypeId, 
+                    nodeId:newNodeId,   
+                    diagramx:point.x, 
+                    diagramy:point.y}
+                );
+                action.doAction();
+*/
+            }
+
+
+            function makeTooltip(str) {  // a helper function for defining tooltips for buttons
+              return GOJS(go.Adornment, go.Panel.Auto,
+                       GOJS(go.Shape, { fill: "#FFFFCC" }),
+                       GOJS(go.TextBlock,str,{margin:4,stroke:"black",font:"15px sans-serif"}));
+            }
+
+
+
+            // -------------------------------------------------------------------------------
+            myDiagram.nodeTemplateMap.add("dialog",
+                    GOJS(go.Node, "Auto",  {width:200, layerName:"Foreground", location:new go.Point(200,-20)},
+                        GOJS(go.Shape, "Rectangle", {fill:"white"}),
+                        GOJS(go.TextBlock, {margin:3, editable:true, text:"Equation", textAlign:"left", width:180,
+                            click:function() {}, doubleClick:function() {}})
+                    )
+                );
+
+
+            // -------------------------------------------------------------
+            // Whenever a new Link is drawn by the LinkingTool, it also adds a node data object
+            // that acts as the label node for the link, to allow links to be drawn to/from the link.
+            myDiagram.toolManager.linkingTool.archetypeLabelNodeData =
+              { category: "valve" };
+
+
+
+            // this DiagramEvent handler is called during the linking or relinking transactions
+            function maybeChangeLinkCategory(e) {
+              var link = e.subject;
+              var linktolink = (link.fromNode.isLinkLabel || link.toNode.isLinkLabel);
+              e.diagram.model.setCategoryForLinkData(link.data, (linktolink ? "influence" : ""));
+            }
+
+            // install the NodeLabelDraggingTool as a "mouse move" tool
+            myDiagram.toolManager.mouseMoveTools.insertAt(0, new NodeLabelDraggingTool());
+
+            $(document).on('diagram_modified_event', {}, function(event, parameters) {
+                //gojs_init(self, myDiagram);
+            });
 
             this._setOptions({
             });
+
+            gojs_init(this, myDiagram);
         },
 
         _destroy: function () {
@@ -100,99 +313,47 @@
     });
 
 
+    // Provided by GoJS support, 30 Jan 2016, to fix a bug
+    // - refusal to allow a table GraphObject to be dragged around like a label
 
-    // This is all the GoJS code needed to handle this particular mode of user interaction.
-    // So, in principle, should just need to swap this function with another to handle
-    // e.g. modeless addition of nodes and links.
-    // So, potentially could be handled using a plugin mechanism?
+    NodeLabelDraggingTool.prototype.findLabel = function() {
+      var diagram = this.diagram;
+      var e = diagram.firstInput;
+      var elt = diagram.findObjectAt(e.documentPoint, null, null);
+      if (elt === null || !(elt.part instanceof go.Node)) return null;
+      while (elt.panel !== null) {
+        if (elt._isNodeLabel && elt.panel.type === go.Panel.Spot && elt.panel.elt(0) !== elt) return elt;
+        elt = elt.panel;
+      }
+      return null;
+    };
 
-    function gojsInit(widget) {
 
-      var $ = go.GraphObject.make;
 
-      myDiagram = $(go.Diagram, "diagram",
-        {
-          initialContentAlignment: go.Spot.Center,
-          "undoManager.isEnabled": true,
-          allowLink: false,  // linking is only started via buttons, not modelessly
-          "animationManager.isEnabled": false,
+    function gojs_init(widget, myDiagram) {
 
-          "linkingTool.portGravity": 0,  // no snapping while drawing new links
-          // override the link creation process
-          "linkingTool.insertLink": function(fromnode, fromport, tonode, toport) {
-            // to control what kind of Link is created,
-            // change the LinkingTool.archetypeLinkData's category
-            myDiagram.model.setCategoryForLinkData(this.archetypeLinkData, SYSTO.state.arcTypeId);
-            // Whenever a new Link is drawng by the LinkingTool, it also adds a node data object
-            // that acts as the label node for the link, to allow links to be drawn to/from the link.
-            this.archetypeLabelNodeData = (SYSTO.state.arcTypeId === "flow") ? { category: "valve" } : null;
-            // also change the text indicating the condition, which the user can edit
-            this.archetypeLinkData.text = SYSTO.state.arcTypeId;
-            return go.LinkingTool.prototype.insertLink.call(this, fromnode, fromport, tonode, toport);
-          },
+      // The following 15 lines generate a separate node or link template for
+      // every node and arc (GoJS link) defined in the Systo graph language definition.
+      // Note that Systo says "arc" where GoJS says "link".
 
-          "clickCreatingTool.archetypeNodeData": {},  // enable ClickCreatingTool
-          "clickCreatingTool.isDoubleClick": false,   // operates on a single click in background
-          "clickCreatingTool.canStart": function() {  // but only in "node" creation mode
-            return SYSTO.state.mode === "add_node" && go.ClickCreatingTool.prototype.canStart.call(this);
-          },
-          "clickCreatingTool.insertPart": function(loc) {  // customize the data for the new node
-            SD.nodeCounter[SYSTO.state.nodeTypeId] += 1;                            // RM changed
-            var newNodeId = SYSTO.state.nodeTypeId + SD.nodeCounter[SYSTO.state.nodeTypeId];   // RM changed
-            this.archetypeNodeData = {
-              key: newNodeId,
-              category: SYSTO.state.nodeTypeId,
-              label: newNodeId
-            };
-            return go.ClickCreatingTool.prototype.insertPart.call(this, loc);
-          }
-        });
+      var model = SYSTO.models[widget.options.modelId];
+      var languageId = model.meta.language;
+      var language = SYSTO.languages[languageId];
 
-        // install the NodeLabelDraggingTool as a "mouse move" tool
-        myDiagram.toolManager.mouseMoveTools.insertAt(0, new NodeLabelDraggingTool());
+      var nodeTypes = language.NodeType;
+      for (var nodeTypeId in nodeTypes) {
+          var nodeType = nodeTypes[nodeTypeId];
+          createNodeTypeTemplate(nodeTypeId, nodeType, widget);
+      }
 
-        // RM added: generate unique label for valve on newly-created flow link
-        myDiagram.addDiagramListener("LinkDrawn", function(e) {
-            var link = e.subject;
-            if (link.category === "flow") {
-                myDiagram.startTransaction('updateNode');
-                SD.nodeCounter.valve += 1; 
-                var newNodeId = "flow" + SD.nodeCounter.valve; 
-                var labelNode = link.labelNodes.first();
-                myDiagram.model.setDataProperty(labelNode.data, "label", newNodeId);
-                myDiagram.commitTransaction('updateNode');
-            }
-        });
+      var arcTypes = language.ArcType;
+      for (var arcTypeId in arcTypes) {
+          var arcType = arcTypes[arcTypeId];
+          createLinkTypeTemplate(arcTypeId, arcType);
+      }
 
-        generateTemplates(widget);
-
-        var model = SYSTO.models.cascade;
-        load(model);
+      load(model);
     }
-
-
-    function generateTemplates(widget) {
-        // The following 15 lines generate a separate node or link template for
-        // every node and arc (GoJS link) defined in the Systo graph language definition.
-        // Note that Systo says "arc" where GoJS says "link".
-
-        var model = SYSTO.models[widget.options.modelId];
-        var languageId = model.meta.language;
-        var language = SYSTO.languages[languageId];
-
-        var nodeTypes = language.NodeType;
-        for (var nodeTypeId in nodeTypes) {
-            var nodeType = nodeTypes[nodeTypeId];
-            createNodeTypeTemplate(nodeTypeId, nodeType, widget);
-        }
-
-        var arcTypes = language.ArcType;
-        for (var arcTypeId in arcTypes) {
-            var arcType = arcTypes[arcTypeId];
-            createLinkTypeTemplate(arcTypeId, arcType);
-        }
-    }
-
 
     // Show the diagram's model in JSON format
     function save() {
@@ -315,24 +476,13 @@
         // Create a new node template, and set its properties.
 
         if (nodeType.no_separate_symbol) {      // Just a text label - no symbol for the node.
-            var template = new go.Node();   
+            var template = new go.Node(go.Panel.Spot);   // or Auto?
             myDiagram.nodeTemplateMap.add(nodeTypeId, template);
-            template.type = go.Panel.Auto;
-            template.layerName = "Background";
-            template.locationObjectName = "SHAPE";
-            template.selectionObjectName = "SHAPE";
+            template.locationObjectName = "ICON";
             template.locationSpot = go.Spot.Center;
+            template.layerName = "Foreground";
+            template.selectionObjectName = "ICON";
             template.bind(new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify));
-
-            var shape = new go.Shape();
-            shape.name = "SHAPE";
-            shape.stroke = null;
-            shape.fill = "white";
-            shape.cursor = "pointer";
-            shape.portId = ""; // So a link can be dragged from the Node: see /GraphObject.html#portId
-            shape.fromLinkable = true;
-            shape.toLinkable = true;
-            template.add(shape);
 
             var label = new go.TextBlock();
             label.font = "9.5pt helvetica, arial, sans-serif";
@@ -404,7 +554,7 @@
                         data('nodeId',node.id).
                         dialog('open');
                 };
-                //template.add(shape1);
+                template.add(shape1);
             }
 
             // Create the label for the node template.
@@ -439,14 +589,14 @@
 
             var table = new go.Panel(go.Panel.Table);
             table.setProperties({_isNodeLabel: true});
-            table.alignment = new go.Spot(0,0,0,35);
+            table.alignment = new go.Spot(0,0,0,50);
             //var columnDef = new go.RowColumnDefinition();
             //columnDef.column = 1;
             //columnDef.width = 100;
             //table.add(columnDef);
             var label = new go.TextBlock();
             label.font = "9.5pt bold helvetica, arial, sans-serif";
-            label.background = "white";
+            label.background = "#ffe0e0";
             label.editable = true;        
             label.maxSize = new go.Size(120,NaN);
             label.row = 0;
@@ -461,7 +611,7 @@
             equation.row = 1;
             equation.column = 0;
             equation.bind(new go.Binding("text", "equation").makeTwoWay());
-            //table.add(equation);
+            table.add(equation);
             template.add(table);
             
 
@@ -548,37 +698,6 @@
             myDiagram.remove(T);
         });
     }
-
-
-    function setMode(mode, itemType) {
-      console.debug(mode);
-      console.debug(itemType);
-      myDiagram.startTransaction();
-      if (mode === "pointer") {
-        myDiagram.allowLink = false;
-      } else if (mode === "add_arc") {
-        myDiagram.allowLink = true;
-      }
-      myDiagram.commitTransaction("mode changed");
-    }
-
-
-    // Provided by GoJS support, 30 Jan 2016, to fix a bug:
-    // - refusal to allow a table GraphObject to be dragged around like a label.
-    // Should be fixed in next release; otherwise, shift to NodeLabelDraggingTool.js
-
-    NodeLabelDraggingTool.prototype.findLabel = function() {
-      var diagram = this.diagram;
-      var e = diagram.firstInput;
-      var elt = diagram.findObjectAt(e.documentPoint, null, null);
-      if (elt === null || !(elt.part instanceof go.Node)) return null;
-      while (elt.panel !== null) {
-        if (elt._isNodeLabel && elt.panel.type === go.Panel.Spot && elt.panel.elt(0) !== elt) return elt;
-        elt = elt.panel;
-      }
-      return null;
-    };
-
 
 })(jQuery);
 
