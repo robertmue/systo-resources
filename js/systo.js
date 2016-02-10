@@ -2441,6 +2441,58 @@ SYSTO.Model = function(args) {
 
 // ======================================  GoJS  ========================================
 
+SYSTO.convertSystoToGojs = function(systoModel) {
+
+        var gojsModel = { 
+            "class": "go.GraphLinksModel",
+            linkLabelKeysProperty: "labelKeys",
+            nodeDataArray: [],
+            linkDataArray: []
+        }
+
+        var nodeList = systoModel.nodes;
+        for (var nodeId in nodeList) {
+            var node = nodeList[nodeId];
+            var key = node.id;
+            var category = node.type;
+            if (node.type !== "cloud") {
+                var has_equation = true;
+                var label = node.label;
+            } else {
+                has_equation = false;
+            }
+            var loc = node.centrex+" "+node.centrey;
+            var shifty = -1*node.text_shifty+20;
+            var text_shift = "0.5 0.5 "+node.text_shiftx+" "+shifty;
+            if (node.extras && node.extras.equation) {
+                var equation = node.extras.equation.value;
+            }
+            var gojsNode = {key:key, category:category, label:label, loc:loc, text_shift:text_shift, equation:equation, has_equation:has_equation};
+            console.debug(JSON.stringify(gojsNode));
+            gojsModel.nodeDataArray.push(gojsNode);
+        }
+
+        var arcList = systoModel.arcs;
+        for (var arcId in arcList) {
+            var arc = arcList[arcId];
+            var key = arcId;   // Not actually use in GoJS, but so an be pushed back to Systo.
+            var category = arc.type;
+            var from = arc.start_node_id;
+            var to = arc.end_node_id;
+            if (arc.node_id) {
+                var labelKeys = [arc.node_id];
+                var gojsArc = {key:key, category:category, from:from, to:to, labelKeys:labelKeys};
+            } else {
+                gojsArc = {category:category, from:from, to:to};
+            }
+            console.debug(JSON.stringify(gojsArc));
+            gojsModel.linkDataArray.push(gojsArc);
+        }
+   
+        return gojsModel;
+};
+
+
 SYSTO.convertGojsToSysto = function(gojsModel) {
 
         console.debug(gojsModel);
