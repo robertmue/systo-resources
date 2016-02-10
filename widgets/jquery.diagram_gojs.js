@@ -311,93 +311,127 @@
     // Templates
     function createNodeTypeTemplate(nodeTypeId, nodeType, widget) {
 
-        var equationVisibility = true;
+        var equationVisibility = false;
+        var GOJS = go.GraphObject.make;
+
         // Create a new node template, and set its properties.
 
         if (nodeType.no_separate_symbol) {      // Just a text label - no symbol for the node.
-            var template = new go.Node();   
+            var template = GOJS(go.Node,
+                {   type: go.Panel.Auto,
+                    layerName: "Background",
+                    locationObjectName: "SHAPE",
+                    selectionObjectName: "SHAPE",
+                    locationSpot: go.Spot.Center
+                },
+                new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+
+                GOJS(go.Shape,
+                    {   figure: "Rectangle",
+                        width: 100,
+                        height: 50,
+                        stroke: null,
+                        fill: "white",
+                        cursor: "pointer",
+                        portId: "", // So a link can be dragged from the Node: see /GraphObject.html#portId
+                        fromLinkable: true,
+                        toLinkable: true
+                    }
+                ),
+
+                GOJS(go.TextBlock,
+                    {
+                        name: "SHAPE",
+                        font: "9.5pt helvetica, arial, sans-serif",
+                        stroke: 'black',
+                        // padding: 10,  // make some extra space for the shape around the text
+                        isMultiline: false,  // don't allow newlines in text
+                        editable: true  // allow in-place editing by user
+                    },
+                    new go.Binding("text", "label").makeTwoWay()
+                )
+            );
             myDiagram.nodeTemplateMap.add(nodeTypeId, template);
-            template.type = go.Panel.Auto;
-            template.layerName = "Background";
-            template.locationObjectName = "SHAPE";
-            template.selectionObjectName = "SHAPE";
-            template.locationSpot = go.Spot.Center;
-            template.bind(new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify));
-
-            var shape = new go.Shape();
-            shape.name = "SHAPE";
-            shape.stroke = null;
-            shape.fill = "white";
-            shape.cursor = "pointer";
-            shape.portId = ""; // So a link can be dragged from the Node: see /GraphObject.html#portId
-            shape.fromLinkable = true;
-            shape.toLinkable = true;
-            template.add(shape);
-
-            var label = new go.TextBlock();
-            label.font = "9.5pt helvetica, arial, sans-serif";
-            label.stroke = 'black';
-            label.padding = 10;  // make some extra space for the shape around the text
-            label.isMultiline = false;  // don't allow newlines in text
-            label.editable = true;  // allow in-place editing by user
-            label.bind(new go.Binding("text", "label").makeTwoWay());
-            template.add(label);
 
 
         } else {        // This node type has a symbol (rectangle, circle, whatever)
-            var template = new go.Node(go.Panel.Spot);
-            myDiagram.nodeTemplateMap.add(nodeTypeId, template);
-            template.locationObjectName = "ICON";
-            template.locationSpot = go.Spot.Center;
-            template.layerName = "Foreground";
-            template.selectionObjectName = "ICON";
-            template.bind(new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify));
-            if (nodeTypeId === "valve") {       // TODO: fix this hack! Only for nodes attached to middle of arcs
-                template.alignmentFocus = go.Spot.None;
-                template.movable = false;
-            } else {
-                template.alignmentFocus = go.Spot.Default;
-            }
+            var template = GOJS(go.Node,
+                {   type: go.Panel.Spot,
+                    locationObjectName: "ICON",
+                    selectionObjectName: "ICON",
+                    locationSpot: go.Spot.Center,
+                    layerName: "Foreground",
+                    alignmentFocus: nodeTypeId==="valve" ? go.Spot.None : go.Spot.Default,
+                    movable: nodeTypeId==="valve" ? false : true
+                },
+                new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
 
-            // Create the main shape for the node template.
-            var shape = new go.Shape();
-            if (nodeType.shape === "rectangle") {
-                shape.figure = "Rectangle";
-            } else if (nodeType.shape === "oval") {
-                shape.figure = "Ellipse";
-            }
-            shape.name = "ICON";
-            shape.desiredSize = new go.Size(nodeType.width, nodeType.height);
-            shape.fill = nodeType.fill_colour.set.normal;
-            shape.stroke = nodeType.border_colour.set.normal;
-            shape.portId = "";
-            shape.fromLinkable = true;
-            shape.fromLinkableSelfNode = true;
-            shape.fromLinkableDuplicates = true;
-            shape.toLinkable = true;
-            shape.toLinkableSelfNode = true;
-            shape.toLinkableDuplicates = true;
-            shape.cursor = "pointer";   
-            shape.doubleClick = function(e, node) {
-                removeNodePopup();
-                $('#dialog_sd_node').
-                    data('modelId',widget.options.modelId).
-                    data('nodeId',node.id).
-                    dialog('open');
-                };
-            template.add(shape);
+                GOJS(go.Shape,
+                    {   figure: nodeType.shape==="rectangle" ? "Rectangle" : nodeType.shape==="oval" ? "Ellipse" : "Rectangle",
+                        name: "ICON",
+                        desiredSize: new go.Size(nodeType.width, nodeType.height),
+                        fill: nodeType.fill_colour.set.normal,
+                        stroke: nodeType.border_colour.set.normal,
+                        portId: "",
+                        fromLinkable: true,
+                        fromLinkableSelfNode: true,
+                        fromLinkableDuplicates: true,
+                        toLinkable: true,
+                        toLinkableSelfNode: true,
+                        toLinkableDuplicates: true,
+                        cursor: "pointer",   
+                        doubleClick: function(e, node) {
+                            removeNodePopup();
+                            $('#dialog_sd_node').
+                                data('modelId',widget.options.modelId).
+                                data('nodeId',node.id).
+                                dialog('open');
+                        }
+                    }
+                ),
 
+                GOJS(go.Panel, 
+                    {   type: go.Panel.Table,
+                        alignment: new go.Spot(0,0,0,35),
+                        _isNodeLabel: true
+                    },
+
+                    GOJS(go.TextBlock,
+                        {   font: "9.5pt bold helvetica, arial, sans-serif",
+                            background: "white",
+                            editable: true,        
+                            maxSize: new go.Size(120,NaN),
+                            row: 0,
+                            column: 0
+                        },
+                        new go.Binding("text", "label").makeTwoWay()
+                    ),
+
+                    GOJS(go.TextBlock,
+                        {   font: "9.5pt helvetica, arial, sans-serif",
+                            background: "#f0f0ff",
+                            editable: true,        
+                            maxSize: new go.Size(120,NaN),
+                            row: 1,
+                            column: 0
+                        },
+                        new go.Binding("text", "equation").makeTwoWay()
+                    )
+                )
+            );
+
+/* No longer needed
             // Create a section inside the node's shape which can be used to drag it around.
             // This is not needed for nodes attached midway along an arc.
             if (nodeTypeId !== "valve") {             // TODO Fix this hack!
                 var shape1 = new go.Shape();
-                shape1.fill = nodeType.fill_colour.set.normal;
-                shape1.stroke = null;
-                var w = Math.max(nodeType.width-8,10);
-                var h = Math.max(nodeType.height-8,8);
-                shape1.desiredSize = new go.Size(w, h);
+                shape1.fill: nodeType.fill_colour.set.normal;
+                shape1.stroke: null;
+                var w: Math.max(nodeType.width-8,10);
+                var h: Math.max(nodeType.height-8,8);
+                shape1.desiredSize: new go.Size(w, h);
                 shape1.bind(new go.Binding("nodeId", "key"));
-                shape1.doubleClick = function(e, node) {
+                shape1.doubleClick: function(e, node) {
                     removeNodePopup();
                     $('#dialog_sd_node').
                         data('modelId',widget.options.modelId).
@@ -406,27 +440,29 @@
                 };
                 //template.add(shape1);
             }
+*/
 
+/* Replaced by table approach below
             // Create the label for the node template.
             var label = new go.TextBlock();
-            label.font = "9.5pt helvetica, arial, sans-serif";
-            label.editable = true;        
+            label.font: "9.5pt helvetica, arial, sans-serif";
+            label.editable: true;        
             label.setProperties({_isNodeLabel: true});
-            label.cursor = "move";   
+            label.cursor: "move";   
             label.bind(new go.Binding("text", "label").makeTwoWay());
             label.bind(new go.Binding("alignment", "text_shift", go.Spot.parse).makeTwoWay(go.Spot.stringify));
             //template.add(label);
 
             // Create the equation field for the node template.
-            var equation = new go.TextBlock();
-            equation.maxSize = new go.Size(200,NaN);
-            equation.margin = 5;
-            equation.background = "#ffe0e0";
-            equation.font = "9.5pt helvetica, arial, sans-serif";
-            equation.editable = true;   
+            var equation: new go.TextBlock();
+            equation.maxSize: new go.Size(200,NaN);
+            equation.margin: 5;
+            equation.background: "#ffe0e0";
+            equation.font: "9.5pt helvetica, arial, sans-serif";
+            equation.editable: true;   
             equation.bind(new go.Binding("visible", "has_equation"));
             equation.setProperties({_isNodeLabel: true});
-            equation.cursor = "move";   
+            equation.cursor: "move";   
             equation.bind(new go.Binding("text", "equation").makeTwoWay());
             // equation.bind(new go.Binding("alignment", "text_shift", go.Spot.parse).makeTwoWay(go.Spot.stringify));
             equation.bind(new go.Binding("alignment", "text_shift", function(spotString) {
@@ -436,34 +472,35 @@
                 ).makeTwoWay(go.Spot.stringify)
               );
             //template.add(equation);
-
+*/
+/*
             var table = new go.Panel(go.Panel.Table);
             table.setProperties({_isNodeLabel: true});
-            table.alignment = new go.Spot(0,0,0,35);
+            table.alignment: new go.Spot(0,0,0,35);
             //var columnDef = new go.RowColumnDefinition();
             //columnDef.column = 1;
             //columnDef.width = 100;
             //table.add(columnDef);
             var label = new go.TextBlock();
-            label.font = "9.5pt bold helvetica, arial, sans-serif";
-            label.background = "white";
-            label.editable = true;        
-            label.maxSize = new go.Size(120,NaN);
-            label.row = 0;
-            label.column = 0;
+            label.font: "9.5pt bold helvetica, arial, sans-serif";
+            label.background: "white";
+            label.editable: true;        
+            label.maxSize: new go.Size(120,NaN);
+            label.row: 0;
+            label.column: 0;
             label.bind(new go.Binding("text", "label").makeTwoWay());
             table.add(label);
-            var equation = new go.TextBlock();
-            equation.font = "9.5pt helvetica, arial, sans-serif";
-            equation.background = "#f0f0ff";
-            equation.editable = true;        
-            equation.maxSize = new go.Size(120,NaN);
-            equation.row = 1;
-            equation.column = 0;
+            var equation: new go.TextBlock();
+            equation.font: "9.5pt helvetica, arial, sans-serif";
+            equation.background: "#f0f0ff";
+            equation.editable: true;        
+            equation.maxSize: new go.Size(120,NaN);
+            equation.row: 1;
+            equation.column: 0;
             equation.bind(new go.Binding("text", "equation").makeTwoWay());
             //table.add(equation);
             template.add(table);
-            
+*/            
 
         }
         myDiagram.nodeTemplateMap.add(nodeTypeId, template);
