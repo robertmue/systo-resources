@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Wed Feb 10 11:50:14 GMT 2016  */
+/* Last merge : Thu Feb 11 23:00:59 GMT 2016  */
 
 /* Merging order :
 
@@ -14696,6 +14696,8 @@ function handleWidget(widgetId, newDivId, packageId, modelId) {
                     var gojsModel = myDiagram.model;
                     console.debug(gojsModel);
                     var model = SYSTO.convertGojsToSysto(gojsModel);
+                    var modelId = SYSTO.getUID();
+                    SYSTO.models[modelId] = model;
                     console.debug(model);
                     SYSTO.generateSimulationFunction(model);
                     model.workspace.modelChanged = false;

@@ -211,6 +211,8 @@
                     var gojsModel = myDiagram.model;
                     console.debug(gojsModel);
                     var model = SYSTO.convertGojsToSysto(gojsModel);
+                    var modelId = SYSTO.getUID();
+                    SYSTO.models[modelId] = model;
                     console.debug(model);
                     SYSTO.generateSimulationFunction(model);
                     model.workspace.modelChanged = false;

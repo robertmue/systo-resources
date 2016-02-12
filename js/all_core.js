@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Wed Feb 10 11:50:14 GMT 2016  */
+/* Last merge : Thu Feb 11 23:00:59 GMT 2016  */
 
 /* Merging order :
 
@@ -1283,6 +1283,7 @@ SYSTO.revertToPointer = function () {
         event_type: 'revert_to_pointer_listener',
         parameters: {}
     });
+
     SYSTO.trigger({
         file:'systo.js', 
         action:'revertToPointer() called', 
@@ -2549,7 +2550,9 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
                     }
                 }
             },
-            workspace:{}
+            workspace:{},
+            results:{},
+            resultStats:{}
         };
 
         console.debug("Number of nodes = "+gojsModel.nodeDataArray.length);
@@ -2559,6 +2562,9 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
             var gojsNode = gojsModel.nodeDataArray[i];
             var systoNode = {};
             systoNode.id = gojsNode.key;
+            if (jQuery.isNumeric(systoNode.id)) systoNode.id = systoNode.id.toString();
+            systoNode.type = gojsNode.category;
+            console.debug('%%%%%%%%%%%%%%%% '+systoNode.type);
             systoNode.label = gojsNode.label;
             var loc = go.Point.parse(gojsNode.loc);
             systoNode.centrex = loc.x;
@@ -2566,10 +2572,11 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
             var alignment = go.Spot.parse(gojsNode.alignment);
             systoNode.text_shiftx = alignment.offsetX;
             systoNode.text_shifty = alignment.offsetY;
+            systoNode.equation = gojsNode.equation;
             systoNode.extras = {
-                equation: {type:"long_text", value:gojsNode.equation, default_value:""},
-                min_value: {type:"short_text", value:"", default_value:""},
-                max_value: {type:"short_text", value:"", default_value:""},
+                equation: {type:"long_text", value:systoNode.equation, default_value:""},
+                min_value: {type:"short_text", value:0, default_value:""},
+                max_value: {type:"short_text", value:100, default_value:""},
                 documentation: {type:"long_text", value:"", default_value:""},
                 comments: {type:"long_text", value:"", default_value:""}
              };
@@ -2591,7 +2598,9 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
             systoArc.start_node_id = gojsLink.from;
             systoArc.end_node_id = gojsLink.to;
             if (gojsLink.labelKeys) {
-                systoArc.node_id = gojsLink.labelKeys[0]; // Should be able to safely assume it's a 1-element array
+                systoArc.node_id = gojsLink.labelKeys[0]; // Should be able to safely assume it's a 1-element array. 
+                                                         // Currently, GoJS makes it a negative number!
+                if (jQuery.isNumeric(systoArc.node_id)) systoArc.node_id = systoArc.node_id.toString();
             }
             systoModel.arcs[arcId] = systoArc;
         }

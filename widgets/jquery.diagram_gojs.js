@@ -62,6 +62,11 @@
                 setMode(parameters.mode, parameters.itemTypeId);
             });
 
+            $(document).on('revert_to_pointer_listener', {}, function(event, parameters) {
+                console.debug('@log. listener: jquery.diagram_gojs.js: revert_to_pointer_listener: '+JSON.stringify(parameters));
+                setMode("pointer", null);
+            });
+
             gojsInit(this);
 
             this._setOptions({
@@ -111,7 +116,7 @@
       var $ = go.GraphObject.make;
 
       myDiagram = $(go.Diagram, "diagram",
-        {
+        { // "textEditingTool.selectsTextOnActivate":false,
           initialContentAlignment: go.Spot.Center,
           "undoManager.isEnabled": true,
           allowLink: false,  // linking is only started via buttons, not modelessly
@@ -155,8 +160,26 @@
           }
         });
 
+        myDiagram.toolManager.textEditingTool.selectsTextOnActivate = false;  
+        myDiagram.toolManager.textEditingTool.defaultTextEditor.style.background = "yellow";
+        //myDiagram.toolManager.textEditingTool.defaultTextEditor.style.padding = "5px";
+        myDiagram.toolManager.textEditingTool.defaultTextEditor.style.overflow = "scroll";
+
+        myDiagram.toolManager.linkingTool.linkValidation = linkable;
+
+        // Generic linking validator - driven by Systo language definition
+        function linkable(fromnode, fromport, tonode, toport) {
+            var languageId = widget.model.meta.language;
+            var language = SYSTO.languages[languageId];
+            var arcType = language.ArcType[SYSTO.state.arcTypeId]
+            var rules = arcType.rules;
+            return rules && rules[fromnode.category] && rules[fromnode.category][tonode.category];
+        }
+
         // install the NodeLabelDraggingTool as a "mouse move" tool
         myDiagram.toolManager.mouseMoveTools.insertAt(0, new NodeLabelDraggingTool());
+
+        // go.TextEditingTool.selectsTextOnActivate = false;     
 
 
         // RM added: generate unique label for valve on newly-created flow link
@@ -231,22 +254,49 @@
             var template = GOJS(go.Node,
                 {   type: go.Panel.Auto,
                     layerName: "Background",
-                    locationObjectName: "SHAPE",
-                    selectionObjectName: "SHAPE",
+                    locationObjectName: "LABEL",
+                    selectionObjectName: "LABEL",
+                    selectionChanged: onSelectionChanged,  // executed when Part.isSelected has changed
                     locationSpot: go.Spot.Center
                 },
                 new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
 
-                GOJS(go.TextBlock,
-                    {
-                        name: "SHAPE",
-                        font: "9.5pt helvetica, arial, sans-serif",
-                        stroke: 'black',
-                        // padding: 10,  // make some extra space for the shape around the text
-                        isMultiline: false,  // don't allow newlines in text
-                        editable: true  // allow in-place editing by user
+                GOJS(go.Panel, 
+                    {   type: go.Panel.Table,
+                        alignmentFocus: new go.Spot(0.5,0,0,0),
+                        alignment: new go.Spot(0.5,1.5,0,0),
+                        _isNodeLabel: true
                     },
-                    new go.Binding("text", "label").makeTwoWay()
+
+                    GOJS(go.TextBlock,
+                        {   font: "bold 9.5pt helvetica, arial, sans-serif",
+                            name: "LABEL",
+                            background: "white",
+                            editable: true,  
+                            margin: new go.Margin(5,5,5,5),
+                            //maxSize: new go.Size(200,NaN),
+                            row: 0,
+                            column: 0,
+                            visible: nodeType.has_label ? true : false
+                        },
+                        new go.Binding("text", "label").makeTwoWay()
+                    ),
+
+                    GOJS(go.TextBlock,
+                        {   font: "10.5pt helvetica, arial, sans-serif",
+                            stroke: "black",
+                            name:"EQUATION",
+                            background: "yellow",
+                            editable: true,  
+                            maxSize: new go.Size(300,NaN),
+                            isMultiline: false,
+                            minSize: new go.Size(10,14),
+                            row: 1,
+                            column: 0,
+                            visible: equationVisibility
+                        },
+                        new go.Binding("text", "equation").makeTwoWay()
+                    )
                 ),
 
                 GOJS(go.Shape,
@@ -257,9 +307,7 @@
                         cursor: "pointer",
                         portId: "", // So a link can be dragged from the Node: see /GraphObject.html#portId
                         fromLinkable: true,
-                        toLinkable: true,
-                        fromLinkableSelfNode: false,
-                        toLinkableSelfNode: false
+                        toLinkable: true
                     }
                 )
             );
@@ -271,10 +319,9 @@
                 {   type: go.Panel.Spot,
                     locationObjectName: "ICON",
                     selectionObjectName: "ICON",
+                    selectionChanged: onSelectionChanged,  // executed when Part.isSelected has changed
                     locationSpot: go.Spot.Center,
                     layerName: "Foreground",
-                    fromLinkableSelfNode: false,
-                    toLinkableSelfNode: false,
                     alignmentFocus: nodeTypeId==="valve" ? go.Spot.None : go.Spot.Default,
                     movable: nodeTypeId==="valve" ? false : true
                 },
@@ -288,10 +335,8 @@
                         stroke: nodeType.border_colour.set.normal,
                         portId: "",
                         fromLinkable: true,
-                        fromLinkableSelfNode: true,
                         fromLinkableDuplicates: true,
                         toLinkable: true,
-                        toLinkableSelfNode: true,
                         toLinkableDuplicates: true,
                         cursor: "pointer",   
                         doubleClick: function(e, node) {
@@ -306,15 +351,17 @@
 
                 GOJS(go.Panel, 
                     {   type: go.Panel.Table,
-                        alignment: new go.Spot(0,0,0,35),
+                        alignmentFocus: new go.Spot(0.5,0,0,0),
+                        alignment: new go.Spot(0.5,1.5,0,0),
                         _isNodeLabel: true
                     },
 
                     GOJS(go.TextBlock,
-                        {   font: "9.5pt bold helvetica, arial, sans-serif",
+                        {   font: "bold 9.5pt helvetica, arial, sans-serif",
+                            name: "LABEL",
                             background: "white",
-                            editable: true,        
-                            maxSize: new go.Size(120,NaN),
+                            editable: true,  
+                            //maxSize: new go.Size(200,NaN),
                             row: 0,
                             column: 0,
                             visible: nodeType.has_label ? true : false
@@ -323,13 +370,17 @@
                     ),
 
                     GOJS(go.TextBlock,
-                        {   font: "9.5pt helvetica, arial, sans-serif",
-                            background: "#f0f0ff",
-                            editable: true,        
-                            maxSize: new go.Size(120,NaN),
+                        {   font: "10.5pt helvetica, arial, sans-serif",
+                            name:"EQUATION",
+                            background: "yellow",
+                            editable: true,  
+                            margin: new go.Margin(5,5,5,5),
+                            maxSize: new go.Size(300,NaN),
+                            isMultiline: false,
+                            minSize: new go.Size(10,14),
                             row: 1,
                             column: 0,
-                            visible: equationVisibility
+                            visible: equationVisibility && nodeType.has_label ? true : false
                         },
                         new go.Binding("text", "equation").makeTwoWay()
                     )
@@ -339,6 +390,28 @@
         myDiagram.nodeTemplateMap.add(nodeTypeId, template);
     }
 
+    // This function provides a common style for most of the TextBlocks.
+    // Some of these values may be overridden in a particular TextBlock.
+    function textStyle() {
+      return { font: "9pt  Segoe UI,sans-serif", stroke: "red" };
+    }
+
+
+    function onSelectionChanged(node) {
+        var label = node.findObject("LABEL");
+        var equation = node.findObject("EQUATION");
+        if (node.isSelected) {
+            if (label !== null) {
+                label.font = "bold 10.5pt helvetica, arial, sans-serif";
+            }
+            if (equation !== null) {
+                equation.visible = node.category !== "cloud" ? true : false;  // TO: fix hack
+            }
+        } else {
+            label.font = "bold 10.5pt helvetica, arial, sans-serif";
+            equation.visible = false;
+        }
+    }
 
 
     function createLinkTypeTemplate(arcTypeId, arcType) {

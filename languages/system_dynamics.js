@@ -189,6 +189,7 @@ ArcType:{
                 stock:true},
             stock:{
                 canvas:{new_to_node:'cloud'}, 
+                cloud:true,
                 stock:true},
             cloud:{
                 stock:true}}
@@ -236,7 +237,6 @@ ArcType:{
 */
         rules: {
             stock:{
-                stock:true, 
                 valve:true, 
                 variable:true},
             variable:{
@@ -244,7 +244,6 @@ ArcType:{
                 valve:true, 
                 variable:true},
             valve:{
-                stock:true, 
                 valve:true, 
                 variable:true}
         }
