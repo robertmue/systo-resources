@@ -1,3 +1,5 @@
+Note difference in readability, look-up-ability etcbetween commented-out bits in "myDiagram = ..." and what follows below it.
+
 (function ($) {
 
   /***********************************************************
@@ -36,7 +38,7 @@
             var self = this;
             this.element.addClass('diagram_gojs-1');
 
-            var div = $('<div id="myDiagram" style="width:100%; height:100%;"></div>');
+            var div = $('<div id="myDiagram">diagram_gojs</div>');
             this._container = $(this.element).append(div);
             this.div = div;
 
@@ -66,67 +68,6 @@
                 console.debug('@log. listener: jquery.diagram_gojs.js: revert_to_pointer_listener: '+JSON.stringify(parameters));
                 setMode("pointer", null);
             });
-
-
-            // Options-handling dialog section
-            var dialogOptions = [
-                [
-                    {type:'text', checkbox:true, name:'canvasColour', label:'Canvas colour', 
-                        help:'Sets the background colour for the graph.'},
-                    {type:'text', checkbox:true, name:'colours', label:'Line colours', 
-                        help:"The colours used for each line on the graph. This is a list enclosed in square brackets, and each colour is enclosed in single quotes. E.g:\n ['red','green','blue']\nor, in hex format:\n['#ff0000','#00ff00','#0000ff']."},
-                    {type:'text', checkbox:true, name:'css', label:'CSS (experts only)'},
-                    {type:'text', checkbox:true, name:'drawmode', label:'Drawing mode', 
-                        help:"'line' or 'bar'.  Currently only 'line' is implemented."},
-                    {type:'text', checkbox:true, name:'margin_bottom', label:'Bottom margin'},
-                    {type:'text', checkbox:true, name:'margin_left', label:'Left margin'},
-                    {type:'text', checkbox:true, name:'margin_right', label:'Right margin'},
-                    {type:'text', checkbox:true, name:'margin_top', label:'Top margin'},
-                    {type:'text', checkbox:true, name:'nxdivs', label:'n X-axis divisions'},
-                    {type:'text', checkbox:true, name:'nydivs', label:'n Y-axis divisions'},
-                    {type:'text', checkbox:true, name:'yscaling_mode', label:'Y-axis scaling mode', 
-                        help: "Y-axis scaling mode (dynamic, fixed or ratchet)."},
-                    {type:'text', checkbox:true, name:'ymax', label:'Ymax', 
-                        help:'The maximum value for the Y-axis.'},
-                    {type:'text', checkbox:true, name:'ymin', label:'Ymin', 
-                        help:'The minimum value for the Y-axis.'},
-                    {type:'menu', checkbox:false, name:'selectNodeObject', label:'Plot variables', 
-                        help: "Select the stocks, flows and/or variables to be plotted."}
-                ]
-            ];
-            
-            SYSTO.createOptionsDialog({
-                baseName: 'diagram',
-                sections: dialogOptions,
-                closeFunction: function(widget) {
-                    createSelectedNodeList(widget);
-                    clearCanvas(widget);
-                    updateAxes(widget);
-                    render(widget);
-                }
-            });
-            $("#diagram").
-                hover(
-                    function() {
-                        $(this).find('.optionsButton').fadeIn(0);
-                    }, 
-                    function() {
-                        $(this).find('.optionsButton').fadeOut(0); 
-                    });
-
-            var optionsButton = $('<img src="../images/options1.gif" class="optionsButton" style="display:none; width:24px; height:24px; position:absolute; right:3px; top:4px; z-index:20000;"></img>').
-                click(function() {
-                    $('#dialog_diagram_options').
-                        data('widget', self).
-                        data('dialogOptions', dialogOptions).
-                        data('baseName', 'diagram').
-                        dialog('open');
-                }).
-                mouseenter(function(e) {
-                    $(this).css('display','block');
-                });
-            $("#diagram").append(optionsButton);
-
 
             gojsInit(this);
 
@@ -174,20 +115,58 @@
 
     function gojsInit(widget) {
 
-        var GOJS = go.GraphObject.make;
+      var $ = go.GraphObject.make;
 
-        myDiagram = GOJS(go.Diagram,
-            {   div: document.getElementById("myDiagram"),
-                initialContentAlignment: go.Spot.Center,
-                allowLink: false,  // linking is only started via buttons, not modelessly
-            }
-        );
+      myDiagram = $(go.Diagram, "diagram",
+        { // "textEditingTool.selectsTextOnActivate":false,
+          initialContentAlignment: go.Spot.Center,
+          //"undoManager.isEnabled": true,
+          allowLink: false,  // linking is only started via buttons, not modelessly
+          //"animationManager.isEnabled": false,
+
+          //"linkingTool.portGravity": 0,  // no snapping while drawing new links
+          //"linkingTool.doActivate": function() {
+            // change the curve of the LinkingTool.temporaryLink
+          //  this.temporaryLink.curve = (SYSTO.state.arcTypeId === "flow") ? go.Link.Normal : go.Link.Bezier;
+          //  this.temporaryLink.path.stroke = (SYSTO.state.arcTypeId === "flow") ? "blue" : "green";
+          //  this.temporaryLink.path.strokeWidth = (SYSTO.state.arcTypeId === "flow") ? 5 : 1;
+          //  go.LinkingTool.prototype.doActivate.call(this);
+          //},
+          // override the link creation process
+          //"linkingTool.insertLink": function(fromnode, fromport, tonode, toport) {
+            // to control what kind of Link is created,
+            // change the LinkingTool.archetypeLinkData's category
+          //  myDiagram.model.setCategoryForLinkData(this.archetypeLinkData, SYSTO.state.arcTypeId);
+            // Whenever a new Link is drawng by the LinkingTool, it also adds a node data object
+            // that acts as the label node for the link, to allow links to be drawn to/from the link.
+          //  this.archetypeLabelNodeData = (SYSTO.state.arcTypeId === "flow") ? { category: "valve" } : null;
+            // also change the text indicating the condition, which the user can edit
+          //  this.archetypeLinkData.text = SYSTO.state.arcTypeId;
+          //  return go.LinkingTool.prototype.insertLink.call(this, fromnode, fromport, tonode, toport);
+          //},
+
+          //"clickCreatingTool.archetypeNodeData": {},  // enable ClickCreatingTool
+          //"clickCreatingTool.isDoubleClick": false,   // operates on a single click in background
+          //"clickCreatingTool.canStart": function() {  // but only in "node" creation mode
+          //  return SYSTO.state.mode === "add_node" && go.ClickCreatingTool.prototype.canStart.call(this);
+          //},
+          //"clickCreatingTool.insertPart": function(loc) {  // customize the data for the new node
+          //  SD.nodeCounter[SYSTO.state.nodeTypeId] += 1;                            // RM changed
+          //  var newNodeId = SYSTO.state.nodeTypeId + SD.nodeCounter[SYSTO.state.nodeTypeId];   // RM changed
+          //  this.archetypeNodeData = {
+          //    key: newNodeId,
+          //    category: SYSTO.state.nodeTypeId,
+          //    label: newNodeId
+          //  };
+          //  return go.ClickCreatingTool.prototype.insertPart.call(this, loc);
+          //}
+        });
 
         // undoManager
         myDiagram.undoManager.isEnabled = true;
 
         // animationManager  
-        // Only needed because of bug in GoJS - will be fixed in later release. See email.
+        // Only needed because of bug in GoJS - will be fixed. See email.
         myDiagram.animationManager.isEnabled = false;
 
         // toolManager.textEditingTool
@@ -199,7 +178,7 @@
         myDiagram.toolManager.linkingTool.portGravity = 0;
         myDiagram.toolManager.linkingTool.linkValidation = linkable;
         myDiagram.toolManager.linkingTool.doActivate = function() {
-            // Set the properties of the LinkingTool.temporaryLink to look like final link
+            // change the curve of the LinkingTool.temporaryLink
             this.temporaryLink.curve = (SYSTO.state.arcTypeId === "flow") ? go.Link.Normal : go.Link.Bezier;
             this.temporaryLink.path.stroke = (SYSTO.state.arcTypeId === "flow") ? "blue" : "green";
             this.temporaryLink.path.strokeWidth = (SYSTO.state.arcTypeId === "flow") ? 5 : 1;
@@ -225,8 +204,8 @@
             return SYSTO.state.mode === "add_node" && go.ClickCreatingTool.prototype.canStart.call(this);
         };
         myDiagram.toolManager.clickCreatingTool.insertPart = function(loc) {  // customize the data for the new node
-            SD.nodeCounter[SYSTO.state.nodeTypeId] += 1;                        
-            var newNodeId = SYSTO.state.nodeTypeId + SD.nodeCounter[SYSTO.state.nodeTypeId];  
+            SD.nodeCounter[SYSTO.state.nodeTypeId] += 1;                            // RM changed
+            var newNodeId = SYSTO.state.nodeTypeId + SD.nodeCounter[SYSTO.state.nodeTypeId];   // RM changed
             this.archetypeNodeData = {
               key: newNodeId,
               category: SYSTO.state.nodeTypeId,
@@ -235,9 +214,21 @@
             return go.ClickCreatingTool.prototype.insertPart.call(this, loc);
         };
 
-        // toolManager.mouseMoveTools
+
+
+        // Generic linking validator - driven by Systo language definition
+        function linkable(fromnode, fromport, tonode, toport) {
+            var languageId = widget.model.meta.language;
+            var language = SYSTO.languages[languageId];
+            var arcType = language.ArcType[SYSTO.state.arcTypeId]
+            var rules = arcType.rules;
+            return rules && rules[fromnode.category] && rules[fromnode.category][tonode.category];
+        }
+
         // install the NodeLabelDraggingTool as a "mouse move" tool
         myDiagram.toolManager.mouseMoveTools.insertAt(0, new NodeLabelDraggingTool());
+
+        // go.TextEditingTool.selectsTextOnActivate = false;     
 
 
         // RM added: generate unique label for valve on newly-created flow link
@@ -252,15 +243,6 @@
                 myDiagram.commitTransaction('updateNode');
             }
         });
-
-        // Generic linking validator - driven by Systo language definition
-        function linkable(fromnode, fromport, tonode, toport) {
-            var languageId = widget.model.meta.language;
-            var language = SYSTO.languages[languageId];
-            var arcType = language.ArcType[SYSTO.state.arcTypeId]
-            var rules = arcType.rules;
-            return rules && rules[fromnode.category] && rules[fromnode.category][tonode.category];
-        }
 
         generateTemplates(widget);
 

@@ -128,7 +128,7 @@
                     });
 
             
-            var optionsButton = $('<img src="/static/images/options1.gif" class="optionsButton" style="display:none; width:24px; height:24px; position:absolute; right:5px; top:14px; z-index:200;"></img>').
+            var optionsButton = $('<img src="../images/options1.gif" class="optionsButton" style="display:none; width:24px; height:24px; position:absolute; right:5px; top:14px; z-index:200;"></img>').
                 click(function() {
                     $('#dialog_table_options').
                         data('widget', self).
@@ -140,7 +140,7 @@
                     $(this).css('display','block');
                 });
             
-            var variablesButton = $('<img src="/static/images/options1.gif" class="variablesButton" style="display:none; width:24px; height:24px; position:absolute; right:5px; top:44px; z-index:200;"></img>').
+            var variablesButton = $('<img src="../images/options1.gif" class="variablesButton" style="display:none; width:24px; height:24px; position:absolute; right:5px; top:44px; z-index:200;"></img>').
                 click(function() {
                     $('#dialog_table_variables').
                         data('widget', self).

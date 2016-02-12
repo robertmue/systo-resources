@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Thu Feb 11 23:00:59 GMT 2016  */
+/* Last merge : Fri Feb 12 23:47:49 GMT 2016  */
 
 /* Merging order :
 
@@ -1767,8 +1767,8 @@ SYSTO.createOptionsDialog = function(parameters) {
                 autoOpen: false,
                 height: 500,
                 width: 750,
-                modal: true,
-                title: 'Plotter options',
+                modal: false,
+                title: 'Diagram options',
                 buttons: {
                     OK: function() {
                         //alert(JSON.stringify($('#dialog_plotter_options_selectNodeObject_tr select').val()));

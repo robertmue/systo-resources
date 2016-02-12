@@ -1734,8 +1734,8 @@ SYSTO.createOptionsDialog = function(parameters) {
                 autoOpen: false,
                 height: 500,
                 width: 750,
-                modal: true,
-                title: 'Plotter options',
+                modal: false,
+                title: 'Diagram options',
                 buttons: {
                     OK: function() {
                         //alert(JSON.stringify($('#dialog_plotter_options_selectNodeObject_tr select').val()));

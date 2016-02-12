@@ -36,7 +36,8 @@ NodeType: {
 
    cloud: {
       counter: 0,
-      has_button: false,
+      has_button: true,
+      button_label: 'Cloud',
       has_label: false,
       default_label_root: 'cloud',
       shape: 'rectangle',

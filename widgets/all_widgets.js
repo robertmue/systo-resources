@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Thu Feb 11 23:00:59 GMT 2016  */
+/* Last merge : Fri Feb 12 23:47:49 GMT 2016  */
 
 /* Merging order :
 
@@ -12824,7 +12824,7 @@ $(function () {
                     });
 
             
-            var optionsButton = $('<img src="/static/images/options1.gif" class="optionsButton" style="display:none; width:24px; height:24px; position:absolute; right:3px; top:4px; z-index:200;"></img>').
+            var optionsButton = $('<img src="../images/options1.gif" class="optionsButton" style="display:none; width:24px; height:24px; position:absolute; right:3px; top:4px; z-index:200;"></img>').
                 click(function() {
                     $('#dialog_plotter_options').
                         data('widget', self).
@@ -12836,7 +12836,7 @@ $(function () {
                     $(this).css('display','block');
                 });
             
-            var variablesButton = $('<img src="/static/images/options1.gif" class="variablesButton" style="display:none; width:24px; height:24px; position:absolute; right:3px; top:34px; z-index:200;"></img>').
+            var variablesButton = $('<img src="../images/options1.gif" class="variablesButton" style="display:none; width:24px; height:24px; position:absolute; right:3px; top:34px; z-index:200;"></img>').
                 click(function() {
                     $('#dialog_plotter_variables').
                         data('widget', self).
@@ -17136,7 +17136,7 @@ $(function () {
                     });
 
             
-            var optionsButton = $('<img src="/static/images/options1.gif" class="optionsButton" style="display:none; width:24px; height:24px; position:absolute; right:5px; top:14px; z-index:200;"></img>').
+            var optionsButton = $('<img src="../images/options1.gif" class="optionsButton" style="display:none; width:24px; height:24px; position:absolute; right:5px; top:14px; z-index:200;"></img>').
                 click(function() {
                     $('#dialog_table_options').
                         data('widget', self).
@@ -17148,7 +17148,7 @@ $(function () {
                     $(this).css('display','block');
                 });
             
-            var variablesButton = $('<img src="/static/images/options1.gif" class="variablesButton" style="display:none; width:24px; height:24px; position:absolute; right:5px; top:44px; z-index:200;"></img>').
+            var variablesButton = $('<img src="../images/options1.gif" class="variablesButton" style="display:none; width:24px; height:24px; position:absolute; right:5px; top:44px; z-index:200;"></img>').
                 click(function() {
                     $('#dialog_table_variables').
                         data('widget', self).
@@ -18511,7 +18511,7 @@ function createNodeButton(nodeTypeId, nodeType, first, widget) {
         }
     }
 
-    var buttonDiv = $('<div class="node_arc_toolbar_button node_arc_button" width="'+buttonWidth+'" height="'+buttonHeight+'" style="padding-top:0px; padding-left:0px; width:'+buttonWidth+'px; height:'+buttonHeight+'px; max-width:'+buttonWidth+'px; max-height:'+buttonHeight+'px; float:left; clear:'+css_clear+'; border:solid 1px #404040; font-size:12px; text-align:center;line-height:10px; overflow:hidden;"></div>');
+    var buttonDiv = $('<div class="node_arc_toolbar_button node_arc_button" width="'+buttonWidth+'" height="'+buttonHeight+'" style="padding-top:0px; padding-left:0px; width:'+buttonWidth+'px; height:'+buttonHeight+'px; max-width:'+buttonWidth+'px; max-height:'+buttonHeight+'px; float:left; clear:'+css_clear+'; border:none; font-size:12px; text-align:center;line-height:10px; overflow:hidden;"></div>');
 
     $(buttonDiv).append(buttonCanvas);
     $(buttonDiv).append('<span style="height:10px; font-size:12px; overflow:hidden;">'+nodeType.button_label+'</span>');
@@ -18625,7 +18625,7 @@ function createArcButton(arcTypeId, arcType, first, widget) {
     drawArcArrowhead(context, arcType, arrowheadPoints);
 
 
-    var buttonDiv = $('<div class="node_arc_toolbar_button node_arc_button" width="'+buttonWidth+'" height="'+buttonHeight+'" style="padding-top:0px; padding-left:0px; width:'+buttonWidth+'px; height:'+buttonHeight+'px; max-width:'+buttonWidth+'px; max-height:'+buttonHeight+'px; float:left; overflow:hidden; clear:'+css_clear+'; border:solid 1px #404040; font-size:12px; text-align:center;line-height:10px; "></div>');
+    var buttonDiv = $('<div class="node_arc_toolbar_button node_arc_button" width="'+buttonWidth+'" height="'+buttonHeight+'" style="padding-top:0px; padding-left:0px; width:'+buttonWidth+'px; height:'+buttonHeight+'px; max-width:'+buttonWidth+'px; max-height:'+buttonHeight+'px; float:left; overflow:hidden; clear:'+css_clear+'; border:none; font-size:12px; text-align:center;line-height:10px; "></div>');
 
     $(buttonDiv).append(buttonCanvas);
     $(buttonDiv).append('<span style="height:10px; overflow:hidden;">'+arcType.button_label+'</span>');
@@ -18846,7 +18846,7 @@ function createContainerButton(containerTypeId, containerType, first, widget) {
     var buttonHeight = widget.options.button_height+10;
 
 
-        buttonCanvas = $('<canvas title="'+containerType.button_label+'" width="'+iconWidth+'" height="'+iconHeight+'" style="float:left; clear:'+css_clear+'; float:left;  background-color:rgba(255,255,255,0);"></canvas>');
+        buttonCanvas = $('<canvas title="'+containerType.button_label+'" width="'+iconWidth+'" height="'+iconHeight+'" style="float:left; clear:'+css_clear+'; float:left;  border:none; background-color:rgba(255,255,255,0);"></canvas>');
         var context = buttonCanvas[0].getContext("2d");
         if (containerType.shape === 'rectangle') {
                 var wscale = (iconWidth-8)/50;
@@ -18895,7 +18895,7 @@ function createContainerButton(containerTypeId, containerType, first, widget) {
             context.fill(); 
         }
 
-    var buttonDiv = $('<div class="node_arc_toolbar_button" width="'+buttonWidth+'" height="'+buttonHeight+'" style="padding-top:0px; padding-left:0px; width:'+buttonWidth+'px; height:'+buttonHeight+'px; max-width:'+buttonWidth+'px; max-height:'+buttonHeight+'px; float:left; clear:'+css_clear+'; border:solid 1px #404040; font-size:12px; text-align:center;line-height:10px; overflow:hidden;"></div>');
+    var buttonDiv = $('<div class="node_arc_toolbar_button" width="'+buttonWidth+'" height="'+buttonHeight+'" style="padding-top:0px; padding-left:0px; width:'+buttonWidth+'px; height:'+buttonHeight+'px; max-width:'+buttonWidth+'px; max-height:'+buttonHeight+'px; float:left; clear:'+css_clear+'; border:none; font-size:12px; text-align:center;line-height:10px; overflow:hidden;"></div>');
 
     $(buttonDiv).append(buttonCanvas);
     $(buttonDiv).append('<span style="height:10px; font-size:12px; overflow:hidden;">'+containerType.button_label+'</span>');
@@ -18906,7 +18906,7 @@ function createContainerButton(containerTypeId, containerType, first, widget) {
                 $( this ).css({'border':'solid 1px black', 'background-color':backgroundHover})},
             function() {
                 if (widget.state.toolbarButton !== containerTypeId || SYSTO.state.mode === 'pointer') {
-                    $( this ).css({'border':'solid 1px white', 'background-color':backgroundNormal});
+                    $( this ).css({'border':'none', 'background-color':backgroundNormal});
                 }
             }
         ).
@@ -18984,7 +18984,7 @@ function createGenericButton(buttonId, buttonOptions, widget) {
     } else {
         css_clear = 'none';
     }
-    var buttonDiv = $('<div id="toolbar_button_'+buttonId+'" class="node_arc_toolbar_button" width="'+buttonWidth+'" height="'+buttonHeight+'" style="padding-top:0px; padding-left:0px; width:'+buttonWidth+'px; height:'+buttonHeight+'px; max-width:'+buttonWidth+'px; max-height:'+buttonHeight+'px; float:left; clear:'+css_clear+'; border:solid 1px #404040; font-size:12px; text-align:center;line-height:10px; "></div>');
+    var buttonDiv = $('<div id="toolbar_button_'+buttonId+'" class="node_arc_toolbar_button" width="'+buttonWidth+'" height="'+buttonHeight+'" style="padding-top:0px; padding-left:0px; width:'+buttonWidth+'px; height:'+buttonHeight+'px; max-width:'+buttonWidth+'px; max-height:'+buttonHeight+'px; float:left; clear:'+css_clear+'; border:none; font-size:12px; text-align:center;line-height:10px; "></div>');
 
     $(buttonDiv).append('<img title="'+base64Image[buttonId].title+'" style="padding-top:'+base64Image[buttonId].padding_top+'; title="Redo" src="'+base64Image[buttonId].data+'" />');
     $(buttonDiv).append('<span style="height:10px; overflow:hidden;"><br/>'+base64Image[buttonId].label+'</span>');
@@ -19005,7 +19005,7 @@ function createGenericButton(buttonId, buttonOptions, widget) {
             click({buttonId:buttonId}, 
                 function(event) {
                     SYSTO.revertToPointer();
-                    $( this ).css({'border':'solid 1px black', 'background-color':backgroundClicked});
+                    $( this ).css({'border':'none', 'background-color':backgroundClicked});
                     widget.state.toolbarButton = buttonId;
                     widget.state.status = buttonId;
                     widget.state.statusDetail = event.data.buttonId;
