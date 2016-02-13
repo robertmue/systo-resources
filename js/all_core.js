@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Fri Feb 12 23:47:49 GMT 2016  */
+/* Last merge : Sat Feb 13 23:18:47 GMT 2016  */
 
 /* Merging order :
 
@@ -38,6 +38,7 @@
 var SYSTO = {};
 SYSTO.gojs = {};  // Temporary measure, to hold GoJS diagram(s)
 SYSTO.models = {};
+SYSTO.gojsModels = {};
 SYSTO.modelInstances = {};
 SYSTO.languages = {};
 SYSTO.tutorials = {};
@@ -52,6 +53,7 @@ SYSTO.state = {
     mode: 'pointer',
     currentModelId: null,
     modelInstanceCounter: 0,
+    needToUpdateSystoFromGojs: true,
     simulationRunSequenceNumber: 0,
     simulationTimings: [{dateTime: 'start', nRuns: 0, cumElapsedTime: 0,
              cumEvaluationTime: 0}], 
@@ -2533,6 +2535,7 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
         var systoModel = {
             meta:{
                 //modelId: SYSTO.state.currentModelId,
+                title: "gojs",
                 modelId: "gojs",
                 language: "system_dynamics",
                 name:'GoJS'
@@ -3403,7 +3406,11 @@ SYSTO.generateSimulationFunction = function (model) {
         if (!model.workspace) model.workspace = {};
         for (var nodeId in nodeList) {
             var node = nodeList[nodeId];
-            var label = node.label.replace(' ','_');
+            if (node.label) {
+                var label = node.label.replace(' ','_');
+            } else {
+                label = "";
+            }
             model.workspace[label] = true;
         }
 

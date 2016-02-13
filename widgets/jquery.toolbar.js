@@ -223,65 +223,6 @@
                                 file:'jquery.toolbar.js', 
                                 action:'Clicked on New button',
                                 languageId:'system_dynamics'});
-/*                        SYSTO.revertToPointer();
-                        var instructions = '<b>Start a new model</b><br/>Use the stock, variable, flow and influence buttons in the toolbar to start making your model diagram.';
-                        SYSTO.trigger({
-                            file:'jquery.toolbar.js', 
-                            action:'Clicked on the New button', 
-                            event_type: 'message_listener', 
-                            parameters: {message:instructions}});
-                        var modelId = SYSTO.getUID();
-                        SYSTO.state.currentModelId = modelId;
-                        SYSTO.models[modelId] = {
-                            meta:{
-                                language:self.options.languageId,
-                                name:'noname',
-                                id:modelId},
-                            nodes:{},
-                            arcs:{},
-                            workspace:{}
-                        };
-                        SYSTO.createDefaultScenario(SYSTO.models[SYSTO.state.currentModelId]);
-                        delete SYSTO.results;
-                        delete SYSTO.resultStats;
-                        delete SYSTO.resultsBase;
-                        delete SYSTO.resultStatsBase;
-
-                        // The following should be done using the pub-sub mechanism.
-                        var model = SYSTO.models[modelId];
-                        var option = $('<option value="'+modelId+'" title="Model ID: '+modelId+'">'+
-                            model.meta.name+'</option>').
-                            mouseover(function(event) {
-                                var modelId = event.target.value;
-                                var model = SYSTO.models[modelId];
-                                var title = model.meta.title;
-                                var description = model.meta.description;
-                                var author = model.meta.author;
-                            }).
-                            click(function(event) {
-                                var modelId = event.target.value;
-                                var model = SYSTO.models[modelId];
-                                var backgroundColour = $('#toolbar_buttons').toolbar('option', 'button_background_node_normal');
-                                SYSTO.revertToPointer();
-                                SYSTO.switchToModel(modelId);
-                            });
-                        $('#model_select').prepend(option);
-                        SYSTO.trigger({
-                            file:'jquery.toolbar.js', 
-                            action:'Clicked on New button', 
-                            event_type: 'change_model_listener', 
-                            parameters: {oldModelId:'',newModelId:SYSTO.state.currentModelId}});
-
-                        SYSTO.trigger({
-                            file:'jquery.toolbar.js', 
-                            action:'Clicked on New button', 
-                            event_type: 'display_listener', 
-                            parameters: {
-                                packageId:SYSTO.state.currentPackageId,
-                                modelId:SYSTO.state.currentModelId
-                            }
-                        });
-*/
                     });
                 $(toolbarDiv).append(newButton);
             }

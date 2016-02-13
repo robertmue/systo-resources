@@ -205,14 +205,16 @@
                 click(function() {
                     //var modelId = SYSTO.state.currentModelId;
                     //SYSTO.models[modelId] = model;
+                    
+                    SYSTO.state.currentModelId = "gojs";
+                    modelId = "gojs";
 
                     // Hacky in so many ways.  TODO: Fix!
-                    //var gojsModel = SYSTO.gojs.currentModel;
-                    var gojsModel = myDiagram.model;
-                    console.debug(gojsModel);
-                    var model = SYSTO.convertGojsToSysto(gojsModel);
-                    var modelId = SYSTO.getUID();
-                    SYSTO.models[modelId] = model;
+                    if (SYSTO.state.needToUpdateSystoFromGojs) {
+                        var gojsModel = myDiagram.model;
+                        var model = SYSTO.convertGojsToSysto(gojsModel);
+                        SYSTO.models[modelId] = model;
+                    }
                     console.debug(model);
                     SYSTO.generateSimulationFunction(model);
                     model.workspace.modelChanged = false;

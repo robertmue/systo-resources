@@ -261,7 +261,11 @@ SYSTO.generateSimulationFunction = function (model) {
         if (!model.workspace) model.workspace = {};
         for (var nodeId in nodeList) {
             var node = nodeList[nodeId];
-            var label = node.label.replace(' ','_');
+            if (node.label) {
+                var label = node.label.replace(' ','_');
+            } else {
+                label = "";
+            }
             model.workspace[label] = true;
         }
 

@@ -302,7 +302,8 @@
     // Converts model from Systo to GoJS graph format
     function load(systoModel) {
 
-        var gojsModel = SYSTO.convertSystoToGojs(systoModel);
+        //var gojsModel = SYSTO.convertSystoToGojs(systoModel);
+        var gojsModel = SYSTO.gojsModels.predator_prey_shodor;
 
         myDiagram.model = go.Model.fromJson(JSON.stringify(gojsModel));
     }

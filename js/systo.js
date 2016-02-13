@@ -5,6 +5,7 @@
 var SYSTO = {};
 SYSTO.gojs = {};  // Temporary measure, to hold GoJS diagram(s)
 SYSTO.models = {};
+SYSTO.gojsModels = {};
 SYSTO.modelInstances = {};
 SYSTO.languages = {};
 SYSTO.tutorials = {};
@@ -19,6 +20,7 @@ SYSTO.state = {
     mode: 'pointer',
     currentModelId: null,
     modelInstanceCounter: 0,
+    needToUpdateSystoFromGojs: true,
     simulationRunSequenceNumber: 0,
     simulationTimings: [{dateTime: 'start', nRuns: 0, cumElapsedTime: 0,
              cumEvaluationTime: 0}], 
@@ -2500,6 +2502,7 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
         var systoModel = {
             meta:{
                 //modelId: SYSTO.state.currentModelId,
+                title: "gojs",
                 modelId: "gojs",
                 language: "system_dynamics",
                 name:'GoJS'

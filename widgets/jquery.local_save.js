@@ -33,92 +33,7 @@
             // http://stackoverflow.com/questions/3162901/how-to-derive-a-custom-widget-from-jquery-ui-dialog
             var self = this;
             this.element.addClass('local_save-1');
-/*
-            var div = $('<div></div>');
-            var modelName = $('<input type="text" id="modelName"></input>');
-            var saveButton = $('<button>Save</button>').
-                click(function () {
-                    // The following line DOES NOT WORK.  It returns
-                    // {"meta":{},"nodes":{},"arcs":{}} 
-                    // i.e. the original value, rather than the current value.    WHY?
-                    //var modelJSON = JSON.stringify(SYSTO.models.new, ['meta', 'nodes', 'arcs']);
-                    var meta = SYSTO.models.new.meta;
-                    var nodes = SYSTO.models.new.nodes;
-                    var arcs = SYSTO.models.new.arcs;
-                    var modelJSON = JSON.stringify({meta:meta, nodes:nodes, arcs:arcs},{},1);
-                    var modelName = $('#modelName').val();
-                    localStorage.setItem(modelName, modelJSON);
-                });
-            var loadButton = $('<button>Load</button>').
-                click(function () {
-                    var modelName = $('#modelName').val();
-                    var modelJSON = localStorage.getItem(modelName, modelJSON);
-                    SYSTO.models.new = JSON.parse(modelJSON);
-                    $('.diagram_listener').trigger('click');
-                });
-            $(div).append(modelName).append(saveButton).append(loadButton);
 
-            var displayJSON = $('<textarea id="displayJSON" rows="15" cols="40"></textarea>"');
-            var displayButton = $('<button>Display</button>').
-                click(function () {
-                    // The following line DOES NOT WORK.  It returns
-                    // {"meta":{},"nodes":{},"arcs":{}} 
-                    // i.e. the original value, rather than the current value.    WHY?
-                    //var modelJSON = JSON.stringify(SYSTO.models.new, ['meta', 'nodes', 'arcs']);
-                    var meta = SYSTO.models.new.meta;
-                    var nodes = SYSTO.models.new.nodes;
-                    var arcs = SYSTO.models.new.arcs;
-                    var modelJSON = JSON.stringify({meta:meta, nodes:nodes, arcs:arcs},{},1);
-                    $('#displayJSON').val(modelJSON);
-                });
-            var loadFromDisplayButton = $('<button>Load</button>').
-                click(function () {
-                    var modelJSON = $('#displayJSON').val();
-                    SYSTO.models.new = JSON.parse(modelJSON);
-                    $('.diagram_listener').trigger('click');
-                });
-            $(div).append(displayJSON).append(displayButton).append(loadFromDisplayButton);
-*/
-
-            //var div = $('<div></div>');
-
-            var model = SYSTO.models[this.options.modelId];
-            if (model.meta.title) {
-                var title = model.meta.title;
-            } else {
-                title = '';
-            }
-            if (model.meta.description) {
-                var description = model.meta.description;
-            } else {
-                description = '';
-            }
-            if (model.meta.author) {
-                var author = model.meta.author;
-            } else {
-                author = '';
-            }
-            if (!model.meta.id) {
-                model.meta.id = SYSTO.getUID();
-            }
-            var modelId = model.meta.id;
-/*
-            var modelIdList = {};
-            for (var key in localStorage) {
-                var i1 = key.indexOf('_');
-                var header = key.substring(0,i1);
-                if (header === 'SYSTO') {
-                    var modelId = key.substring(i1+1);
-                    var rest = key.substring(i1+1);
-                    var i2 = rest.indexOf('_');
-                    var type = rest.substring(0,i2);
-                    if (type === 'MODEL') {
-                        var modelId = rest.substring(i2+1);
-                        modelIdList[modelId] = {};
-                    }
-                }
-          }
-*/
 
             var modelIdList = {};
             for (var key in localStorage) {
@@ -137,26 +52,6 @@
 
 
 
- /*
-            var dialog = $(
-                '<div id="save_dialog_form" title="Save the model" style="font-size:75%;">'+
-                    '<form style="width:400px;">'+
-                        '<fieldset>'+
-                            '<p>All fields are optional</p>'+
-                            '<label for="local_save_name">Name - <i style="color:#808080">default is model ID: change to something better</i></label>'+
-                            '<input type="text" id="local_save_name" name="name" class="text ui-widget-content ui-corner-all" value="'+this.options.modelId+'"/>'+
-
-                            '<label for="local_save_title">Title - <i style="color:#808080">a single-line title for the model</i></label>'+
-                            '<input type="text" id="local_save_title" name="title" class="text ui-widget-content ui-corner-all" value="'+title+'"/>'+
-
-                            '<label for="local_save_description">Description</label>'+
-                            '<textarea type="text" rows="5" cols="52" id="local_save_description" name="description" class="text ui-widget-content ui-corner-all">'+description+'</textarea>'+
-                            '<label for="local_save_author">Author</label>'+
-                            '<input type="text" id="local_save_author" name="author" class="text ui-widget-content ui-corner-all" value="'+author+'"/>'+
-                        '</fieldset>'+
-                    '</form>'+
-                '</div>');
-*/ 
             var dialog = $(
                 '<div id="save_dialog_form" title="Open a model" '+
                     'style="font-size:75%;">'+
@@ -251,15 +146,6 @@
                         var authorObj = $("#save_dialog_display_author");
                         var allFields = $([]).add(nameObj).add(titleObj).add(descriptionObj).add(authorObj);
 
-/*
-                        var bValid = true;
-                        allFields.removeClass( "ui-state-error" );           
-                        bValid = bValid && checkLength(nameObj, 'model name', 3, 100 );
-                        bValid = bValid && checkRegexp(nameObj, /^[a-z]([0-9a-z_])+$/i, "Username may consist of a-z, 0-9, underscores, begin with a letter." );             
-                        bValid = bValid && checkLength(titleObj, 'title', 0, 80 );
-                        bValid = bValid && checkLength(descriptionObj, 'description', 0, 200 );
-                        bValid = bValid && checkLength(authorObj, 'author', 0, 60 );
-*/
                         var errorArray = [];
                         var checkResult = checkLength(nameObj, 'model name', 3, 100 );
                         if (checkResult.error) {
@@ -294,7 +180,16 @@
                             var replaceParamValues = $('#replaceParameterValues').is(':checked');
                             var modelPrepared = SYSTO.prepareModelForSaving(model, replaceParamValues);
                             var outputXmlStr, blob;
-                            outputXmlStr = JSON.stringify(modelPrepared,null,3);
+
+                            //outputXmlStr = JSON.stringify(modelPrepared,null,3);
+                            myDiagram.model.modelData = 
+                                {   id: SYSTO.state.currentModelId,
+                                    name: name,
+                                    title: title,
+                                    description: description,
+                                    author: author
+                                }
+                            outputXmlStr = myDiagram.model.toJson();
                              // Was saved as .js, now .json...
                             //outputXmlStr = 'SYSTO.models.'+model.meta.id+' = '+outputXmlStr+';';  // Was saved as .js, now.json
                             //alert(JSON.stringify(model.meta));
@@ -318,9 +213,18 @@
                 open: function() {
                     console.debug('Opening save-model dialogue');
                     var modelId = SYSTO.state.currentModelId;
-                    console.debug(modelId);
-                    var model = SYSTO.models[modelId];
-                    console.debug(JSON.stringify(model.meta));
+                    // Convert from GoJS version, if relevant. Hacky in so many ways.  TODO: Fix!
+                    if (SYSTO.state.needToUpdateSystoFromGojs && myDiagram && myDiagram.model) {
+                        var gojsModel = myDiagram.model;
+                         var model = SYSTO.convertGojsToSysto(gojsModel);
+                        SYSTO.models[self.options.modelId] = model;
+                    } else {
+                        var model = SYSTO.models[modelId];
+                    }
+                    if (!model.meta.id) {
+                        model.meta.id = SYSTO.getUID();
+                    }
+                    var modelId = model.meta.id;
 
                     if (!model.meta.name) model.meta.name = modelId;
                     if (!model.meta.title) model.meta.title = 'no title';
