@@ -11,6 +11,16 @@
             including language, re-building of templates, etc.
 
    */
+
+    // This contains information which is shared between multiple diagram_gojs instances.
+    var gojs = {
+        templateMaps: {}  // This is actually a map of template maps!  Each key:object
+            // pair, where the obect is an individual template map, consists of 
+            // templateMapKey:{nodeTemplateMap:nodeTemplateMap, linkTemplateMap:linkTemplateMap}
+    };
+    var myDiagram = {};
+    
+
     $.widget('systo.diagram_gojs', {
         meta:{
             short_description: 'Diagramming widget based on GoJS.',
@@ -32,6 +42,7 @@
 
         _create: function () {
             console.debug('@log. creating_widget: diagram_gojs');
+            console.debug(this.options.modelId);
             SD = {nodeCounter:{stock:0, cloud:0, variable:0, valve:0}};
             var self = this;
             this.element.addClass('diagram_gojs-1');
@@ -51,9 +62,12 @@
             $(document).on('change_model_listener', {}, function(event, parameters) {
                 console.debug('@log. listener: jquery.diagram_gojs.js: change_model_listener: '+JSON.stringify(parameters));
                 self.options.modelId = parameters.newModelId;
-                var model = SYSTO.models[parameters.newModelId];
-                self.model = model;
-                load(model);
+                //var model = SYSTO.models[parameters.newModelId];
+                //self.model = model;
+            
+                //myDiagram.model = SYSTO.gojsModels["predator_prey_shodor"];
+                myDiagram.model = SYSTO.gojsModels[self.options.modelId];
+
                 //event.stopPropagation();
             });
 
@@ -127,8 +141,10 @@
                 });
             $("#diagram").append(optionsButton);
 
-
+            //myDiagram.model = SYSTO.gojsModels[self.options.modelId];
+            this.model = SYSTO.gojsModels[self.options.modelId];
             gojsInit(this);
+            myDiagram.model = SYSTO.gojsModels[self.options.modelId];
 
             this._setOptions({
             });
@@ -264,11 +280,9 @@
 
         generateTemplates(widget);
 
-        var model = SYSTO.models.cascade;
-        load(model);
     }
 
-
+/*
     function generateTemplates(widget) {
         // The following 15 lines generate a separate node or link template for
         // every node and arc (GoJS link) defined in the Systo graph language definition.
@@ -290,7 +304,32 @@
             createLinkTypeTemplate(arcTypeId, arcType);
         }
     }
+*/
+    function generateTemplates(widget) {
+        // The following 15 lines generate a separate node or link template for
+        // every node and arc (GoJS link) defined in the Systo graph language definition.
+        // Note that Systo says "arc" where GoJS says "link".
 
+        var gojsModel = SYSTO.gojsModels[widget.options.modelId];
+        var languageId = gojsModel.modelData.language;
+        var language = SYSTO.languages[languageId];
+        //var language = SYSTO.languages["system_dynamics"];
+        console.debug(language);
+
+        var nodeTypes = language.NodeType;
+        for (var nodeTypeId in nodeTypes) {
+            console.debug(nodeTypeId);
+            var nodeType = nodeTypes[nodeTypeId];
+            createNodeTypeTemplate(nodeTypeId, nodeType, widget);
+        }
+
+        var arcTypes = language.ArcType;
+        for (var arcTypeId in arcTypes) {
+            console.debug(arcTypeId);
+            var arcType = arcTypes[arcTypeId];
+            createLinkTypeTemplate(arcTypeId, arcType);
+        }
+    }
 
     // Show the diagram's model in JSON format
     function save() {
@@ -298,15 +337,6 @@
       myDiagram.isModified = false;
     }
 
-
-    // Converts model from Systo to GoJS graph format
-    function load(systoModel) {
-
-        //var gojsModel = SYSTO.convertSystoToGojs(systoModel);
-        var gojsModel = SYSTO.gojsModels.predator_prey_shodor;
-
-        myDiagram.model = go.Model.fromJson(JSON.stringify(gojsModel));
-    }
 
 
     // --------------------------------------------------------------------------------

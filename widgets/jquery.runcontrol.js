@@ -212,6 +212,10 @@
                     // Hacky in so many ways.  TODO: Fix!
                     if (SYSTO.state.needToUpdateSystoFromGojs) {
                         var gojsModel = myDiagram.model;
+                        console.debug(gojsModel);
+                        console.debug(JSON.parse(gojsModel.toJson()));
+                        console.debug("Number of nodes1 = "+gojsModel.nodeDataArray.length);
+                        console.debug("Number of nodes2 = "+gojsModel.toJson(nodeDataArray.length));
                         var model = SYSTO.convertGojsToSysto(gojsModel);
                         SYSTO.models[modelId] = model;
                     }

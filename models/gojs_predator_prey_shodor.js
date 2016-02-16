@@ -1,6 +1,6 @@
-SYSTO.gojsModels.predator_prey_shodor = { "class": "go.GraphLinksModel",
+SYSTO.gojsModelSources.predator_prey_shodor = { "class": "go.GraphLinksModel",
   "linkLabelKeysProperty": "labelKeys",
-  "modelData": {"id":"predator_prey_shodor", "name":"GoJS", "title":"gojs", "dsecription":"no description", "author":"no author"},
+  "modelData": {"id":"predator_prey_shodor", "name":"Predator_prey_shodor", "title":"gojs", "description":"no description", "author":"no author", "language":"system_dynamics"},
   "nodeDataArray": [ 
 {"key":"cloud1", "category":"cloud", "loc":"141 216", "text_shift":"0.5 0.5 0 -5", "has_equation":false},
 {"key":"cloud2", "category":"cloud", "loc":"458 114", "text_shift":"0.5 0.5 0 -5", "has_equation":false},
@@ -15,7 +15,7 @@ SYSTO.gojsModels.predator_prey_shodor = { "class": "go.GraphLinksModel",
 {"key":"variable1", "category":"variable", "label":"predator_death_constant", "loc":"406 48", "text_shift":"0.5 0.5 0 20", "equation":"0.46", "has_equation":true},
 {"key":"variable2", "category":"variable", "label":"prey_birth_fraction", "loc":"184 306", "text_shift":"0.5 0.5 0 20", "equation":"0.14", "has_equation":true},
 {"key":"variable3", "category":"variable", "label":"prey_death_constant", "loc":"422 310", "text_shift":"0.5 0.5 0 20", "equation":"0.006", "has_equation":true},
-{"key":"variable4", "category":"variable", "label":"predator_birth_fraction", "loc":"168 25", "text_shift":"0.5 0.5 0.3333333333333339 28.333333333333336", "equation":"0.03", "has_equation":true}
+{"key":"variable4", "category":"variable", "label":"predator_birth_fraction", "loc":"168 25", "text_shift":"0.5 0.5 0.3333333333333339 28.333333333333336", "equation":"0.01", "has_equation":true}
  ],
   "linkDataArray": [ 
 {"key":"flow1", "category":"flow", "from":"cloud1", "to":"stock1", "labelKeys":[ "valve1" ]},

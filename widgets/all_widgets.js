@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Sat Feb 13 23:18:47 GMT 2016  */
+/* Last merge : Tue Feb 16 22:53:57 GMT 2016  */
 
 /* Merging order :
 
@@ -14601,6 +14601,10 @@ function handleWidget(widgetId, newDivId, packageId, modelId) {
                     // Hacky in so many ways.  TODO: Fix!
                     if (SYSTO.state.needToUpdateSystoFromGojs) {
                         var gojsModel = myDiagram.model;
+                        console.debug(gojsModel);
+                        console.debug(JSON.parse(gojsModel.toJson()));
+                        console.debug("Number of nodes1 = "+gojsModel.nodeDataArray.length);
+                        console.debug("Number of nodes2 = "+gojsModel.toJson(nodeDataArray.length));
                         var model = SYSTO.convertGojsToSysto(gojsModel);
                         SYSTO.models[modelId] = model;
                     }

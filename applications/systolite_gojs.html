@@ -64,17 +64,25 @@
     <script type="text/javascript" src="../languages/system_dynamics.js"></script>
 
     <!-- Model(s), held as a Javascript object literal -->
-    <script type="text/javascript" src="../models/miniworld.js"></script>
-    <script type="text/javascript" src="../models/predator_prey_shodor.js"></script>
-    <script type="text/javascript" src="../models/cascade.js"></script>
-    <script type="text/javascript" src="../models/two_species_sir.js"></script>
+    <script type="text/javascript" src="../models/gojs_miniworld.js"></script>
+    <script type="text/javascript" src="../models/gojs_cascade.js"></script>
+    <script type="text/javascript" src="../models/gojs_two_species_sir.js"></script>
     <script type="text/javascript" src="../models/gojs_predator_prey_shodor.js"></script>
 
     <!-- This page's custom script -->
     <script>
 
     $(document).ready(function() {
-
+/*
+        var gojsModel = SYSTO.convertSystoToGojs(SYSTO.models["cascade"]);
+        console.debug(JSON.stringify(gojsModel,null,4));
+        gojsModel = SYSTO.convertSystoToGojs(SYSTO.models["two_species_sir"]);
+        console.debug(JSON.stringify(gojsModel,null,4));
+        gojsModel = SYSTO.convertSystoToGojs(SYSTO.models["miniworld"]);
+        console.debug(JSON.stringify(gojsModel,null,4));
+        gojsModel = SYSTO.convertSystoToGojs(SYSTO.models["predator_prey_shodor"]);
+        console.debug(JSON.stringify(gojsModel,null,4));
+*/
 /*
         var widgets = window.jQuery.systo;
         for (var widgetId in widgets) {
@@ -147,7 +155,8 @@
 
         console.debug('\ncalling switchToModel; '+initialModelId);
         if (initialModelId) {
-            SYSTO.switchToModel(initialModelId);
+            //SYSTO.switchToModel(initialModelId);
+            SYSTO.switchToModel("predator_prey_shodor");
         }
 
         var options = {
@@ -266,8 +275,10 @@
         console.debug(modelId + ', ' + SYSTO.state.currentModelId);
 
         var modelId = 'predator_prey_shodor'; 
-        SYSTO.prepareModel(modelId);
-        //SYSTO.switchToModel(modelId);
+        SYSTO.gojsModels[modelId] = go.Model.fromJson(SYSTO.gojsModelSources[modelId]);
+
+        //SYSTO.prepareModel(modelId);
+        SYSTO.switchToModel(modelId);
         var model = SYSTO.models[modelId];
 
         $('#diagram').diagram_gojs({
@@ -382,21 +393,21 @@
             modelId:modelId
         });
 
-        for (var modelId in SYSTO.models) {
-            var model = SYSTO.models[modelId];
-            model.workspace = {};
-            if (!model.meta.name) model.meta.name = modelId;
-            var option = $('<option value="'+modelId+'" title="Model ID: '+modelId+'">'+model.meta.name+'</option>').
+        for (var modelId in SYSTO.gojsModelSources) {
+            var model = SYSTO.gojsModelSources[modelId];
+            //model.workspace = {};
+            if (!model.modelData.name) model.modelData.name = modelId;
+            var option = $('<option value="'+modelId+'" title="Model ID: '+modelId+'">'+model.modelData.name+'</option>').
                 mouseover(function(event) {
                     var modelId = event.target.value;
-                    var model = SYSTO.models[modelId];
-                    var title = model.meta.title;
-                    var description = model.meta.description;
-                    var author = model.meta.author;
+                    var model = SYSTO.gojsModelSources[modelId];
+                    var title = model.modelData.title;
+                    var description = model.modelData.description;
+                    var author = model.modelData.author;
                 }).
                 click(function(event) {
                     var modelId = event.target.value;
-                    var model = SYSTO.models[modelId];
+                    var model = SYSTO.gojsModelSources[modelId];
                     SYSTO.revertToPointer();
                     SYSTO.switchToModel(modelId);
                 });

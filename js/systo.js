@@ -4,8 +4,11 @@
 
 var SYSTO = {};
 SYSTO.gojs = {};  // Temporary measure, to hold GoJS diagram(s)
-SYSTO.models = {};
-SYSTO.gojsModels = {};
+SYSTO.models = {};  // This is the legacy object-literal for holding the model, as loaded from the
+    // source .js or .json file, and as then manipulated by e.f. the diagram widget.
+SYSTO.gojsModels = {};    // Holds the GoJS Model object for each model for which it has been produced.
+    // This can come from either the Systo-JSON or the GoJS-JSON.
+SYSTO.gojsModelSources = {}; // Holds the source JSON as an object-literal.  Won't be changed.
 SYSTO.modelInstances = {};
 SYSTO.languages = {};
 SYSTO.tutorials = {};
@@ -38,6 +41,9 @@ SYSTO.state = {
         integration_method: "euler1"
     }
 };
+
+
+
 SYSTO.logging = {
     listener_classes: {
         model_modified_event: true, 
@@ -96,8 +102,16 @@ SYSTO.switchToModel = function (modelId, packageId) {
 	if (!packageId) packageId = 'package1';
     console.debug('@log. switchToModel. packageId:'+packageId+'; modelId:'+modelId);
 
-    if (SYSTO.models[modelId]) {
+
         console.debug('switching...');
+
+    //if (SYSTO.gojsModelSources[modelId]) {
+        var gojsModel = SYSTO.gojsModelSources[modelId];
+        SYSTO.gojsModels[modelId] = go.Model.fromJson(gojsModel);
+        SYSTO.models[modelId] = SYSTO.convertGojsToSysto(gojsModel);
+        //var model = SYSTO.models[modelId];
+
+    //} else if (SYSTO.models[modelId]) {
         var model = SYSTO.models[modelId];
         if (SYSTO.checkModel) var resultObject = SYSTO.checkModel(model);
 
@@ -142,11 +156,14 @@ SYSTO.switchToModel = function (modelId, packageId) {
             parameters: {packageId:packageId, modelId:modelId}
         });
         return true;
+    
+    //} else {
+    //    alert('INTERNAL ERROR - not your fault.\n\n'+
+    //        'File:     systo.js\nFunction: switchToModel(modelId)\n'+
+    //        'Error:    Model with the specified modelId ('+modelId+') does not exist.');
+    //    return false;
 
-    } else {
-        alert('INTERNAL ERROR - not your fault.\n\nFile:     systo.js\nFunction: switchToModel(modelId)\nError:    Model with the specified modelId ('+modelId+') does not exist.');
-        return false;
-    }
+    //}
 };
 
 
@@ -2446,9 +2463,12 @@ SYSTO.Model = function(args) {
 
 SYSTO.convertSystoToGojs = function(systoModel) {
 
+        var meta = systoModel.meta;
         var gojsModel = { 
             "class": "go.GraphLinksModel",
             linkLabelKeysProperty: "labelKeys",
+            modelData: {id:meta.id, name:meta.name, language:meta.language, author:meta.author,
+                title:meta.title, description:meta.description, comments:meta.comments},
             nodeDataArray: [],
             linkDataArray: []
         }
@@ -2574,7 +2594,7 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
             }
             systoModel.arcs[arcId] = systoArc;
         }
-        console.debug(JSON.stringify(systoModel,null,4));
+        //console.debug(JSON.stringify(systoModel,null,4));
         return systoModel;
     };
 
