@@ -1,6 +1,7 @@
 #!/bin/bash
+echo ""
 date
 mergejs mergejs_file_list_core.txt ../js/all_core.js
 mergejs mergejs_file_list_plugins.txt ../plugins/all_plugins.js
 mergejs mergejs_file_list_widgets.txt ../widgets/all_widgets.js
-echo ""
+

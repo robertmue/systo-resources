@@ -271,7 +271,7 @@
 
         // Generic linking validator - driven by Systo language definition
         function linkable(fromnode, fromport, tonode, toport) {
-            var languageId = widget.model.meta.language;
+            var languageId = SYSTO.models[widget.options.modelId].meta.language;
             var language = SYSTO.languages[languageId];
             var arcType = language.ArcType[SYSTO.state.arcTypeId]
             var rules = arcType.rules;

@@ -497,6 +497,9 @@ SYSTO.createNewModel_1 = function (parameters) {
         workspace:{}
     };
 
+    SYSTO.gojsModelSources[modelId] = SYSTO.convertSystoToGojs(model);
+    SYSTO.gojsModels[modelId] = go.Model.fromJson(SYSTO.gojsModelSources[modelId]);
+
     SYSTO.models[SYSTO.state.currentModelId] = model;
     model.actionArray = [];
     model.actionArray[0] = 'start';
@@ -2522,10 +2525,10 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
         var systoModel = {
             meta:{
                 //modelId: SYSTO.state.currentModelId,
-                title: "gojs",
-                modelId: "gojs",
-                language: "system_dynamics",
-                name:'GoJS'
+                title: gojsModel.modelData.title,
+                modelId: gojsModel.modelData.id,
+                language: gojsModel.modelData.language,
+                name: gojsModel.modelData.name
             },
             nodes:{},
             arcs:{},

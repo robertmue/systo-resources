@@ -153,6 +153,8 @@
                             }
                             model.nodes[nodeId].workspace.jsequation = ui.value;
                         }
+console.debug(nodeId);
+console.debug(modelIdArray);
                         self._setOption('value',ui.value);
                         SYSTO.simulateMultiple(modelIdArray);
                         SYSTO.trigger({

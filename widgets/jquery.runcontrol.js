@@ -206,16 +206,16 @@
                     //var modelId = SYSTO.state.currentModelId;
                     //SYSTO.models[modelId] = model;
                     
-                    SYSTO.state.currentModelId = "gojs";
-                    modelId = "gojs";
+                    modelId = self.options.modelId;
+                    SYSTO.state.currentModelId = modelId;
 
                     // Hacky in so many ways.  TODO: Fix!
                     if (SYSTO.state.needToUpdateSystoFromGojs) {
-                        var gojsModel = myDiagram.model;
+                        var gojsModel = SYSTO.gojsModels[modelId];
                         console.debug(gojsModel);
                         console.debug(JSON.parse(gojsModel.toJson()));
-                        console.debug("Number of nodes1 = "+gojsModel.nodeDataArray.length);
-                        console.debug("Number of nodes2 = "+gojsModel.toJson(nodeDataArray.length));
+                        //console.debug("Number of nodes1 = "+gojsModel.nodeDataArray.length);
+                        //console.debug("Number of nodes2 = "+gojsModel.toJson(nodeDataArray.length));
                         var model = SYSTO.convertGojsToSysto(gojsModel);
                         SYSTO.models[modelId] = model;
                     }
@@ -226,7 +226,7 @@
                         file:'jquery.runcontrol.js', 
                         action:'runButton click', 
                         event_type: 'change_model_listener', 
-                        parameters: {oldModelId:'',newModelId:SYSTO.state.currentModelId}
+                        parameters: {oldModelId:'',newModelId:modelId}
                     });
                     resultsObject = SYSTO.simulate(model);
 
@@ -242,7 +242,7 @@
                         event_type: 'display_listener', 
                         parameters: {
                             packageId:self.options.packageId,
-                            modelId:self.options.modelId
+                            modelId:modelId
                         }
                     });
                     SYSTO.revertToPointer();

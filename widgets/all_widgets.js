@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Tue Feb 16 22:53:57 GMT 2016  */
+/* Last merge : Thu Feb 25 23:34:52 GMT 2016  */
 
 /* Merging order :
 
@@ -14595,16 +14595,16 @@ function handleWidget(widgetId, newDivId, packageId, modelId) {
                     //var modelId = SYSTO.state.currentModelId;
                     //SYSTO.models[modelId] = model;
                     
-                    SYSTO.state.currentModelId = "gojs";
-                    modelId = "gojs";
+                    modelId = self.options.modelId;
+                    SYSTO.state.currentModelId = modelId;
 
                     // Hacky in so many ways.  TODO: Fix!
                     if (SYSTO.state.needToUpdateSystoFromGojs) {
-                        var gojsModel = myDiagram.model;
+                        var gojsModel = SYSTO.gojsModels[modelId];
                         console.debug(gojsModel);
                         console.debug(JSON.parse(gojsModel.toJson()));
-                        console.debug("Number of nodes1 = "+gojsModel.nodeDataArray.length);
-                        console.debug("Number of nodes2 = "+gojsModel.toJson(nodeDataArray.length));
+                        //console.debug("Number of nodes1 = "+gojsModel.nodeDataArray.length);
+                        //console.debug("Number of nodes2 = "+gojsModel.toJson(nodeDataArray.length));
                         var model = SYSTO.convertGojsToSysto(gojsModel);
                         SYSTO.models[modelId] = model;
                     }
@@ -14615,7 +14615,7 @@ function handleWidget(widgetId, newDivId, packageId, modelId) {
                         file:'jquery.runcontrol.js', 
                         action:'runButton click', 
                         event_type: 'change_model_listener', 
-                        parameters: {oldModelId:'',newModelId:SYSTO.state.currentModelId}
+                        parameters: {oldModelId:'',newModelId:modelId}
                     });
                     resultsObject = SYSTO.simulate(model);
 
@@ -14631,7 +14631,7 @@ function handleWidget(widgetId, newDivId, packageId, modelId) {
                         event_type: 'display_listener', 
                         parameters: {
                             packageId:self.options.packageId,
-                            modelId:self.options.modelId
+                            modelId:modelId
                         }
                     });
                     SYSTO.revertToPointer();
@@ -16329,6 +16329,8 @@ $(function () {
                             }
                             model.nodes[nodeId].workspace.jsequation = ui.value;
                         }
+console.debug(nodeId);
+console.debug(modelIdArray);
                         self._setOption('value',ui.value);
                         SYSTO.simulateMultiple(modelIdArray);
                         SYSTO.trigger({

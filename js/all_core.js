@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Tue Feb 16 22:53:57 GMT 2016  */
+/* Last merge : Thu Feb 25 23:34:52 GMT 2016  */
 
 /* Merging order :
 
@@ -529,6 +529,9 @@ SYSTO.createNewModel_1 = function (parameters) {
         arcs:{},
         workspace:{}
     };
+
+    SYSTO.gojsModelSources[modelId] = SYSTO.convertSystoToGojs(model);
+    SYSTO.gojsModels[modelId] = go.Model.fromJson(SYSTO.gojsModelSources[modelId]);
 
     SYSTO.models[SYSTO.state.currentModelId] = model;
     model.actionArray = [];
@@ -2555,10 +2558,10 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
         var systoModel = {
             meta:{
                 //modelId: SYSTO.state.currentModelId,
-                title: "gojs",
-                modelId: "gojs",
-                language: "system_dynamics",
-                name:'GoJS'
+                title: gojsModel.modelData.title,
+                modelId: gojsModel.modelData.id,
+                language: gojsModel.modelData.language,
+                name: gojsModel.modelData.name
             },
             nodes:{},
             arcs:{},
