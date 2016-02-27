@@ -75,6 +75,8 @@
                                 return true;
                             } else if (node.type === 'variable' && isParameter(node)) {
                                 return true;
+                            } else if (node.type === 'valve' && isParameter(node)) {
+                                return true;
                             } else {
                                 return false;
                             }

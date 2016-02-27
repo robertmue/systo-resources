@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Thu Feb 25 23:34:52 GMT 2016  */
+/* Last merge : Sat Feb 27 14:39:34 GMT 2016  */
 
 /* Merging order :
 
@@ -9079,6 +9079,8 @@ function handleFileSelect(evt) {
                                 return true;
                             } else if (node.type === 'variable' && isParameter(node)) {
                                 return true;
+                            } else if (node.type === 'valve' && isParameter(node)) {
+                                return true;
                             } else {
                                 return false;
                             }
@@ -16318,6 +16320,7 @@ $(function () {
                     slide: function (event, ui) {
                         self._setOption('value',ui.value);
                         var nodeId = $(this).data('id');
+                        console.debug(nodeId+' = '+ui.value);
                         var modelIdArray = self.options.modelIdArray;
                         if (self.options.modelId && modelIdArray.length === 0) {
                             modelIdArray = [self.options.modelId];
@@ -16329,8 +16332,6 @@ $(function () {
                             }
                             model.nodes[nodeId].workspace.jsequation = ui.value;
                         }
-console.debug(nodeId);
-console.debug(modelIdArray);
                         self._setOption('value',ui.value);
                         SYSTO.simulateMultiple(modelIdArray);
                         SYSTO.trigger({

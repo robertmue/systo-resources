@@ -228,7 +228,10 @@
             myDiagram.model.setCategoryForLinkData(this.archetypeLinkData, SYSTO.state.arcTypeId);
             // Whenever a new Link is drawng by the LinkingTool, it also adds a node data object
             // that acts as the label node for the link, to allow links to be drawn to/from the link.
-            this.archetypeLabelNodeData = (SYSTO.state.arcTypeId === "flow") ? { category: "valve" } : null;
+            this.archetypeLabelNodeData = (SYSTO.state.arcTypeId === "flow") ? { key:"valve1", category: "valve" } : null;
+            //this.archetypeLabelNodeData = function() {
+            //    return (SYSTO.state.arcTypeId === "flow") ? { key:"valve1", category: "valve" } : null;
+            //}
             // also change the text indicating the condition, which the user can edit
             this.archetypeLinkData.text = SYSTO.state.arcTypeId;
             return go.LinkingTool.prototype.insertLink.call(this, fromnode, fromport, tonode, toport);

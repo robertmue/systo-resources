@@ -517,7 +517,9 @@ SYSTO.simulate = function (model) {
     for (i = 0; i < nParameter; i++) {
         nodeId = parameters[i].id;
         node = nodeList[nodeId];
-        m[node.label] = parseFloat(node.workspace.jsequation);
+        //if (node.type !== "stock") {
+            m[node.label] = parseFloat(node.workspace.jsequation);
+        //}
     }
 
     var parameterValues = {};
@@ -536,7 +538,10 @@ SYSTO.simulate = function (model) {
 
     for (i = 0; i < nParameter; i++) {
         nodeId = parameters[i].id;
-        parameterValues[nodeId] = parseFloat(nodeList[nodeId].workspace.jsequation);
+        node = nodeList[nodeId];
+        //if (node.type !== "stock") {
+            parameterValues[nodeId] = parseFloat(nodeList[nodeId].workspace.jsequation);
+        //}
     }
 
 
@@ -555,6 +560,8 @@ SYSTO.simulate = function (model) {
     var inputValues = {};
     inputValues.parameterValues = parameterValues;
     inputValues.initialStockValues = initialStockValues;
+    console.debug('\n.....@@@@....');
+    console.debug(inputValues);
 
     try {
         var startEvalClockTime = new Date();

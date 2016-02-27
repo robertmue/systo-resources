@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Thu Feb 25 23:34:52 GMT 2016  */
+/* Last merge : Sat Feb 27 14:39:34 GMT 2016  */
 
 /* Merging order :
 
@@ -47,6 +47,8 @@ SYSTO.plugins.codeGenerator.euler1 = function (model, sortedDynamicArray, simula
     var variables = simulationDataStructures.variables; 
     var parameters = simulationDataStructures.parameters;
     var initialStockArray = simulationDataStructures.initialStockArray;
+    console.debug(parameters);
+    console.debug(initialStockArray);
     var inflows = simulationDataStructures.inflows;
     var outflows = simulationDataStructures.outflows;
 
@@ -102,7 +104,7 @@ SYSTO.plugins.codeGenerator.euler1 = function (model, sortedDynamicArray, simula
 
     for (i=0;i<nParameter; i++) {
         node = parameters[i];
-        code += 'var '+node.label+' = parameterValues[\'' + node.id + '\'];' + line_break;
+        code += 'var '+node.label+' = parameterValues[\'' + node.id + '\']; // xxxx;' + line_break;
     }
     code += line_break;
 
@@ -231,7 +233,8 @@ SYSTO.plugins.codeGenerator.euler1 = function (model, sortedDynamicArray, simula
     code += '    var rates = {};' + line_break;
     for (i=0; i<nStock; i++) {
         node = stocks[i];
-        code += '    states.'+node.label + ' = ' + node.workspace.jsequation + ';' + line_break;
+        //code += '    states.'+node.label + ' = ' + node.workspace.jsequation + ';' + line_break;
+        code += '    states.'+node.label + ' = parameterValues[\'' + node.id + '\'];' + line_break;
         code += '    rates.'+node.label + ' = 0';
         
         nInflow = inflows[i].length;

@@ -142,6 +142,7 @@
                     slide: function (event, ui) {
                         self._setOption('value',ui.value);
                         var nodeId = $(this).data('id');
+                        console.debug(nodeId+' = '+ui.value);
                         var modelIdArray = self.options.modelIdArray;
                         if (self.options.modelId && modelIdArray.length === 0) {
                             modelIdArray = [self.options.modelId];
@@ -153,8 +154,6 @@
                             }
                             model.nodes[nodeId].workspace.jsequation = ui.value;
                         }
-console.debug(nodeId);
-console.debug(modelIdArray);
                         self._setOption('value',ui.value);
                         SYSTO.simulateMultiple(modelIdArray);
                         SYSTO.trigger({

@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Thu Feb 25 23:34:52 GMT 2016  */
+/* Last merge : Sat Feb 27 14:39:34 GMT 2016  */
 
 /* Merging order :
 
@@ -964,8 +964,9 @@ function isNumericArray(equation) {
 }
 
 function isParameter(node) {
-    var equation = getEquation(node);
-    if (node.type === 'variable' || node.type === 'valve') {
+    //var equation = getEquation(node);
+    var equation = node.extras.equation.value;
+    if (equation && (node.type === 'variable' || node.type === 'valve')) {
         if (isNumericConstant(equation) || isNumericArray(equation)) {
             return true;
         }
@@ -3685,7 +3686,9 @@ SYSTO.simulate = function (model) {
     for (i = 0; i < nParameter; i++) {
         nodeId = parameters[i].id;
         node = nodeList[nodeId];
-        m[node.label] = parseFloat(node.workspace.jsequation);
+        //if (node.type !== "stock") {
+            m[node.label] = parseFloat(node.workspace.jsequation);
+        //}
     }
 
     var parameterValues = {};
@@ -3704,7 +3707,10 @@ SYSTO.simulate = function (model) {
 
     for (i = 0; i < nParameter; i++) {
         nodeId = parameters[i].id;
-        parameterValues[nodeId] = parseFloat(nodeList[nodeId].workspace.jsequation);
+        node = nodeList[nodeId];
+        //if (node.type !== "stock") {
+            parameterValues[nodeId] = parseFloat(nodeList[nodeId].workspace.jsequation);
+        //}
     }
 
 
@@ -3723,6 +3729,8 @@ SYSTO.simulate = function (model) {
     var inputValues = {};
     inputValues.parameterValues = parameterValues;
     inputValues.initialStockValues = initialStockValues;
+    console.debug('\n.....@@@@....');
+    console.debug(inputValues);
 
     try {
         var startEvalClockTime = new Date();

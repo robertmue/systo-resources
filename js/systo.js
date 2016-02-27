@@ -931,8 +931,9 @@ function isNumericArray(equation) {
 }
 
 function isParameter(node) {
-    var equation = getEquation(node);
-    if (node.type === 'variable' || node.type === 'valve') {
+    //var equation = getEquation(node);
+    var equation = node.extras.equation.value;
+    if (equation && (node.type === 'variable' || node.type === 'valve')) {
         if (isNumericConstant(equation) || isNumericArray(equation)) {
             return true;
         }
