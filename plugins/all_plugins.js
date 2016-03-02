@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Sat Feb 27 14:39:34 GMT 2016  */
+/* Last merge : Tue Mar 1 21:26:57 GMT 2016  */
 
 /* Merging order :
 
@@ -233,7 +233,6 @@ SYSTO.plugins.codeGenerator.euler1 = function (model, sortedDynamicArray, simula
     code += '    var rates = {};' + line_break;
     for (i=0; i<nStock; i++) {
         node = stocks[i];
-        //code += '    states.'+node.label + ' = ' + node.workspace.jsequation + ';' + line_break;
         code += '    states.'+node.label + ' = parameterValues[\'' + node.id + '\'];' + line_break;
         code += '    rates.'+node.label + ' = 0';
         

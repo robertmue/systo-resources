@@ -18,8 +18,9 @@
             // pair, where the obect is an individual template map, consists of 
             // templateMapKey:{nodeTemplateMap:nodeTemplateMap, linkTemplateMap:linkTemplateMap}
     };
-    var myDiagram = {};
-    
+    var myDiagram;
+
+    var zOrder = 0;  // Incremented each time a node is selected, to ensure it is always on top.
 
     $.widget('systo.diagram_gojs', {
         meta:{
@@ -234,6 +235,7 @@
             //}
             // also change the text indicating the condition, which the user can edit
             this.archetypeLinkData.text = SYSTO.state.arcTypeId;
+            colourFlowNetworks(myDiagram);
             return go.LinkingTool.prototype.insertLink.call(this, fromnode, fromport, tonode, toport);
         };
 
@@ -251,6 +253,7 @@
               category: SYSTO.state.nodeTypeId,
               label: newNodeId
             };
+            colourFlowNetworks(myDiagram);
             return go.ClickCreatingTool.prototype.insertPart.call(this, loc);
         };
 
@@ -268,6 +271,7 @@
                 var newNodeId = "flow" + SD.nodeCounter.valve; 
                 var labelNode = link.labelNodes.first();
                 myDiagram.model.setDataProperty(labelNode.data, "label", newNodeId);
+                colourFlowNetworks(myDiagram);
                 myDiagram.commitTransaction('updateNode');
             }
         });
@@ -357,6 +361,7 @@
                     layerName: "Background",
                     locationObjectName: "LABEL",
                     selectionObjectName: "LABEL",
+                    zOrder: 0,
                     selectionChanged: onSelectionChanged,  // executed when Part.isSelected has changed
                     locationSpot: go.Spot.Center
                 },
@@ -420,6 +425,7 @@
                 {   type: go.Panel.Spot,
                     locationObjectName: "ICON",
                     selectionObjectName: "ICON",
+                    zOrder:0,
                     selectionChanged: onSelectionChanged,  // executed when Part.isSelected has changed
                     locationSpot: go.Spot.Center,
                     layerName: "Foreground",
@@ -447,7 +453,8 @@
                                 data('nodeId',node.id).
                                 dialog('open');
                         }
-                    }
+                    },
+                    new go.Binding("fill", "fill")
                 ),
 
                 GOJS(go.Panel, 
@@ -460,9 +467,7 @@
                     GOJS(go.TextBlock,
                         {   font: "bold 10.5pt helvetica, arial, sans-serif",
                             name: "LABEL",
-                            background: "white",
                             editable: true,  
-                            //maxSize: new go.Size(200,NaN),
                             row: 0,
                             column: 0,
                             visible: nodeType.has_label ? true : false
@@ -502,7 +507,10 @@
         var label = node.findObject("LABEL");
         var equation = node.findObject("EQUATION");
         if (node.isSelected) {
+            zOrder += 1;
+            node.zOrder = zOrder;
             if (label !== null) {
+                label.background = "#ffe0e0";
                 label.font = "bold 10.5pt helvetica, arial, sans-serif";
             }
             if (equation !== null) {
@@ -510,6 +518,7 @@
             }
         } else {
             label.font = "bold 10.5pt helvetica, arial, sans-serif";
+            label.background = "white";
             equation.visible = false;
         }
     }
@@ -593,6 +602,55 @@
       }
       return null;
     };
+
+
+
+    // Colours the distinct flow networks 
+    function colourFlowNetworks(diagram) {
+        var nodes = diagram.nodes;  // This is a GoJS "iterator"
+        nodes.reset();
+        while (nodes.next()) {
+            var node = nodes.value;
+            var nodeData = node.data;  
+            if (nodeData && (nodeData.category === "stock" || nodeData.category === "cloud")) {
+                nodeData.flag1 = false;
+            }
+        }
+        nodes.reset();
+
+        var icolour = 0;
+        var colours = ['#ffa0a0', '#a0a0ff', '#a0ffa0', 'red','blue','green','yellow','orange'];
+        while (nodes.next()) {
+            node = nodes.value;
+            nodeData = node.data;  
+            if (nodeData && (nodeData.category === "stock" || nodeData.category === "cloud")) {
+                if (!nodeData.flag1) {
+                    colourStock(diagram, nodeData, colours[icolour]);
+                    icolour += 1;
+                }
+            }
+        }
+    }
+
+
+    function colourStock(diagram, nodeData, colour) {
+        if (nodeData.flag1) {
+            return;
+        } else {
+            diagram.model.setDataProperty(nodeData, "fill", colour);
+            nodeData.flag1 = true;
+            var node = diagram.findNodeForKey(nodeData.key);
+            var links = node.findLinksConnected()
+            while (links.next()) {
+                var link = links.value;
+                if (link.data.category === "flow") {
+                    diagram.model.setDataProperty(link.labelNodes.first().data, "fill", colour)
+                    SYSTO.gojsColourStock(diagram, link.fromNode.data, colour);
+                    SYSTO.gojsColourStock(diagram, link.toNode.data, colour);
+                }
+            }
+        }
+    }
 
 
 })(jQuery);

@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Sat Feb 27 14:39:34 GMT 2016  */
+/* Last merge : Tue Mar 1 21:26:57 GMT 2016  */
 
 /* Merging order :
 
@@ -1740,6 +1740,79 @@ SYSTO.colourOutflows = function (model, node, colour) {
                 SYSTO.colourStock(model, node, colour);
             }
         }); 
+    }
+};
+
+
+// GoJS version for colouring flow netorks
+
+/*
+SYSTO.gojsColourFlowNetworks = function (diagram) {
+    var nodeDataArray = diagram.model.nodeDataArray;
+
+    for (var i=0; i<nodeDataArray.length; i++) {
+        var nodeData = nodeDataArray[i];
+        if (nodeData.category === "stock" || nodeData.category === "cloud") {
+            nodeData.flag1 = false;
+        }
+    }
+
+    var icolour = 0;
+    var colours = ['#ffa0a0', '#a0a0ff', '#a0ffa0', 'red','blue','green','yellow','orange'];
+    for (var i=0; i<nodeDataArray.length; i++) {
+        var nodeData = nodeDataArray[i];
+        if (nodeData.category === "stock" || nodeData.category === "cloud") {
+            if (!nodeData.flag1) {
+                SYSTO.gojsColourStock(diagram, nodeData, colours[icolour]);
+                icolour += 1;
+            }
+        }
+    }
+};
+*/
+SYSTO.gojsColourFlowNetworks = function (diagram) {
+    var nodes = diagram.nodes;  // This is a GoJS "iterator"
+    nodes.reset();
+    while (nodes.next()) {
+        var node = nodes.value;
+        var nodeData = node.data;  
+        if (nodeData && (nodeData.category === "stock" || nodeData.category === "cloud")) {
+            nodeData.flag1 = false;
+        }
+    }
+    nodes.reset();
+
+    var icolour = 0;
+    var colours = ['#ffa0a0', '#a0a0ff', '#a0ffa0', 'red','blue','green','yellow','orange'];
+    while (nodes.next()) {
+        node = nodes.value;
+        nodeData = node.data;  
+        if (nodeData && (nodeData.category === "stock" || nodeData.category === "cloud")) {
+            if (!nodeData.flag1) {
+                SYSTO.gojsColourStock(diagram, nodeData, colours[icolour]);
+                icolour += 1;
+            }
+        }
+    }
+};
+
+
+SYSTO.gojsColourStock = function (diagram, nodeData, colour) {
+    if (nodeData.flag1) {
+        return;
+    } else {
+        diagram.model.setDataProperty(nodeData, "fill", colour);
+        nodeData.flag1 = true;
+        var node = diagram.findNodeForKey(nodeData.key);
+        var links = node.findLinksConnected()
+        while (links.next()) {
+            var link = links.value;
+            if (link.data.category === "flow") {
+                diagram.model.setDataProperty(link.labelNodes.first().data, "fill", colour)
+                SYSTO.gojsColourStock(diagram, link.fromNode.data, colour);
+                SYSTO.gojsColourStock(diagram, link.toNode.data, colour);
+            }
+        }
     }
 };
 
