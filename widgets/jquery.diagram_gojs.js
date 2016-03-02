@@ -20,6 +20,9 @@
     };
     var myDiagram;
 
+    var currentGojsNode;  // This is made global so that checkEquation() knows what node is being checked.
+            // There has to be a cleaner way...
+
     var zOrder = 0;  // Incremented each time a node is selected, to ensure it is always on top.
 
     $.widget('systo.diagram_gojs', {
@@ -209,7 +212,7 @@
 
         // toolManager.textEditingTool
         myDiagram.toolManager.textEditingTool.selectsTextOnActivate = false;  
-        myDiagram.toolManager.textEditingTool.defaultTextEditor.style.background = "yellow";
+        myDiagram.toolManager.textEditingTool.defaultTextEditor.style.background = "white";
         myDiagram.toolManager.textEditingTool.defaultTextEditor.style.overflow = "scroll";
 
         // toolManager.linkingTool
@@ -236,6 +239,7 @@
             // also change the text indicating the condition, which the user can edit
             this.archetypeLinkData.text = SYSTO.state.arcTypeId;
             colourFlowNetworks(myDiagram);
+            SYSTO.revertToPointer();
             return go.LinkingTool.prototype.insertLink.call(this, fromnode, fromport, tonode, toport);
         };
 
@@ -254,6 +258,7 @@
               label: newNodeId
             };
             colourFlowNetworks(myDiagram);
+            SYSTO.revertToPointer();
             return go.ClickCreatingTool.prototype.insertPart.call(this, loc);
         };
 
@@ -369,6 +374,7 @@
 
                 GOJS(go.Panel, 
                     {   type: go.Panel.Table,
+                        name: "TABLE",
                         alignmentFocus: new go.Spot(0.5,0,0,0),
                         alignment: new go.Spot(0.5,1.5,0,0),
                         _isNodeLabel: true
@@ -389,14 +395,14 @@
                     ),
 
                     GOJS(go.TextBlock,
-                        {   font: "10.5pt helvetica, arial, sans-serif",
+                        {   font: "12pt helvetica, arial, sans-serif",
                             stroke: "black",
                             name:"EQUATION",
-                            background: "yellow",
+                            background: "white",
                             editable: true,  
                             maxSize: new go.Size(300,NaN),
                             isMultiline: false,
-                            minSize: new go.Size(10,14),
+                            minSize: new go.Size(40,20),
                             row: 1,
                             column: 0,
                             visible: equationVisibility
@@ -459,6 +465,7 @@
 
                 GOJS(go.Panel, 
                     {   type: go.Panel.Table,
+                        name: "TABLE",
                         alignmentFocus: new go.Spot(0.5,0,0,0),
                         alignment: new go.Spot(0.5,1.5,0,0),
                         _isNodeLabel: true
@@ -476,16 +483,17 @@
                     ),
 
                     GOJS(go.TextBlock,
-                        {   font: "10.5pt helvetica, arial, sans-serif",
+                        {   font: "12pt helvetica, arial, sans-serif",
                             name:"EQUATION",
-                            background: "yellow",
+                            background: "white",
                             editable: true,  
                             margin: new go.Margin(5,5,5,5),
                             maxSize: new go.Size(300,NaN),
                             isMultiline: false,
-                            minSize: new go.Size(10,14),
+                            minSize: new go.Size(40,20),
                             row: 1,
                             column: 0,
+                            textValidation: checkEquation,
                             visible: equationVisibility && nodeType.has_label ? true : false
                         },
                         new go.Binding("text", "equation").makeTwoWay()
@@ -504,19 +512,24 @@
 
 
     function onSelectionChanged(node) {
+        var table = node.findObject("TABLE");
         var label = node.findObject("LABEL");
         var equation = node.findObject("EQUATION");
         if (node.isSelected) {
+            currentGojsNode = node;
+            table.background = "yellow";
             zOrder += 1;
             node.zOrder = zOrder;
             if (label !== null) {
-                label.background = "#ffe0e0";
+                label.background = "yellow";
                 label.font = "bold 10.5pt helvetica, arial, sans-serif";
             }
             if (equation !== null) {
                 equation.visible = node.category !== "cloud" ? true : false;  // TO: fix hack
             }
         } else {
+            currentGojsNode = null;
+            table.background = "white";
             label.font = "bold 10.5pt helvetica, arial, sans-serif";
             label.background = "white";
             equation.visible = false;
@@ -652,6 +665,40 @@
         }
     }
 
+
+    function checkEquation(textblock, oldstr, newstr) {
+        console.debug('Checking equation...'+newstr);
+        console.debug(currentGojsNode.data.key);
+        SYSTO.convertGojsToSysto(myDiagram.model);
+        var modelId = myDiagram.model.modelData.id;
+        var systoModel = SYSTO.models[modelId];
+        var nodeId = currentGojsNode.data.key;
+        var systoNode = systoModel.nodes[nodeId];
+        console.debug(systoModel);
+        console.debug(modelId);
+        console.debug(systoNode);
+        console.debug(nodeId);
+        var result = SYSTO.checkEquationString(systoModel, systoNode, newstr);    
+        if (result.status === "OK") {
+            return true;
+        } else {
+            displayEquationErrors(result);
+            return false;
+        }
+}
+
+
+    function displayEquationErrors(result) {
+        console.debug(result);
+        var report = "Sorry - error in expression - please fix.\n";
+        for (var errorId in result.checkObject) {
+            var error = result.checkObject[errorId];
+            if (error.status === "error" && error.message) {
+                report += error.message+"\n";
+            }
+        }
+        alert(report);
+    }
 
 })(jQuery);
 
