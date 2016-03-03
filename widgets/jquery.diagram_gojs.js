@@ -20,6 +20,8 @@
     };
     var myDiagram;
 
+    var equationTries = 0;
+
     var currentGojsNode;  // This is made global so that checkEquation() knows what node is being checked.
             // There has to be a cleaner way...
 
@@ -259,7 +261,10 @@
             };
             colourFlowNetworks(myDiagram);
             SYSTO.revertToPointer();
-            return go.ClickCreatingTool.prototype.insertPart.call(this, loc);
+            //return go.ClickCreatingTool.prototype.insertPart.call(this, loc);
+            var node = go.ClickCreatingTool.prototype.insertPart.call(this, loc);
+            currentGojsNode = node;
+            return node;
         };
 
         // toolManager.mouseMoveTools
@@ -398,7 +403,7 @@
                         {   font: "12pt helvetica, arial, sans-serif",
                             stroke: "black",
                             name:"EQUATION",
-                            background: "white",
+                            background: "yellow",
                             editable: true,  
                             maxSize: new go.Size(300,NaN),
                             isMultiline: false,
@@ -414,13 +419,17 @@
                 GOJS(go.Shape,
                     {   figure: "Rectangle",
                         isPanelMain: true, 
-                        stroke: null,
+                        // stroke: null,
+                        stroke: nodeType.border_colour.unset.normal,
+                        strokeWidth: nodeType.line_width.unset.normal,
                         fill: "transparent",
                         cursor: "pointer",
                         portId: "", // So a link can be dragged from the Node: see /GraphObject.html#portId
                         fromLinkable: true,
                         toLinkable: true
-                    }
+                    },
+                    new go.Binding("stroke", "", getStrokeFromEquationStatus),
+                    new go.Binding("strokeWidth", "", getStrokeWidthFromEquationStatus)
                 )
             );
             myDiagram.nodeTemplateMap.add(nodeTypeId, template);
@@ -445,7 +454,8 @@
                         name: "ICON",
                         desiredSize: new go.Size(nodeType.width, nodeType.height),
                         fill: nodeType.fill_colour.set.normal,
-                        stroke: nodeType.border_colour.set.normal,
+                        stroke: nodeType.border_colour.unset.normal,
+                        strokeWidth: nodeType.line_width.unset.normal,
                         portId: "",
                         fromLinkable: true,
                         fromLinkableDuplicates: true,
@@ -460,7 +470,9 @@
                                 dialog('open');
                         }
                     },
-                    new go.Binding("fill", "fill")
+                    new go.Binding("fill", "fill"),
+                    new go.Binding("stroke", "", getStrokeFromEquationStatus),
+                    new go.Binding("strokeWidth", "", getStrokeWidthFromEquationStatus)
                 ),
 
                 GOJS(go.Panel, 
@@ -485,7 +497,7 @@
                     GOJS(go.TextBlock,
                         {   font: "12pt helvetica, arial, sans-serif",
                             name:"EQUATION",
-                            background: "white",
+                            background: "yellow",
                             editable: true,  
                             margin: new go.Margin(5,5,5,5),
                             maxSize: new go.Size(300,NaN),
@@ -509,6 +521,34 @@
     function textStyle() {
       return { font: "10.5pt  Segoe UI,sans-serif", stroke: "red" };
     }
+
+
+    function getStrokeFromEquationStatus(data, node) {
+        var language = SYSTO.languages["system_dynamics"];
+        var nodeTypes = language.NodeType;
+        var modelId = myDiagram.model.modelData.id;
+        var result = checkEquation1(modelId, data.key, data.equation);
+        if (result.status === "OK") {
+            return nodeTypes[data.category].border_colour.set.normal;
+        } else {
+            return nodeTypes[data.category].border_colour.unset.normal;
+        }
+    }
+
+
+    function getStrokeWidthFromEquationStatus(data, node) {
+        var language = SYSTO.languages["system_dynamics"];
+        var nodeTypes = language.NodeType;
+        var modelId = myDiagram.model.modelData.id;
+        var result = checkEquation1(modelId, data.key, data.equation);
+        if (result.status === "OK") {
+            return nodeTypes[data.category].line_width.set.normal;
+        } else {
+            return nodeTypes[data.category].line_width.unset.normal;
+        }
+    }
+
+
 
 
     function onSelectionChanged(node) {
@@ -667,29 +707,37 @@
 
 
     function checkEquation(textblock, oldstr, newstr) {
-        console.debug('Checking equation...'+newstr);
-        console.debug(currentGojsNode.data.key);
-        SYSTO.convertGojsToSysto(myDiagram.model);
         var modelId = myDiagram.model.modelData.id;
-        var systoModel = SYSTO.models[modelId];
         var nodeId = currentGojsNode.data.key;
-        var systoNode = systoModel.nodes[nodeId];
-        console.debug(systoModel);
-        console.debug(modelId);
-        console.debug(systoNode);
-        console.debug(nodeId);
-        var result = SYSTO.checkEquationString(systoModel, systoNode, newstr);    
+        var result = checkEquation1(modelId, nodeId, newstr);
         if (result.status === "OK") {
+            equationTries = 0;
             return true;
         } else {
-            displayEquationErrors(result);
-            return false;
+            if (equationTries <1) {
+                displayEquationErrors(result);
+                equationTries += 1;
+                return false;
+            } else {
+                equationTries = 0;
+                return true;
+            }
         }
-}
+    }
+    
+    function checkEquation1(modelId, nodeId, equationString) {
+        console.debug("checkEquation1: "+modelId+": "+nodeId+": "+equationString);
+        //console.debug(JSON.stringify(myDiagram.model.nodeDataArray,null,4));
+        systoModel = SYSTO.convertGojsToSysto(myDiagram.model);
+        //console.debug(systoModel.nodes);
+        var systoNode = systoModel.nodes[nodeId];
+        var result = SYSTO.checkEquationString(systoModel, systoNode, equationString);    
+        console.debug(result);
+        return result;
+    }
 
 
     function displayEquationErrors(result) {
-        console.debug(result);
         var report = "Sorry - error in expression - please fix.\n";
         for (var errorId in result.checkObject) {
             var error = result.checkObject[errorId];
@@ -697,6 +745,7 @@
                 report += error.message+"\n";
             }
         }
+        report += "\nIf you click anywhere again without correcting it, the incorrect version will be kept.\n\nDo ***NOT*** check the box below.";
         alert(report);
     }
 

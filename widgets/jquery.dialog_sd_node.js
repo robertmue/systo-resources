@@ -93,11 +93,11 @@
                 //append(buildKeypadDiv());  March 2015.  Temporarily disabled for UKSD workshop, because of
                 // problems with insertion point in equation box.  TODO: re-instate
             $(equationDiv).append(top);
-            var equDiv = $('<div style="float:left; clear:both; margin-top:30px; width:400px;"/>');
+            var equDiv = $('<div style="float:left; clear:both; margin-top:0px; width:400px;"/>');
             var label = $(
                 '<label for="name">Dependent variable = </label>');
             var equation = $('<div id="equation" class="equation" style="-webkit-user-select:text; -moz-user-select:text;'+
-                'width:450px; height:60px; border-style:solid; border-width:px; border-color:#e0e0e0;"'+
+                'width:450px; height:50px; border-style:solid; border-width:px; border-color:#e0e0e0;"'+
                 'contenteditable="true" />').
                 click(function() {
                     //self.cursorPos = getCursorPos(); March 2015.  Temporarily disabled for UKSD workshop,
@@ -315,7 +315,7 @@
 
 function buildFunctionDiv(widget) {
 
-    var functionDiv = $('<div class="functions" style="float:left; width:200px; height:200px;">Functions<br/></div>');
+    var functionDiv = $('<div class="functions" style="float:left; width:200px; height:150px;">Functions<br/></div>');
 
     var functionInfo = $('<div class="functionInfo" style="float:left; display:block; height:40px; min-height:40px; clear:both;"> </div>');
     var functionSelect = $('<select size="6" style="width:95%;"/>').
@@ -337,7 +337,8 @@ function buildFunctionDiv(widget) {
             });
         $(functionSelect).append(option);
     }
-    $(functionDiv).append(functionSelect).append(functionInfo);
+    //$(functionDiv).append(functionSelect).append(functionInfo);
+    $(functionDiv).append(functionSelect);
     return functionDiv;
 }
 
@@ -351,7 +352,7 @@ function buildInfluenceDiv() {
         mouseout(function() {
         });
 
-    var influenceMessage = $('<p class="influenceMessage" >There are no influences on this node.</p>');
+    var influenceMessage = $('<span class="influenceMessage" >There are no influences on this node.</span>');
 
     $(influenceDiv).append(influenceSelect).append(influenceMessage);
     return influenceDiv;

@@ -2595,7 +2595,6 @@ SYSTO.convertSystoToGojs = function(systoModel) {
 
 SYSTO.convertGojsToSysto = function(gojsModel) {
 
-        console.debug(gojsModel);
         var systoModel = {
             meta:{
                 //modelId: SYSTO.state.currentModelId,
@@ -2622,16 +2621,12 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
             resultStats:{}
         };
 
-        console.debug("Number of nodes = "+gojsModel.nodeDataArray.length);
-        console.debug(JSON.stringify(gojsModel.nodeDataArray));
         for (var i=0; i<gojsModel.nodeDataArray.length; i++) {
-            console.debug("Node "+i);
             var gojsNode = gojsModel.nodeDataArray[i];
             var systoNode = {};
             systoNode.id = gojsNode.key;
             if (jQuery.isNumeric(systoNode.id)) systoNode.id = systoNode.id.toString();
             systoNode.type = gojsNode.category;
-            console.debug('%%%%%%%%%%%%%%%% '+systoNode.type);
             systoNode.label = gojsNode.label;
             var loc = go.Point.parse(gojsNode.loc);
             systoNode.centrex = loc.x;
@@ -2650,11 +2645,8 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
              systoModel.nodes[systoNode.id] = systoNode;
         }
 
-        console.debug('links: '+gojsModel.linkDataArray.length);
-        console.debug(gojsModel.linkDataArray.length);
-        for (j=0; j<gojsModel.linkDataArray.length; j++) {
+         for (j=0; j<gojsModel.linkDataArray.length; j++) {
             var gojsLink = gojsModel.linkDataArray[j];
-            console.debug(gojsLink);
             SYSTO.state.languageId = "system_dynamics";  // TODO: Shouldn't have to do this here
             //var currentModelId = SYSTO.state.currentModelId;
             //var systoModel = SYSTO.models[currentModelId];
