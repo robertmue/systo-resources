@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Thu Mar 3 23:35:49 GMT 2016  */
+/* Last merge : Sat Mar 5 00:56:01 GMT 2016  */
 
 /* Merging order :
 
@@ -54,6 +54,7 @@ SYSTO.plugins = {codeGenerator: {}};   // These are not actual jQuery plugins,
         // but they could be...
 SYSTO.state = {
     mode: 'pointer',
+    datamodel: 'gojs',    // or: 'systo'
     currentModelId: null,
     modelInstanceCounter: 0,
     needToUpdateSystoFromGojs: true,
@@ -2700,6 +2701,116 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
         return systoModel;
     };
 
+
+
+    // GETTERS
+
+
+    SYSTO.getNodeInfluencingNodeIdArray = function (modelId, nodeId) {
+        var influencingNodeIdArray = [];
+        if (SYSTO.state.datamodel === "systo") {
+            var model = SYSTO.models[modelId];
+            var node = model.nodes[nodeId];
+            for (var inarcId in node.inarcList) {
+                var arc = model.arcs[inarcId];
+                var influencingNodeId = arc.start_node_id;
+                influencingNodeIdArray.push(influencingNodeId);
+            }
+        } else {
+            var gojsModel = SYSTO.gojsModels[modelId];
+            for (j=0; j<gojsModel.linkDataArray.length; j++) {
+                var gojsLink = gojsModel.linkDataArray[j];
+                if (gojsLink.to === nodeId && gojsLink.category === "influence") {
+                    influencingNodeIdArray.push(gojsLink.from);
+                }
+            }
+        }
+        console.debug(influencingNodeIdArray);
+        return influencingNodeIdArray;
+    };
+
+    SYSTO.getNodeDocumentation = function (modelId, nodeId) {
+        if (SYSTO.state.datamodel === "systo") {
+            var result = SYSTO.models[modelId].nodes[nodeId].extras.documentation.value;
+        } else {
+            result = SYSTO.gojsModels[modelId].findNodeDataForKey(nodeId).documentation;
+        }
+        return result ? result : "";
+    };
+
+    SYSTO.getNodeEquation = function (modelId, nodeId) {
+        if (SYSTO.state.datamodel === "systo") {
+            var result = SYSTO.models[modelId].nodes[nodeId].extras.equation.value;
+        } else {
+            result = SYSTO.gojsModels[modelId].findNodeDataForKey(nodeId).equation;
+        }
+        return result ? result : "";
+    };
+
+    SYSTO.getNodeLabel = function (modelId, nodeId) {
+        if (SYSTO.state.datamodel === "systo") {
+            var result = SYSTO.models[modelId].nodes[nodeId].label;
+        } else {
+            result = SYSTO.gojsModels[modelId].findNodeDataForKey(nodeId).label;
+        }
+        return result ? result : "";
+    };
+
+
+    SYSTO.getNodeType = function (modelId, nodeId) {
+        if (SYSTO.state.datamodel === "systo") {
+            var result = SYSTO.models[modelId].nodes[nodeId].type;
+        } else {
+            result = SYSTO.gojsModels[modelId].findNodeDataForKey(nodeId).category;
+        }
+        return result ? result : "";
+    };
+
+    // SETTERS
+    SYSTO.setNodeDocumentation = function (modelId, nodeId, value) {
+        if (SYSTO.state.datamodel === "systo") {
+            SYSTO.models[modelId].nodes[nodeId].extras.documentation.value = value;
+        } else {
+            var gojsModel = SYSTO.gojsModels[modelId];
+            gojsModel.setDataProperty(gojsModel.findNodeDataForKey(nodeId), "documentation", value);
+        }
+    };
+
+    SYSTO.setNodeEquation = function (modelId, nodeId, value) {
+        if (SYSTO.state.datamodel === "systo") {
+            SYSTO.models[modelId].nodes[nodeId].extras.equation.value = value;
+        } else {
+            var gojsModel = SYSTO.gojsModels[modelId];
+            gojsModel.setDataProperty(gojsModel.findNodeDataForKey(nodeId), "equation", value);
+        }
+    };
+
+    SYSTO.setNodeLabel = function (modelId, nodeId, value) {
+        if (SYSTO.state.datamodel === "systo") {
+            SYSTO.models[modelId].nodes[nodeId].label = value;
+        } else {
+            var gojsModel = SYSTO.gojsModels[modelId];
+            gojsModel.setDataProperty(gojsModel.findNodeDataForKey(nodeId), "label", value);
+        }
+    };
+
+    SYSTO.setNodeLookup = function (modelId, nodeId, value) {
+        if (SYSTO.state.datamodel === "systo") {
+            SYSTO.models[modelId].nodes[nodeId].extras.lookup = value;
+        } else {
+            var gojsModel = SYSTO.gojsModels[modelId];
+            gojsModel.setDataProperty(gojsModel.findNodeDataForKey(nodeId), "lookup", value);
+        }
+    };
+
+    SYSTO.setNodeType = function (modelId, nodeId, value) {
+        if (SYSTO.state.datamodel === "systo") {
+            SYSTO.models[modelId].nodes[nodeId].type = value;
+        } else {
+            var gojsModel = SYSTO.gojsModels[modelId];
+            gojsModel.setDataProperty(gojsModel.findNodeDataForKey(nodeId), "type", value);
+        }
+    };
 
 
 

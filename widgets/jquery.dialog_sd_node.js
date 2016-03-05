@@ -131,7 +131,7 @@
             $('#sd_node_dialog_tabs').
                 on( "tabsactivate", function( event, ui ) {
                     if (ui.newTab.index() === 1) {
-                        var influencingNodeIdArray = getInfluencingNodeIdArray(self);
+                        var influencingNodeIdArray = SYSTO.getNodeInfluencingNodeIdArray(self.options.modelId, self.options.nodeId);
                         if (influencingNodeIdArray.length === 0) {
                             $('#sd_node_dialog_tab_sketchgraph').
                                 sketchgraph({
@@ -176,6 +176,7 @@
                             var action = new Action(model, 'set_equation', {mode:node.type, nodeId:node.id,  nodeLabel:node.label, 
                                         oldEquation:node.extras.equation.value, equation:equationString});
                             action.doAction();
+                            SYSTO.setNodeEquation(modelId, nodeId, equationString);
                             SYSTO.trigger({
                                 file:' jquery.dialog_sd_node.js', 
                                 action: 'OK to close dialog', 
@@ -214,6 +215,11 @@
                     var nodeId = $(this).data('nodeId');
                     self.options.modelId = modelId;
                     self.options.nodeId = nodeId;
+                    $(documentation).text(SYSTO.getNodeDocumentation(modelId, nodeId));
+                    $(equation).text(SYSTO.getNodeEquation(modelId, nodeId));
+                    var label = SYSTO.getNodeLabel(modelId, nodeId);
+                    var type = SYSTO.getNodeType(modelId, nodeId);
+/*
                     var model = SYSTO.models[modelId];
                     var nodeList = model.nodes;
                     var node = nodeList[nodeId];
@@ -225,25 +231,25 @@
                     if (node.extras.equation) {
                         $(equation).text(node.extras.equation.value);
                     }
-                    if (node.type === 'stock') {
+*/
+                    if (type === 'stock') {
                         var extra = 'Initial value for ';
                     } else {
                         extra = '';
                     }
-                    //$(this).dialog('option', 'title', $(this).data('nodeId'));
-                    $(this).dialog('option', 'title', node.label);
-                    //$('#sd_node_dialog_form').find('label').text(extra+nodeId+' =');
-                    $('#sd_node_dialog_form').find('label').text(extra+node.label+' =');
+                    $(this).dialog('option', 'title', label);
+                    $('#sd_node_dialog_form').find('label').text(extra+label+' =');
+
                     $('.influenceSelect').empty();
-                    assignInarcsAndOutarcsForEachNode(model);
-                    if (isEmpty(node.inarcList)) {
+                    if (false) {
                         $('.influenceSelect').css('display','none');
                         $('.influenceMessage').css('display','block');
                     } else {
                         $('.influenceSelect').css('display','block');
                         $('.influenceMessage').css('display','none');
                     }
-                    populateInfluenceDiv(self, model, node, nodeList);
+                    populateInfluenceDiv(self, modelId, nodeId);
+
                     var el = document.getElementById('equation');
                     // This (the call to setCursor()) sometimes generates an error message (in the
                     // developer's console - users will not be aware of it):
@@ -360,6 +366,31 @@ function buildInfluenceDiv() {
 
 
 
+function populateInfluenceDiv(widget, modelId, nodeId) {
+    var influencingNodeIdArray = SYSTO.getNodeInfluencingNodeIdArray(modelId, nodeId);
+    for (var i=0; i<influencingNodeIdArray.length; i++) {
+        var id = influencingNodeIdArray[i];
+        var label = SYSTO.getNodeLabel(modelId, id);
+        var option = $('<option value="'+id+'">'+label+'</option>').
+            mouseover(function(event) {
+                var nodeId = event.target.value;
+                $('.functionInfo').text(nodeId);
+            }).
+            click(function(event) {
+                // March 2015.  Temporarily disabled for UKSD workshop,  TODO: re-instate
+                //var nodeId1 = event.target.value;
+                //var node1 = model.nodes[nodeId1];
+                //addAtCurrentPosition(widget, node1.label);
+                alert('"Click-to-insert" not yet operational. Please type the name of the variable '+
+                    'into the equation.');
+                //$('.equation').text(node1.label);
+            });
+
+        $('.influenceSelect').append(option);
+    }
+}
+
+/*
 function populateInfluenceDiv(widget, model, node, nodeList) {
     for (var inarcId in node.inarcList) {
         var arc = node.inarcList[inarcId];    // TODO: wrong!!
@@ -384,26 +415,7 @@ function populateInfluenceDiv(widget, model, node, nodeList) {
         $('.influenceSelect').append(option);
     }
 }
-
-
-
-
-function getInfluencingNodeIdArray(widget) {
-    var options = widget.options;
-    var modelId = options.modelId;
-    var model = SYSTO.models[modelId];
-    var nodeIdx = options.nodeId;
-    var nodex = model.nodes[nodeIdx];
-
-    var influencingNodeIdArray = [];
-    for (var inarcId in nodex.inarcList) {
-        var arc = model.arcs[inarcId];
-        var influencingNodeId = arc.start_node_id;
-        influencingNodeIdArray.push(influencingNodeId);
-    }
-    return influencingNodeIdArray;
-}
-
+*/
 
 
 function buildKeypadDiv() {

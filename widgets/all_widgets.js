@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Thu Mar 3 23:35:49 GMT 2016  */
+/* Last merge : Sat Mar 5 00:56:01 GMT 2016  */
 
 /* Merging order :
 
@@ -5481,7 +5481,7 @@ function toggleDiagram1(widget) {
             $('#sd_node_dialog_tabs').
                 on( "tabsactivate", function( event, ui ) {
                     if (ui.newTab.index() === 1) {
-                        var influencingNodeIdArray = getInfluencingNodeIdArray(self);
+                        var influencingNodeIdArray = SYSTO.getNodeInfluencingNodeIdArray(self.options.modelId, self.options.nodeId);
                         if (influencingNodeIdArray.length === 0) {
                             $('#sd_node_dialog_tab_sketchgraph').
                                 sketchgraph({
@@ -5526,6 +5526,7 @@ function toggleDiagram1(widget) {
                             var action = new Action(model, 'set_equation', {mode:node.type, nodeId:node.id,  nodeLabel:node.label, 
                                         oldEquation:node.extras.equation.value, equation:equationString});
                             action.doAction();
+                            SYSTO.setNodeEquation(modelId, nodeId, equationString);
                             SYSTO.trigger({
                                 file:' jquery.dialog_sd_node.js', 
                                 action: 'OK to close dialog', 
@@ -5564,6 +5565,11 @@ function toggleDiagram1(widget) {
                     var nodeId = $(this).data('nodeId');
                     self.options.modelId = modelId;
                     self.options.nodeId = nodeId;
+                    $(documentation).text(SYSTO.getNodeDocumentation(modelId, nodeId));
+                    $(equation).text(SYSTO.getNodeEquation(modelId, nodeId));
+                    var label = SYSTO.getNodeLabel(modelId, nodeId);
+                    var type = SYSTO.getNodeType(modelId, nodeId);
+/*
                     var model = SYSTO.models[modelId];
                     var nodeList = model.nodes;
                     var node = nodeList[nodeId];
@@ -5575,25 +5581,25 @@ function toggleDiagram1(widget) {
                     if (node.extras.equation) {
                         $(equation).text(node.extras.equation.value);
                     }
-                    if (node.type === 'stock') {
+*/
+                    if (type === 'stock') {
                         var extra = 'Initial value for ';
                     } else {
                         extra = '';
                     }
-                    //$(this).dialog('option', 'title', $(this).data('nodeId'));
-                    $(this).dialog('option', 'title', node.label);
-                    //$('#sd_node_dialog_form').find('label').text(extra+nodeId+' =');
-                    $('#sd_node_dialog_form').find('label').text(extra+node.label+' =');
+                    $(this).dialog('option', 'title', label);
+                    $('#sd_node_dialog_form').find('label').text(extra+label+' =');
+
                     $('.influenceSelect').empty();
-                    assignInarcsAndOutarcsForEachNode(model);
-                    if (isEmpty(node.inarcList)) {
+                    if (false) {
                         $('.influenceSelect').css('display','none');
                         $('.influenceMessage').css('display','block');
                     } else {
                         $('.influenceSelect').css('display','block');
                         $('.influenceMessage').css('display','none');
                     }
-                    populateInfluenceDiv(self, model, node, nodeList);
+                    populateInfluenceDiv(self, modelId, nodeId);
+
                     var el = document.getElementById('equation');
                     // This (the call to setCursor()) sometimes generates an error message (in the
                     // developer's console - users will not be aware of it):
@@ -5710,6 +5716,31 @@ function buildInfluenceDiv() {
 
 
 
+function populateInfluenceDiv(widget, modelId, nodeId) {
+    var influencingNodeIdArray = SYSTO.getNodeInfluencingNodeIdArray(modelId, nodeId);
+    for (var i=0; i<influencingNodeIdArray.length; i++) {
+        var id = influencingNodeIdArray[i];
+        var label = SYSTO.getNodeLabel(modelId, id);
+        var option = $('<option value="'+id+'">'+label+'</option>').
+            mouseover(function(event) {
+                var nodeId = event.target.value;
+                $('.functionInfo').text(nodeId);
+            }).
+            click(function(event) {
+                // March 2015.  Temporarily disabled for UKSD workshop,  TODO: re-instate
+                //var nodeId1 = event.target.value;
+                //var node1 = model.nodes[nodeId1];
+                //addAtCurrentPosition(widget, node1.label);
+                alert('"Click-to-insert" not yet operational. Please type the name of the variable '+
+                    'into the equation.');
+                //$('.equation').text(node1.label);
+            });
+
+        $('.influenceSelect').append(option);
+    }
+}
+
+/*
 function populateInfluenceDiv(widget, model, node, nodeList) {
     for (var inarcId in node.inarcList) {
         var arc = node.inarcList[inarcId];    // TODO: wrong!!
@@ -5734,26 +5765,7 @@ function populateInfluenceDiv(widget, model, node, nodeList) {
         $('.influenceSelect').append(option);
     }
 }
-
-
-
-
-function getInfluencingNodeIdArray(widget) {
-    var options = widget.options;
-    var modelId = options.modelId;
-    var model = SYSTO.models[modelId];
-    var nodeIdx = options.nodeId;
-    var nodex = model.nodes[nodeIdx];
-
-    var influencingNodeIdArray = [];
-    for (var inarcId in nodex.inarcList) {
-        var arc = model.arcs[inarcId];
-        var influencingNodeId = arc.start_node_id;
-        influencingNodeIdArray.push(influencingNodeId);
-    }
-    return influencingNodeIdArray;
-}
-
+*/
 
 
 function buildKeypadDiv() {
@@ -15411,7 +15423,7 @@ function render()
             '<p>The resulting relationship is normally defined by a series of straight liens between a '+
             'series of data points, using linear interpolation</p>'+
             '<p>An alternative (specified bythe option \'drawmode=bar\'), allows the relationship to be '+
-            '<p>to be defiend by a bar graph.   This is suitable when the x-axis variable can only have '+
+            '<p>to be defined by a bar graph.   This is suitable when the x-axis variable can only have '+
             'discrete values, such as perhaps the days of the week.</p>'+
             '<p>The behaviour of the sketched function when the x-axis (independent) variable has a value '+
             'which is less than the minimum, or greater than the maximum, used to construct the sketch graph is '+
@@ -16012,21 +16024,21 @@ function inputs(context, widget) {
             var nodeIdy = options.nodeIdy;
             var nodey = model.nodes[nodeIdy];
             if (nodeIdx === 'SIMTIME') {
-                nodey.extras.equation.value = 'interp(SIMTIME,'+JSON.stringify(table)+')';
+                SYSTO.setNodeEquation(options.modelId, nodeIdy, 'interp(SIMTIME,'+JSON.stringify(table)+')');
             } else {
                 var nodex = model.nodes[nodeIdx];
-                nodey.extras.equation.value = 'interp('+nodex.label+','+JSON.stringify(table)+')';
+                SYSTO.setNodeEquation(options.modelId, nodeIdy, 'interp('+nodex.label+','+JSON.stringify(table)+')');
             }
-            nodey.extras.lookup = {};
-            nodey.extras.lookup.table = table;
-            nodey.extras.lookup.nodeIdx = nodeIdx;
-            nodey.extras.lookup.drawmode = $('#selectDrawmode option:selected').text();
-            nodey.extras.lookup.extrapolateMode = $('#selectExtrapolateMode option:selected').text();
-
-            nodey.extras.lookup.xmin = $('.data_xmin').text();   // TODO: Fix so that it doesn't handle all sketchgraphs!
-            nodey.extras.lookup.xmax = $('.data_xmax').text();
-            nodey.extras.lookup.ymin = $('.data_ymin').text();
-            nodey.extras.lookup.ymax = $('.data_ymax').text();
+            var lookup = {};
+            lookup.table = table;
+            lookup.nodeIdx = nodeIdx;
+            lookup.drawmode = $('#selectDrawmode option:selected').text();
+            lookup.extrapolateMode = $('#selectExtrapolateMode option:selected').text();
+            lookup.xmin = $('.data_xmin').text();   // TODO: Fix so that it doesn't handle all sketchgraphs!
+            lookup.xmax = $('.data_xmax').text();
+            lookup.ymin = $('.data_ymin').text();
+            lookup.ymax = $('.data_ymax').text();
+            SYSTO.setNodeLookup(options.modelId, nodeIdy, lookup);
         });
     $(div).append(okButton);
 }

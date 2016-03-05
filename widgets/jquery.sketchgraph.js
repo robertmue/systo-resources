@@ -31,7 +31,7 @@
             '<p>The resulting relationship is normally defined by a series of straight liens between a '+
             'series of data points, using linear interpolation</p>'+
             '<p>An alternative (specified bythe option \'drawmode=bar\'), allows the relationship to be '+
-            '<p>to be defiend by a bar graph.   This is suitable when the x-axis variable can only have '+
+            '<p>to be defined by a bar graph.   This is suitable when the x-axis variable can only have '+
             'discrete values, such as perhaps the days of the week.</p>'+
             '<p>The behaviour of the sketched function when the x-axis (independent) variable has a value '+
             'which is less than the minimum, or greater than the maximum, used to construct the sketch graph is '+
@@ -632,21 +632,21 @@ function inputs(context, widget) {
             var nodeIdy = options.nodeIdy;
             var nodey = model.nodes[nodeIdy];
             if (nodeIdx === 'SIMTIME') {
-                nodey.extras.equation.value = 'interp(SIMTIME,'+JSON.stringify(table)+')';
+                SYSTO.setNodeEquation(options.modelId, nodeIdy, 'interp(SIMTIME,'+JSON.stringify(table)+')');
             } else {
                 var nodex = model.nodes[nodeIdx];
-                nodey.extras.equation.value = 'interp('+nodex.label+','+JSON.stringify(table)+')';
+                SYSTO.setNodeEquation(options.modelId, nodeIdy, 'interp('+nodex.label+','+JSON.stringify(table)+')');
             }
-            nodey.extras.lookup = {};
-            nodey.extras.lookup.table = table;
-            nodey.extras.lookup.nodeIdx = nodeIdx;
-            nodey.extras.lookup.drawmode = $('#selectDrawmode option:selected').text();
-            nodey.extras.lookup.extrapolateMode = $('#selectExtrapolateMode option:selected').text();
-
-            nodey.extras.lookup.xmin = $('.data_xmin').text();   // TODO: Fix so that it doesn't handle all sketchgraphs!
-            nodey.extras.lookup.xmax = $('.data_xmax').text();
-            nodey.extras.lookup.ymin = $('.data_ymin').text();
-            nodey.extras.lookup.ymax = $('.data_ymax').text();
+            var lookup = {};
+            lookup.table = table;
+            lookup.nodeIdx = nodeIdx;
+            lookup.drawmode = $('#selectDrawmode option:selected').text();
+            lookup.extrapolateMode = $('#selectExtrapolateMode option:selected').text();
+            lookup.xmin = $('.data_xmin').text();   // TODO: Fix so that it doesn't handle all sketchgraphs!
+            lookup.xmax = $('.data_xmax').text();
+            lookup.ymin = $('.data_ymin').text();
+            lookup.ymax = $('.data_ymax').text();
+            SYSTO.setNodeLookup(options.modelId, nodeIdy, lookup);
         });
     $(div).append(okButton);
 }

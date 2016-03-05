@@ -466,7 +466,7 @@
                             removeNodePopup();
                             $('#dialog_sd_node').
                                 data('modelId',widget.options.modelId).
-                                data('nodeId',node.id).
+                                data('nodeId',node.part.data.key).
                                 dialog('open');
                         }
                     },
