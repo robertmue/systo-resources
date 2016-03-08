@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Sat Mar 5 00:56:01 GMT 2016  */
+/* Last merge : Mon Mar 7 22:35:12 GMT 2016  */
 
 /* Merging order :
 
@@ -2672,7 +2672,7 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
             systoNode.extras = {
                 equation: {type:"long_text", value:systoNode.equation, default_value:""},
                 min_value: {type:"short_text", value:0, default_value:""},
-                max_value: {type:"short_text", value:100, default_value:""},
+                max_value: {type:"short_text", value:0.001, default_value:""},
                 documentation: {type:"long_text", value:"", default_value:""},
                 comments: {type:"long_text", value:"", default_value:""}
              };
@@ -3384,8 +3384,6 @@ SYSTO.generateSimulationFunction = function (model) {
         }
 
         var result = myTopologicalSort(model, ['stock', 'valve', 'variable']);
-        console.debug('\n==============================================');
-        console.debug(result);
         if (result.status === 'OK') {
             var sortedDynamicArray = result.sortedNodeArray;
         } else {
@@ -3393,7 +3391,6 @@ SYSTO.generateSimulationFunction = function (model) {
         }
 
         model.simulationDataStructures = buildSimulationDataStructures(model);
-        console.debug(model.simulationDataStructures);
 
         if (model.scenarios && model.scenarios.default && model.scenarios.default.simulation_settings) {
             var integrationMethod = model.scenarios.default.simulation_settings.integration_method;
@@ -3905,8 +3902,6 @@ SYSTO.simulate = function (model) {
     var inputValues = {};
     inputValues.parameterValues = parameterValues;
     inputValues.initialStockValues = initialStockValues;
-    console.debug('\n.....@@@@....');
-    console.debug(inputValues);
 
     try {
         var startEvalClockTime = new Date();
@@ -4344,7 +4339,6 @@ function turnIntoPureJavascript(tokenArray) {
             token.jsvalue = token.value;
         }
     }
-    //console.debug(tokenArray);
     return tokenArray;
 }
 

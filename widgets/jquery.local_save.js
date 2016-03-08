@@ -182,6 +182,8 @@
                             var outputXmlStr, blob;
 
                             //outputXmlStr = JSON.stringify(modelPrepared,null,3);
+                            var myDiagram = SYSTO.state.currentGojsDiagram;  // TODO: fix this.
+
                             myDiagram.model.modelData = 
                                 {   id: SYSTO.state.currentModelId,
                                     name: name,

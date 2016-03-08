@@ -73,6 +73,8 @@
             
                 //myDiagram.model = SYSTO.gojsModels["predator_prey_shodor"];
                 myDiagram.model = SYSTO.gojsModels[self.options.modelId];
+                colourFlowNetworks(myDiagram);
+                
 
                 //event.stopPropagation();
             });
@@ -286,6 +288,8 @@
             }
         });
 
+        SYSTO.state.currentGojsDiagram = myDiagram;   // TODO - fix this.
+
         // Generic linking validator - driven by Systo language definition
         function linkable(fromnode, fromport, tonode, toport) {
             var languageId = SYSTO.models[widget.options.modelId].meta.language;
@@ -390,7 +394,7 @@
                             name: "LABEL",
                             background: "white",
                             editable: true,  
-                            margin: new go.Margin(5,5,5,5),
+                            margin: new go.Margin(7,7,7,7),
                             //maxSize: new go.Size(200,NaN),
                             row: 0,
                             column: 0,
@@ -403,7 +407,8 @@
                         {   font: "12pt helvetica, arial, sans-serif",
                             stroke: "black",
                             name:"EQUATION",
-                            background: "yellow",
+                            background: "#ffc0ff",
+                            margin: new go.Margin(5,5,5,5),
                             editable: true,  
                             maxSize: new go.Size(300,NaN),
                             isMultiline: false,
@@ -497,9 +502,9 @@
                     GOJS(go.TextBlock,
                         {   font: "12pt helvetica, arial, sans-serif",
                             name:"EQUATION",
-                            background: "yellow",
+                            background: "#ffc0ff",
                             editable: true,  
-                            margin: new go.Margin(5,5,5,5),
+                            margin: new go.Margin(7,7,7,7),
                             maxSize: new go.Size(300,NaN),
                             isMultiline: false,
                             minSize: new go.Size(40,20),
@@ -585,7 +590,9 @@
             {   relinkableFrom: true,
                 relinkableTo: true,
                 toShortLength: 8,
-                curve: arcTypeId==="influence" ? go.Link.Bezier : go.Link.Normal
+                //routing: arcTypeId==="influence" ? go.Link.Normal : go.Link.Orthogonal,
+                //corner:20,
+                curve: arcTypeId==="influence" ? go.Link.Bezier : go.Link.Bezier
             },
 
             GOJS(go.Shape,
@@ -672,7 +679,7 @@
         nodes.reset();
 
         var icolour = 0;
-        var colours = ['#ffa0a0', '#a0a0ff', '#a0ffa0', 'red','blue','green','yellow','orange'];
+        var colours = ['#ffa0ff','#a0ffff','#c0c0c0','#ffa0a0', '#a0a0ff', '#a0ffa0', 'red','blue','green','orange'];
         while (nodes.next()) {
             node = nodes.value;
             nodeData = node.data;  
@@ -726,10 +733,9 @@
     }
     
     function checkEquation1(modelId, nodeId, equationString) {
-        console.debug("checkEquation1: "+modelId+": "+nodeId+": "+equationString);
-        //console.debug(JSON.stringify(myDiagram.model.nodeDataArray,null,4));
+        console.debug("XXXX"+equationString+"YYYY");
+        if (!equationString || equationString === "") return false;
         systoModel = SYSTO.convertGojsToSysto(myDiagram.model);
-        //console.debug(systoModel.nodes);
         var systoNode = systoModel.nodes[nodeId];
         var result = SYSTO.checkEquationString(systoModel, systoNode, equationString);    
         console.debug(result);

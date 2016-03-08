@@ -39,8 +39,6 @@ SYSTO.generateSimulationFunction = function (model) {
         }
 
         var result = myTopologicalSort(model, ['stock', 'valve', 'variable']);
-        console.debug('\n==============================================');
-        console.debug(result);
         if (result.status === 'OK') {
             var sortedDynamicArray = result.sortedNodeArray;
         } else {
@@ -48,7 +46,6 @@ SYSTO.generateSimulationFunction = function (model) {
         }
 
         model.simulationDataStructures = buildSimulationDataStructures(model);
-        console.debug(model.simulationDataStructures);
 
         if (model.scenarios && model.scenarios.default && model.scenarios.default.simulation_settings) {
             var integrationMethod = model.scenarios.default.simulation_settings.integration_method;
@@ -560,8 +557,6 @@ SYSTO.simulate = function (model) {
     var inputValues = {};
     inputValues.parameterValues = parameterValues;
     inputValues.initialStockValues = initialStockValues;
-    console.debug('\n.....@@@@....');
-    console.debug(inputValues);
 
     try {
         var startEvalClockTime = new Date();
@@ -999,7 +994,6 @@ function turnIntoPureJavascript(tokenArray) {
             token.jsvalue = token.value;
         }
     }
-    //console.debug(tokenArray);
     return tokenArray;
 }
 

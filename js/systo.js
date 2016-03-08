@@ -2639,7 +2639,7 @@ SYSTO.convertGojsToSysto = function(gojsModel) {
             systoNode.extras = {
                 equation: {type:"long_text", value:systoNode.equation, default_value:""},
                 min_value: {type:"short_text", value:0, default_value:""},
-                max_value: {type:"short_text", value:100, default_value:""},
+                max_value: {type:"short_text", value:0.001, default_value:""},
                 documentation: {type:"long_text", value:"", default_value:""},
                 comments: {type:"long_text", value:"", default_value:""}
              };

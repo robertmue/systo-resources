@@ -304,7 +304,7 @@
                         var maxval = parseFloat(node.extras.max_value.value);
                     } else {
                         minval = 0;
-                        maxval = 100;
+                        maxval = 0.01;
                     }
                     if (node.extras.equation) {
                         //var value = parseFloat(node.workspace.jsequation);    // TODO: fix this.

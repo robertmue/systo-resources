@@ -121,14 +121,14 @@
             var startTime = $(
                 '<tr>'+
                     '<td style="text-align:left;">Start time</td>'+
-                    '<td><input type="text" class="start_time" id="inputStartTime" style="padding:2px; width:35px; height:13px;"'+
+                    '<td><input type="text" class="start_time" id="inputStartTime" style="padding:2px; width:35px; height:20px;"'+
                         'value="'+simulationSettings.start_time+'"/></td>'+
                 '</tr>');
 
             var endTime = $(
                 '<tr>'+
                     '<td style="text-align:left;">End time</td>'+
-                    '<td><input type="text" class="end_time" id="inputEndTime" style="padding:2px; width:35px; height:13px; text-align:right"'+
+                    '<td><input type="text" class="end_time" id="inputEndTime" style="padding:2px; width:35px; height:20px; text-align:right"'+
                         'value="'+simulationSettings.end_time+'"/></td>'+
                 '</tr>').
                 change(function() {
@@ -142,7 +142,7 @@
             var nStep = $(
                 '<tr>'+
                     '<td style="text-align:left;">Steps per time unit</td>'+
-                    '<td><input type="text" class="nstep" id="inputnStep" style="padding:2px; width:35px; height:13px; text-align:right"'+
+                    '<td><input type="text" class="nstep" id="inputnStep" style="padding:2px; width:35px; height:20px; text-align:right"'+
                         'value="'+simulationSettings.nstep+'"/></td>'+
                 '</tr>').
                 change(function() {
@@ -156,7 +156,7 @@
             var displayInterval = $(
                 '<tr>'+
                     '<td style="text-align:left;">Display interval</td>'+
-                    '<td><input type="text" class="display_interval" id="inputDisplayInterval" style="padding:2px; width:35px; height:13px; text-align:right"'+
+                    '<td><input type="text" class="display_interval" id="inputDisplayInterval" style="padding:2px; width:35px; height:20px; text-align:right"'+
                         'value="'+simulationSettings.display_interval+'"/></td>'+
                 '</tr>');
             // June 2014. Currently, neither start time or display interval are used, so removed from panel.

@@ -5,7 +5,7 @@
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-/* Last merge : Sat Mar 5 00:56:01 GMT 2016  */
+/* Last merge : Mon Mar 7 22:35:12 GMT 2016  */
 
 /* Merging order :
 
@@ -8782,6 +8782,8 @@ function handleFileSelect(evt) {
                             var outputXmlStr, blob;
 
                             //outputXmlStr = JSON.stringify(modelPrepared,null,3);
+                            var myDiagram = SYSTO.state.currentGojsDiagram;  // TODO: fix this.
+
                             myDiagram.model.modelData = 
                                 {   id: SYSTO.state.currentModelId,
                                     name: name,
@@ -9321,7 +9323,7 @@ function handleFileSelect(evt) {
                         var maxval = parseFloat(node.extras.max_value.value);
                     } else {
                         minval = 0;
-                        maxval = 100;
+                        maxval = 0.01;
                     }
                     if (node.extras.equation) {
                         //var value = parseFloat(node.workspace.jsequation);    // TODO: fix this.
@@ -14525,14 +14527,14 @@ function handleWidget(widgetId, newDivId, packageId, modelId) {
             var startTime = $(
                 '<tr>'+
                     '<td style="text-align:left;">Start time</td>'+
-                    '<td><input type="text" class="start_time" id="inputStartTime" style="padding:2px; width:35px; height:13px;"'+
+                    '<td><input type="text" class="start_time" id="inputStartTime" style="padding:2px; width:35px; height:20px;"'+
                         'value="'+simulationSettings.start_time+'"/></td>'+
                 '</tr>');
 
             var endTime = $(
                 '<tr>'+
                     '<td style="text-align:left;">End time</td>'+
-                    '<td><input type="text" class="end_time" id="inputEndTime" style="padding:2px; width:35px; height:13px; text-align:right"'+
+                    '<td><input type="text" class="end_time" id="inputEndTime" style="padding:2px; width:35px; height:20px; text-align:right"'+
                         'value="'+simulationSettings.end_time+'"/></td>'+
                 '</tr>').
                 change(function() {
@@ -14546,7 +14548,7 @@ function handleWidget(widgetId, newDivId, packageId, modelId) {
             var nStep = $(
                 '<tr>'+
                     '<td style="text-align:left;">Steps per time unit</td>'+
-                    '<td><input type="text" class="nstep" id="inputnStep" style="padding:2px; width:35px; height:13px; text-align:right"'+
+                    '<td><input type="text" class="nstep" id="inputnStep" style="padding:2px; width:35px; height:20px; text-align:right"'+
                         'value="'+simulationSettings.nstep+'"/></td>'+
                 '</tr>').
                 change(function() {
@@ -14560,7 +14562,7 @@ function handleWidget(widgetId, newDivId, packageId, modelId) {
             var displayInterval = $(
                 '<tr>'+
                     '<td style="text-align:left;">Display interval</td>'+
-                    '<td><input type="text" class="display_interval" id="inputDisplayInterval" style="padding:2px; width:35px; height:13px; text-align:right"'+
+                    '<td><input type="text" class="display_interval" id="inputDisplayInterval" style="padding:2px; width:35px; height:20px; text-align:right"'+
                         'value="'+simulationSettings.display_interval+'"/></td>'+
                 '</tr>');
             // June 2014. Currently, neither start time or display interval are used, so removed from panel.
@@ -16279,16 +16281,20 @@ $(function () {
                     'color:black; border:0px; font-weight:bold; font-size:0.8em; width:120px; '+
                     'padding-right:2px; text-align:right;"></input>');
 
-            // TODO: remove the 'readonly' attribute.  This was put in because changing teh value meant that the slider
-            // no longer changed the value.  Seee Colin Legg's email, March 2015.
+            // TODO: remove the 'readonly' attribute.  This was put in because changing the value meant that the slider
+            // no longer changed the value.  See Colin Legg's email, March 2015.
 
             // The variable's current value
-            var a2 = $('<input type="text" class="slider_value" readonly value="" '+
+            var a2 = $('<input type="text" class="slider_value" value="" '+
                     'style="float:left; border:1; background:#f0f0f0; font-size:0.8em; '+
                     'width:40px; margin-right:8px; text-align:right"></input>').
                 keypress(function(event) {
                     if (event.which === 13) {
-                        self._setOption('value',parseFloat(this.value));
+                        var value = parseFloat(this.value);
+                        self._setOption('value',value);
+                        //var nodeId = $(this).data('id');
+                        var nodeId = self.options.id;
+                        simulateBecauseValueChanged(self, nodeId, value);
                     }
                 });
 
@@ -16333,33 +16339,8 @@ $(function () {
                     slide: function (event, ui) {
                         self._setOption('value',ui.value);
                         var nodeId = $(this).data('id');
-                        console.debug(nodeId+' = '+ui.value);
-                        var modelIdArray = self.options.modelIdArray;
-                        if (self.options.modelId && modelIdArray.length === 0) {
-                            modelIdArray = [self.options.modelId];
-                        }
-                        for (var i=0; i<modelIdArray.length; i++) {
-                            var model = SYSTO.models[modelIdArray[i]];
-                            if (!model.nodes[nodeId].workspace) {  // Shouldn't be necessary to check this here!
-                                model.nodes[nodeId].workspace = {};
-                            }
-                            model.nodes[nodeId].workspace.jsequation = ui.value;
-                        }
-                        self._setOption('value',ui.value);
-                        SYSTO.simulateMultiple(modelIdArray);
-                        SYSTO.trigger({
-                            file: 'jquery.slider1.js',
-                            action: 'slide function',
-                            event_type: 'display_listener',
-                            parameters: {
-                                packageId:self.options.packageId,
-                                modelId:modelIdArray[0],
-                                modelIdArray:modelIdArray,
-                                nodeId:nodeId,
-                                value: ui.value
-                            }
-                        });
-                    },
+                        simulateBecauseValueChanged(self, nodeId, ui.value);
+                   },
                     start: function (event, ui) {
                         $('.slider_value').css('background-color','white');
                         var nodeId = $(this).data('id');
@@ -16542,6 +16523,35 @@ $(function () {
             widget._setOptions({maxval:value});
         }
     }
+
+    function simulateBecauseValueChanged(widget, nodeId, value) {
+        console.debug('Simulate: '+nodeId+': '+value);
+        var modelIdArray = widget.options.modelIdArray;
+        if (widget.options.modelId && modelIdArray.length === 0) {
+            modelIdArray = [widget.options.modelId];
+        }
+        for (var i=0; i<modelIdArray.length; i++) {
+            var model = SYSTO.models[modelIdArray[i]];
+            if (!model.nodes[nodeId].workspace) {  // Shouldn't be necessary to check this here!
+                model.nodes[nodeId].workspace = {};
+            }
+            model.nodes[nodeId].workspace.jsequation = value;
+        }
+        SYSTO.simulateMultiple(modelIdArray);
+        SYSTO.trigger({
+            file: 'jquery.slider1.js',
+            action: 'slide function',
+            event_type: 'display_listener',
+            parameters: {
+                packageId:widget.options.packageId,
+                modelId:modelIdArray[0],
+                modelIdArray:modelIdArray,
+                nodeId:nodeId,
+                value: value
+            }
+        });
+    }
+
 
 })(jQuery);
 
