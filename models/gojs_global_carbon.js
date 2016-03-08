@@ -1,6 +1,6 @@
 SYSTO.gojsModelSources.global_carbon = { "class": "go.GraphLinksModel",
   "linkLabelKeysProperty": "labelKeys",
-  "modelData": {"id":"global_carbon", "name":"global_carbon", "title":"no title", "description":"no description", "author":"no author"},
+  "modelData": {"id":"global_carbon", "name":"global_carbon", "language":"system_dynamics", "title":"no title", "description":"no description", "author":"no author"},
   "nodeDataArray": [ 
 {"key":"stock1", "category":"stock", "label":"Atmosphere", "loc":"185 126", "text_shift":"0.5 0.5 44 1", "equation":"562", "has_equation":true, "flag1":true, "fill":"#ffa0ff"},
 {"key":"stock2", "category":"stock", "label":"Vegetation", "loc":"185 286", "text_shift":"0.5 0.5 50 26", "equation":"800", "has_equation":true, "flag1":true, "fill":"#ffa0ff"},

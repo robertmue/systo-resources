@@ -594,6 +594,7 @@
                 //corner:20,
                 curve: arcTypeId==="influence" ? go.Link.Bezier : go.Link.Bezier
             },
+            new go.Binding("curviness", "", getFlowCurviness),
 
             GOJS(go.Shape,
                 {   stroke: arcType.fill_colour.set.normal,
@@ -611,6 +612,38 @@
         );
 
         myDiagram.linkTemplateMap.add(arcTypeId, template);
+    }
+
+/*
+        var modelId = myDiagram.model.modelData.id;
+        var result = checkEquation1(modelId, data.key, data.equation);
+        if (result.status === "OK") {
+            return nodeTypes[data.category].border_colour.set.normal;
+        } else {
+            return nodeTypes[data.category].border_colour.unset.normal;
+        }
+*/
+    function getFlowCurviness(data, link) {
+        console.debug('\n');
+        console.debug(data);
+        if (data.category !== "flow") return NaN;
+        var linkDataArray = myDiagram.model.linkDataArray;
+        var counter = 0;
+        for (var i=0; i<linkDataArray.length; i++) {
+            linkData = linkDataArray[i];
+            if ((linkData.from === data.from && linkData.to === data.to) ||
+                    (linkData.from === data.to && linkData.to === data.from)) {
+                counter += 1;
+                if (counter >= 2) break
+            }
+        }
+        if (counter >= 2) {
+            result = NaN;
+        } else {
+            result = 0;
+        }
+        console.debug(result);
+        return result;
     }
 
 
